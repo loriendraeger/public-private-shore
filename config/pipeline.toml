@@ -52,6 +52,7 @@ access_evidence_distance_m = 15
 minzoom = 10
 maxzoom = 16           # shore lines; overzoomed beyond this by MapLibre
 basemap_maxzoom = 15   # keeps basemap.pmtiles under the ~50 MB budget (check on change)
+basemap_buffer_m = 2000   # basemap covers the study area plus this margin
 attribution = "Dane County LIO; WI DNR; SCO V12 parcels; © OpenStreetMap contributors"
 
 # Which exported layers go into which site/public/data/<name>.pmtiles. shore.pmtiles holds

@@ -61,7 +61,8 @@ export: $(STAMPS)/analysis
 tiles: export
 	$(RUN) tiles
 
-basemap:
+# Extract region = the study area (+ margin), so it needs the analysis stage.
+basemap: $(STAMPS)/analysis
 	$(RUN) basemap
 
 # Extra map layer `shore_alt` at another tolerance, e.g. make compare SET=snap_tolerance_m=12.

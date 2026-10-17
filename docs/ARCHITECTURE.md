@@ -17,7 +17,7 @@ PostGIS  raw ──► staging ──► analysis ──► export     SQL stage
    │  shore export (built) / stats (planned)
    ▼
 data/build/export/*.geojsonl ──► tippecanoe ──► site/public/data/{shore,context}.pmtiles   built
-Protomaps planet build ──► pmtiles extract ──► site/public/data/basemap.pmtiles built
+Protomaps planet build ──► pmtiles extract (study-area region) ──► site/public/data/basemap.pmtiles built
                                                 site/public/data/stats.json  planned
    │
    ▼
@@ -38,7 +38,7 @@ cp .env.example .env     # once
 make staging             # db-up → init → load → staging (stamps skip finished steps)
 make analysis            # shoreline → segments → class → municipality → access
 make tiles               # export views → GeoJSONSeq → site/public/data/{shore,context}.pmtiles
-make basemap             # Protomaps extract → site/public/data/basemap.pmtiles (~29 MB)
+make basemap             # Protomaps extract (study-area bounding box + 2 km) → site/public/data/basemap.pmtiles (~22 MB)
 make compare SET=snap_tolerance_m=12   # extra `shore_alt` layer for side-by-side checks
 make test                # unit tests (no DB)
 make psql                # SQL shell in the database
@@ -108,7 +108,7 @@ Python handles orchestration; geometry logic belongs in SQL.
 | `load.py` | built | For each `sources.toml` entry with a `table`: `ogr2ogr` into `raw.<table>`. It honors `load_srs` (assigns an EPSG code when the .prj is ESRI-only or compound) and `clip_to_study_area`. OSM: `osmium extract` to the bbox, then three ogr2ogr layers with `other_tags` as hstore. |
 | `sqlrun.py` | built | Runs `pipeline/sql/<stage>/*.sql` in filename order with `psql -v ON_ERROR_STOP=1` and the config variables. Runs from the repo root so `\copy` can use `config/...` paths. |
 | `download.py` | planned | Fetch sources (downloads are currently by hand) |
-| `export.py` | built | `export`: every view in the `export` schema → `data/build/export/<view>.geojsonl`. `tiles`: builds one PMTiles file per `[tiles.files]` entry in pipeline.toml (`shore` = analysis output, so its bounds are the study area and the map fits to them; `context` = county-wide reference layers). Every exported layer must be assigned to a file. `basemap`: `pmtiles extract` of the Protomaps build URL in sources.toml. `compare` (in cli.py) reruns analysis with `--set` overrides, exports `shore` as `shore_alt`, then restores. |
+| `export.py` | built | `export`: every view in the `export` schema → `data/build/export/<view>.geojsonl`. `tiles`: builds one PMTiles file per `[tiles.files]` entry in pipeline.toml (`shore` = analysis output, so its bounds are the study area and the map fits to them; `context` = county-wide reference layers). Every exported layer must be assigned to a file. `basemap`: writes the bounding rectangle of the study area (buffered by `basemap_buffer_m`) to `data/build/basemap_region.geojson` and runs `pmtiles extract --region` on the Protomaps build URL in sources.toml, up to `basemap_maxzoom` (15: 22 MB; 14 would be ~10 MB). A rectangle, because the site limits the camera to the extract's bounds (`setMaxBounds`), so the extract must fill them. `compare` (in cli.py) reruns analysis with `--set` overrides, exports `shore` as `shore_alt`, then restores. |
 | `stats.py` | planned | analysis tables → `stats.json` |
 
 ### `pipeline/sql/`: the analysis, one directory per schema

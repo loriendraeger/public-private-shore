@@ -58,11 +58,20 @@ def tiles() -> None:
 
 
 def basemap() -> None:
-    """Cut a Dane County extract from a Protomaps planet build (HTTP range requests,
-    so only the needed tiles are downloaded)."""
+    """Cut a basemap extract from a Protomaps planet build: the bounding rectangle of the
+    study area plus a margin. Uses HTTP range requests, so only the needed tiles are downloaded.
+    Needs `analysis.study_area` (run the analysis first)."""
     b = config.sources()["basemap"]
     t = config.pipeline()["tiles"]
-    bbox = ",".join(map(str, config.pipeline()["study_area"]["bbox_4326"]))
+    region = config.BUILD / "basemap_region.geojson"
+    region.parent.mkdir(parents=True, exist_ok=True)
+    region.unlink(missing_ok=True)
+    # The study area plus a margin, as its bounding rectangle: the site limits the camera
+    # to the extract's (rectangular) bounds, so the extract must fill that whole rectangle.
+    # An irregular region would leave blank corners.
+    sql = (f"SELECT ST_Envelope(ST_Buffer(geom, {t['basemap_buffer_m']})) AS geom "
+           f"FROM analysis.study_area")
+    run(["ogr2ogr", "-f", "GeoJSON", str(region), "PG:", "-sql", sql, "-t_srs", "EPSG:4326"])
     SITE_DATA.mkdir(parents=True, exist_ok=True)
     run(["pmtiles", "extract", b["url"], str(SITE_DATA / "basemap.pmtiles"),
-         f"--bbox={bbox}", f"--maxzoom={t['basemap_maxzoom']}"])
+         f"--region={region}", f"--maxzoom={t['basemap_maxzoom']}"])

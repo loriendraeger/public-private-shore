@@ -52,7 +52,9 @@ export default function MapView(): JSX.Element {
     // component's owner so effects created there are disposed with the component.
     const owner = getOwner()
     const shore = new PMTiles(dataUrl('shore.pmtiles'))
+    const basemap = new PMTiles(dataUrl('basemap.pmtiles'))
     protocol.add(shore)
+    protocol.add(basemap)
     const flavor = mode === 'dark' ? 'dark' : 'light'
 
     const m = new MlMap({
@@ -67,7 +69,7 @@ export default function MapView(): JSX.Element {
         sources: {
           protomaps: {
             type: 'vector',
-            url: `pmtiles://${dataUrl('basemap.pmtiles')}`,
+            url: `pmtiles://${basemap.source.getKey()}`,
             attribution:
               '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
           },
@@ -200,6 +202,15 @@ export default function MapView(): JSX.Element {
           'text-halo-width': 1.5,
         },
       })
+
+      // The basemap is an extract: low-zoom tiles cover far more than the study area, and
+      // beyond the extract there's nothing. Keep the camera inside the extract's bounds;
+      // MapLibre then also stops zooming out once the view would exceed them.
+      const b = await basemap.getHeader()
+      m.setMaxBounds([
+        [b.minLon, b.minLat],
+        [b.maxLon, b.maxLat],
+      ])
 
       const h = await shore.getHeader()
       m.fitBounds(
