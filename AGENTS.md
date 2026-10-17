@@ -212,6 +212,9 @@ Structural rules:
 4. **Classify:** map each owner name to an ownership class using
    `config/ownership_rules.csv` (ordered regex patterns loaded into a table, so the rules
    are data, not code).
+   The parcel `AUXCLASS` exemption codes (X1 federal, X2 state, X3 county, X4 other
+   exempt) are a **secondary signal** for flagging disagreements and filling gaps. They
+   are applied too inconsistently to drive classification on their own.
 5. **Municipality:** split segments again at municipal boundaries and attach the
    municipality name and type (city/village/town).
 6. **Access:** assign each segment an access status. See [Access model](#access-model).
@@ -360,6 +363,9 @@ cd site && npm run dev
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-16: Parcels come from SCO V12 (file geodatabase, EPSG:3071). Dane does not
+  redact owner names. Owner-name rules are primary and AUXCLASS is secondary, because
+  e.g. only ~5% of City of Madison parcels carry X4.
 - 2026-10-16: Ownership and access are modeled as separate attributes, with access
   included from v1.
 - 2026-10-16: Shore scope is lakes above a size threshold plus named rivers and

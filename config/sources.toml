@@ -1,0 +1,140 @@
+# Data sources for the pipeline.
+#
+# Milestone 1 (data recon): verify each entry by hand in QGIS, then fill in the
+# TODO fields and set verified = true. Don't write pipeline code against an
+# unverified source.
+#
+# Fields:
+#   url         landing page or direct download
+#   local_path  where the extracted download lives, relative to repo root
+#   format     as delivered (shp, gdb, gpkg, pbf, geojson, ...)
+#   layer       layer/table name inside the download, if multi-layer
+#   crs         as delivered (EPSG code)
+#   license     license / terms of use, plus required attribution
+#   retrieved   date downloaded for the current build (YYYY-MM-DD)
+#   verified    true once inspected in QGIS during recon
+#   notes       recon findings
+
+[parcels]
+name = "Wisconsin Statewide Parcel Map V12 (Dane County extract)"
+publisher = "WI State Cartographer's Office / Dept. of Administration"
+url = "https://www.sco.wisc.edu/parcels/data-county/#v1200"
+local_path = "data/raw/parcels/V1200_Wisconsin_Parcels_DANE.gdb"
+format = "gdb"      # Esri file geodatabase; read via GDAL OpenFileGDB driver
+layer = "V1200_Wisconsin_Parcels_DANE"
+geometry = "MultiPolygon"
+crs = "EPSG:3071"   # NAD83(HARN) / WTM83, meters. Same as our analysis CRS, so no reprojection.
+license = "Free of charge; no formal license. SCO asks users to complete their parcel feedback survey. Attribution: Wisconsin Statewide Parcel Map Initiative (V12), WI DOA / State Cartographer's Office"
+# TODO(owner): fill out the SCO parcel feedback survey (linked from the data page).
+retrieved = "2026-10-16"
+verified = true
+notes = """
+218,857 parcels. Source county data loaded 2026-03-09 (LOADDATE); TAXROLLYEAR
+mostly 2025 (a few 2026/2027).
+Bounds (EPSG:3071): 533141, 263801 to 600599, 313653.
+
+Owner names: OWNERNME1 is 100% populated, so Dane does NOT redact.
+OWNERNME2 is 56% blank. Watch for the placeholder owner 'NOT AVAILABLE'
+(~510 parcels, many in Town of Westport) and classify it as unknown.
+
+Useful classification fields:
+  AUXCLASS: tax-exempt / special class codes (95% blank).
+    X1 = federal  (USFWS, NPS, USPS, VA)
+    X2 = state    (WI DNR, WI DOT, UW Regents, Corrections)
+    X3 = county   (Dane County, Housing Authority, Parks)
+    X4 = other exempt (cities/villages, etc.)
+    W5-W8, AW = forest / special classes. TODO: look up in schema PDF.
+    Inconsistent: only ~5% of City of Madison-owned parcels carry X4, and a
+    private name appears under X1. Use it as a secondary signal, not the rule.
+  PROPCLASS: 1=residential, 2=commercial, etc. Blank for most exempt parcels.
+  PLACENAME: municipality of the parcel ('CITY OF MADISON', 60 distinct).
+    Could cross-check the municipal boundary split.
+
+Owner-name variety to handle in ownership_rules.csv:
+  'DANE COUNTY' / 'DANE, COUNTY OF' / 'COUNTY OF DANE'
+  'CITY OF MADISON ENGINEER STORMWATER UTILITY 533' (department suffixes)
+  'MADISON, CITY OF' (inverted form, common outside Madison)
+  'BOARD OF REGENTS OF UNIV OF WIS SYSTEM' / 'UNIV OF WIS REGENTS ...' / 'UW REGENTS ARBORETUM ...'
+  'WI DNR' / 'STATE OF WISCONSIN DEPT OF NATURAL RESOURCES'
+  HOAs: '... HOME OWNERS ASSOCIATION INC' / '... NEIGHBORHOOD ASSOCIATION INC'
+  Beware false positives: 'DANE COUNTY GROWERS', 'BECKS ENTERPRISES OF DANE COUNTY LLC'.
+
+Not a legal record of ownership; cite that in the methodology page.
+Alternative source: Dane County open data portal (gis-countyofdane.opendata.arcgis.com).
+Not needed. V12 is recent and complete.
+"""
+
+[hydro]
+name = "WI DNR 24K Hydro (full file geodatabase)"
+publisher = "Wisconsin DNR"
+url = "https://data-wi-dnr.opendata.arcgis.com/datasets/24k-hydro-full-file-geodatabase"
+format = "gdb"
+layer = "TODO"      # expect waterbody polygons + flowlines; pick the shoreline-bearing layer
+crs = "TODO"        # likely EPSG:3071 (WTM83). Confirm.
+license = "TODO"
+retrieved = "TODO"
+verified = false
+notes = """
+Latest release seen is 2023. Check the portal for newer.
+Statewide download; clip to Dane County in staging.
+Look for: waterbody name field, area field, WBIC (waterbody ID), navigability attrs.
+"""
+
+[municipalities]
+name = "Dane County Municipal Boundaries"
+publisher = "Dane County Land Information Office"
+url = "https://gis-countyofdane.opendata.arcgis.com/datasets/countyofdane::municipal-boundaries/about"
+format = "TODO"
+layer = "TODO"
+crs = "TODO"
+license = "TODO"
+retrieved = "TODO"
+verified = false
+notes = """
+Reportedly updated weekly (annexations). Record retrieval date.
+Look for: name field, type field (city/village/town).
+Does this layer include the county boundary, or do we need a separate source?
+"""
+
+[boat_access]
+name = "WI DNR Public Boat Access Sites"
+publisher = "Wisconsin DNR"
+url = "https://data-wi-dnr.opendata.arcgis.com/"   # TODO: find exact dataset page
+format = "TODO"
+layer = "TODO"
+crs = "TODO"        # archived 2019 copy was EPSG:3071
+license = "TODO"
+retrieved = "TODO"
+verified = false
+notes = """
+Ramp and carry-in sites owned by state or local government; no private sites.
+Archived copies at UW-Madison GeoData@Wisconsin (2019, 2021, 2022).
+"""
+
+[osm]
+name = "OpenStreetMap Wisconsin extract"
+publisher = "Geofabrik"
+url = "https://download.geofabrik.de/north-america/us/wisconsin.html"
+format = "pbf"
+layer = ""
+crs = "EPSG:4326"
+license = "ODbL 1.0 - attribution: (c) OpenStreetMap contributors"
+retrieved = "TODO"
+verified = false
+notes = """
+Filter with osmium to the Dane County bbox. Tags of interest:
+leisure=park|slipway|beach_resort, natural=beach, man_made=pier,
+leisure=fishing, access=*, highway=* (for street ends).
+"""
+
+[basemap]
+name = "Protomaps basemap (daily planet build)"
+publisher = "Protomaps"
+url = "https://maps.protomaps.com/builds/"
+format = "pmtiles"
+layer = ""
+crs = "EPSG:3857"
+license = "ODbL (OSM data) - attribution: Protomaps, (c) OpenStreetMap contributors"
+retrieved = "TODO"
+verified = false
+notes = "Extract Dane County bbox with `pmtiles extract`. Check output size against 50 MB budget."
