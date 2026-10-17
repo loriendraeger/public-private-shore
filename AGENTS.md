@@ -34,7 +34,7 @@ Two halves:
    map tiles plus stats come out.
 2. **Static site** (GitHub Pages, client-only): renders the committed outputs.
 
-**Status:** milestones 1–3 done; next up are 4 (segment cleanup), 5 (access quality)
+**Status:** milestones 1–3 done; next up are 4 (categories + access quality), 5 (segment cleanup)
 and 6 (scorecard on the site). See [Milestones](#milestones). The full pipeline (load →
 staging → analysis → export → tiles) and the map run locally. `site/public/data/` is
 temporarily gitignored until the owner approves the output, and the deploy workflow is
@@ -286,15 +286,35 @@ capture groups are allowed). Private individuals get the label `Private`.
 **Privacy:** raw owner names stay in the local database for auditing and are **never
 exported** to tiles or stats. Only class and label ship to the site.
 
+### Scorecard categories
+
+Ownership classes and access are inputs. **The analysis (scorecard, stats) uses one
+category per segment**, derived from both after access is assigned. Owner labels and
+access reasons are map-only detail. (Decided 2026-10-17; implementation pending.)
+
+| Category | Meaning | Map shows | Public access? |
+|---|---|---|---|
+| `municipal` | municipality-owned and accessible, plus street ends | owner label (`City of Madison`, `Street end`) | yes; the municipality's own |
+| `county` | county-owned and accessible | `Dane County` | yes |
+| `state_federal` | state or federal and accessible (DNR, WisDOT, UW is separate) | owner label | yes (toggle) |
+| `university` | UW–Madison and accessible | `UW–Madison` | yes (toggle) |
+| `land_trust` | conservation land trust preserve, accessible | `Land trust` | yes (toggle) |
+| `other_public` | other public bodies (sewerage, lake districts) and accessible | owner label | yes (toggle) |
+| `private_public_access` | privately owned with public access (e.g. Edgewood condos) | owner label | toggle |
+| `public_no_access` | publicly owned, no public access | owner label + reason (barrier, no land route, facility, institutional grounds) | no |
+| `private` | privately owned, no public access | `Private` only | no |
+| `unknown` | owner or access not yet determined | what is known | reported separately |
+
+Which categories count as public access is a site setting (presets plus toggles).
+
 ### Access model
 
 Each segment gets an `access` status alongside its ownership class:
 
 - `open`: the public can legally reach the water here (park, boat launch, public
-  street end, open preserve)
-- `restricted`: public or institutional land with limited or permitted access (hours,
-  fees, members/students only, or closed facilities)
-- `none`: no public access from land
+  street end, open preserve). Fees open to anyone still count as `open`.
+- `none`: no public access from land, including members-, students- or residents-only
+  areas and closed facilities
 - `unknown`: not yet determined
 
 Each segment also carries `access_source`, which records which layer set the status:
@@ -390,33 +410,37 @@ cd site && npm run dev
 
 ## Milestones
 
-Rewritten 2026-10-17 around the municipal scorecard goal.
+Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the same day
+(fix data quality before merging).
 
 1. ✅ **Data recon.** Every source inspected; findings in `config/sources.toml`.
 2. ✅ **Thin slice: Lake Wingra.** Download → PostGIS → segments → PMTiles → map, working
    locally. (Deploying moved to milestone 7.)
 3. ✅ **Study-area analysis.** 30 municipalities, named water, islands excluded unless
    bridged, first pass of ownership rules on real owner names.
-4. **Segment cleanup.** Merge adjacent private segments into one, whatever the owner:
-   individual private owners don't matter, only that the shore is private (and its
-   access). Public segments keep their owner labels.
-5. **Access quality.** Make access trustworthy enough to rank municipalities:
+4. **Categories + access quality.** Implement the
+   [scorecard categories](#scorecard-categories) and drop `restricted`, then make access
+   trustworthy enough to rank municipalities:
    - **Barriers:** shore you can't reach from land even though the owner is public, e.g.
      the rail corridor and the strip west of the John Nolen Drive causeway in Monona Bay
      (state-owned, but you'd have to cross tracks). Use OSM railways (and other barriers)
      as negative evidence, possibly a land-side reachability check from public ways.
    - **Private land with public access:** e.g. the Edgewood condo shore on Lake Wingra.
-     The model already allows `private` + `open`; it needs evidence sources (candidates:
+     Category `private_public_access`; it needs evidence sources (candidates:
      public paths along the shore, DNR stewardship and Managed Forest Law "open" lands,
      conservation easements, plat-required lake access).
    - **Unknowns:** shrink the 83 km of `unknown` access, municipality by municipality,
      with `access_overrides.csv` for hand fixes.
    - Re-check the 15 m snap tolerance on dense shores (Mendota, Monona).
+5. **Segment cleanup.** Merge adjacent segments with the same category; all adjacent
+   private shore becomes one run, whatever the owner. Public categories also match on
+   owner label.
 6. **Scorecard on the site.** Interactive tables and charts computed in the browser from
    user-chosen numerators and denominators (e.g. "open shore ÷ all shore", "provided by the
    municipality ÷ all shore", lakes only), plus default reports with preset choices. The
    pipeline ships a tidy per-municipality breakdown (`stats.json`); the site aggregates.
-   Map: shade municipalities by the selected measure.
+   Map: shade municipalities by the selected measure. Metric/imperial display switch
+   (data stays in meters).
 7. **Ship.** Approve the output, commit `site/public/data/`, enable GitHub Pages, restore
    the push trigger.
 8. **Explain and polish.** Methodology/about page (sources and vintages, coastline
@@ -428,6 +452,22 @@ Rewritten 2026-10-17 around the municipal scorecard goal.
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-17: Analysis uses scorecard categories (see [Scorecard categories](#scorecard-categories)),
+  derived from ownership class + access; owner labels and access reasons are map-only.
+  State and federal merge into `state_federal`; street ends go under `municipal`; land
+  trusts get their own `land_trust` category (counted as public), separate from
+  `private_public_access`. UW is its own category; Edgewood College is private.
+- 2026-10-17: Access is `open` / `none` / `unknown`; `restricted` is dropped. Fees open
+  to anyone count as `open`; members-, students- or residents-only count as `none`.
+  Marinas and boat rentals are no longer access evidence. Schools and institutional
+  grounds (e.g. Mendota Mental Health Institute) default to `public_no_access`, open to
+  per-case overrides.
+- 2026-10-17: Edgewood Condo Assn land on Lake Wingra is the Edgewood campus's shared
+  lakefront (college + schools), not a residential condo: label "Edgewood (campus common
+  land)", private with public access (override). Edgewood College owns no shore itself.
+  No other private college owns shore in the study area.
+- 2026-10-17: All data is stored and shipped in meters; the site offers a metric/imperial
+  display switch (m/km ↔ ft/mi).
 - 2026-10-17: Scorecard lives on the site, computed in the browser from user-chosen
   numerators/denominators plus default reports. Libraries: Observable Plot (charts),
   TanStack Table (tables), plain TypeScript aggregation over a tidy `stats.json`.
@@ -445,7 +485,7 @@ changes), newest first, with the date and a one-line rationale.
   taxable residential, and none bill to an institutional address.
 - 2026-10-17: Conservation land trusts (Groundswell / Natural Heritage Land Trust, The
   Nature Conservancy, Driftless Area Land Conservancy) are `other_public`, label "Land
-  trust". Matched by trust name, since generic "CONSERVANCY" also hits HOAs and LLCs.
+  trust" (superseded: now their own `land_trust` category, above). Matched by trust name, since generic "CONSERVANCY" also hits HOAs and LLCs.
 
 - 2026-10-17: Study area = 30 municipalities chosen on the map (central Dane County
   around the Yahara lakes, plus City of Stoughton and Village of Oregon; edge towns
@@ -467,7 +507,7 @@ changes), newest first, with the date and a one-line rationale.
   separate class.
 - 2026-10-17: Piers are access evidence on non-private land only (`public_only` in
   `config/access_osm.csv`); private docks don't open private shore. Marinas and boat
-  rentals count as `restricted` (fee-based).
+  rentals count as `restricted` (fee-based) (superseded: `restricted` dropped, above).
 
 - 2026-10-17: Line-only streams are excluded for now (575 km of named creeks such as
   Pheasant Branch and Six Mile Creek; two banks would be ~1,150 km, more than all lake

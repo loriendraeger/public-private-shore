@@ -82,7 +82,8 @@ def test_class(owner, expected_class):
     ("owner", "expected_label"),
     [
         ("EDGEWOOD COLLEGE INC", "Edgewood College"),
-        ("EDGEWOOD CONDO ASSN INC", "Condo / HOA"),
+        ("EDGEWOOD CONDO ASSN INC", "Edgewood (campus common land)"),
+        ("LAKE POINT CONDO ASSN", "Condo / HOA"),
         ("ST MARYS CATHOLIC CHURCH", "Church"),
         ("UW REGENTS ARBORETUM RE DEV & ADMIN UW MADISON", "UW–Madison"),
         ("SMITH, JOHN", "Private"),

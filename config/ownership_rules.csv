@@ -13,6 +13,7 @@ priority,pattern,class,label,note
 96,(GROUNDSWELL CONSERVANCY|NATURAL HERITAGE LAND TRUST|NATURE CONSERVANCY|DRIFTLESS AREA LAND CONSERVANCY),other_public,Land trust,"Conservation land trusts count as public (decision 2026-10-17). Named trusts only: generic CONSERVANCY also matches HOAs and LLCs"
 100,^EDGEWOOD COLLEGE,private,Edgewood College,Private college
 101,^EDGEWOOD (HIGH SCHOOL|CAMPUS SCHOOL),private,Edgewood schools,Private school
+102,^EDGEWOOD CONDO ASSN,private,Edgewood (campus common land),"Shared lakefront of the Edgewood campus (college + schools), not a residential condo; publicly accessible shore path"
 110,(CONDO|CONDOMINIUM|HOME ?OWNERS|HOMEOWNERS|HOME OWNRS|HOME ASSOC|OWNERS ASSOC|NEIGHBORHOOD ASSOC|BEACH ASSOC),private,Condo / HOA,Common land of a condo or homeowners association
 120,(CHURCH|PARISH|DIOCESE|CONGREGATION|LUTHERAN|METHODIST|CATHOLIC),private,Church,
 1000,.*,private,Private,"Fallback: individuals and companies"
