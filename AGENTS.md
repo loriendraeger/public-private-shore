@@ -60,6 +60,7 @@ This is a **for-fun learning project**. The owner is interested in GIS.
 | Reproducibility | **Docker Compose** for everything: PostGIS + a pipeline container with GDAL/tippecanoe/uv pinned |
 | Tile format | **PMTiles** (single-file vector tiles via HTTP range requests, no tile server) |
 | Frontend | **Vite + Solid + TypeScript** |
+| Frontend lint/format | **ESLint** (typescript-eslint, eslint-plugin-solid) + **Prettier** |
 | Map library | **MapLibre GL JS** + `pmtiles` protocol |
 | Basemap | **Protomaps** basemap PMTiles extract clipped to Dane County (streets with names for orientation; swappable later) |
 | Hosting | **GitHub Pages**, deployed by GitHub Actions |

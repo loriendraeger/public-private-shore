@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "check": "prettier --check . && eslint . && tsc --noEmit"
   },
   "dependencies": {
     "@protomaps/basemaps": "5.7.2",
@@ -15,7 +18,15 @@
     "solid-js": "1.9.17"
   },
   "devDependencies": {
-    "typescript": "7.0.2",
+    "@eslint/js": "10.0.1",
+    "eslint": "10.12.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-simple-import-sort": "14.0.0",
+    "eslint-plugin-solid": "0.18.0",
+    "globals": "17.13.0",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0",
     "vite": "8.3.1",
     "vite-plugin-solid": "2.11.14"
   }

@@ -176,14 +176,42 @@ Views, so they're always current with `analysis`. Each view = one tile layer.
 
 ### `site/`: the map (built)
 
-Vite 8 + Solid + TypeScript 7, MapLibre GL 6, `pmtiles`, `@protomaps/basemaps`.
+Vite 8 + Solid + TypeScript 6, MapLibre GL 6, `pmtiles`, `@protomaps/basemaps`.
 Node 24 (`site/.nvmrc`). It reads only `site/public/data/`.
+
+TypeScript is pinned to 6.0.x, the last JavaScript-based release: typescript-eslint
+needs the compiler's JS API, which TypeScript 7 (native) doesn't ship yet. Move to 7
+when typescript-eslint supports it.
 
 ```sh
 cd site && nvm use && npm install
 npm run dev        # http://localhost:5173/public-private-land/
 npm run build      # tsc --noEmit + vite build → site/dist/
+npm run format     # prettier --write .
+npm run check      # prettier --check, eslint, tsc (also runs in the deploy workflow)
 ```
+
+**Formatting** is Prettier: 100 columns, no semicolons, single quotes, trailing commas
+on multi-line lists only (`trailingComma: "all"`). Arrays print as `[1, 2]`: Prettier has no
+array-bracket-spacing option (by design), and we chose Prettier over formatters that
+have one (ESLint Stylistic, dprint).
+
+**Linting** is ESLint (flat config, `eslint.config.js`): `@eslint/js` recommended,
+typescript-eslint `strictTypeChecked` + `stylisticTypeChecked`, `eslint-plugin-solid`,
+`simple-import-sort`, then `eslint-config-prettier` so ESLint never fights Prettier.
+House rules on top:
+
+| Rule | Meaning |
+|---|---|
+| `func-style: declaration` | Named functions are `function f() {}`; inline callbacks may be arrows |
+| `explicit-function-return-type` | Every named function states its return type (components: `JSX.Element`) |
+| `no-explicit-any`, `no-non-null-assertion` (strict) | No `any`, no `x!`. Prefer total lookups (`Record<Union, …>`) and explicit checks |
+| `consistent-type-imports` | `import { type X }` for type-only imports |
+| `simple-import-sort` | Sorted, grouped imports/exports (auto-fixed) |
+| `naming-convention` | camelCase; PascalCase types and components; UPPER_CASE module constants; property names exempt (snake_case tile attributes, MapLibre style keys) |
+| `eqeqeq`, `curly: all`, `no-console` (warn/error allowed) | |
+
+`npx eslint . --fix` fixes import order, type imports and some style rules.
 
 | File | Role |
 |---|---|
@@ -201,7 +229,7 @@ build). `MapView.tsx` imports the worker with `?worker&url` and passes it to
 
 ### `.github/workflows/deploy.yml`
 
-`npm ci` → `npm run build` → `upload-pages-artifact` → `deploy-pages`. It's **manual only**
+`npm ci` → `npm run check` → `npm run build` → `upload-pages-artifact` → `deploy-pages`. It's **manual only**
 (`workflow_dispatch`) while `site/public/data/` is gitignored; restore the `push`
 trigger when the data is committed. The repo's Pages source must be set to
 "GitHub Actions".
