@@ -1,15 +1,22 @@
 import { For, type JSX, Show } from 'solid-js'
 
-import { ACCESS, entries, type Mode, OWNER_GROUPS } from '../map/colors'
+import { CATEGORIES } from '../lib/categories'
+import { formatShort } from '../lib/units'
+import { ACCESS, CATEGORY_GROUPS, entries, type Mode, SEQUENTIAL } from '../map/colors'
+import { matchingReport } from '../scorecard/measures'
 import {
   colorBy,
   hasAlt,
+  measure,
   selected,
   setColorBy,
+  setShadeMunis,
   setShowAlt,
   setShowMunis,
+  shadeMunis,
   showAlt,
   showMunis,
+  units,
 } from '../state/store'
 
 const mode: Mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
@@ -21,17 +28,11 @@ const ACCESS_SOURCE: Record<string, string> = {
   override: 'manual review',
 }
 
-const CLASS_LABEL: Record<string, string> = {
-  school_district: 'school district',
-  other_public: 'other public',
-  row: 'road right-of-way',
-}
-
 function Legend(): JSX.Element {
   return (
     <ul class="legend">
       <Show
-        when={colorBy() === 'owner'}
+        when={colorBy() === 'category'}
         fallback={
           <For each={entries(ACCESS)}>
             {([, a]) => (
@@ -46,7 +47,7 @@ function Legend(): JSX.Element {
           </For>
         }
       >
-        <For each={entries(OWNER_GROUPS)}>
+        <For each={entries(CATEGORY_GROUPS)}>
           {([, g]) => (
             <li>
               <span class="swatch" style={{ background: g.color[mode] }} />
@@ -71,11 +72,10 @@ function SegmentDetails(): JSX.Element {
         }
         return (
           <dl class="details">
+            <dt>Category</dt>
+            <dd>{CATEGORIES[s().category].label}</dd>
             <dt>Owner</dt>
-            <dd>
-              {s().owner_label}{' '}
-              <span class="muted">({CLASS_LABEL[s().owner_class] ?? s().owner_class})</span>
-            </dd>
+            <dd>{s().owner_label}</dd>
             <dt>Access</dt>
             <dd>
               <span aria-hidden="true">{access().icon}</span> {access().label}
@@ -89,10 +89,7 @@ function SegmentDetails(): JSX.Element {
             <dt>Waterbody</dt>
             <dd>{s().waterbody}</dd>
             <dt>Length</dt>
-            <dd>
-              {Math.round(s().length_m).toLocaleString()} m (
-              {(s().length_m * 3.28084).toLocaleString(undefined, { maximumFractionDigits: 0 })} ft)
-            </dd>
+            <dd>{formatShort(s().length_m, units())}</dd>
           </dl>
         )
       }}
@@ -112,10 +109,10 @@ export default function Panel(): JSX.Element {
       <div class="segmented" role="radiogroup" aria-label="Color shoreline by">
         <button
           role="radio"
-          aria-checked={colorBy() === 'owner'}
-          onClick={() => setColorBy('owner')}
+          aria-checked={colorBy() === 'category'}
+          onClick={() => setColorBy('category')}
         >
-          Ownership
+          Category
         </button>
         <button
           role="radio"
@@ -135,6 +132,27 @@ export default function Panel(): JSX.Element {
         />
         Municipal boundaries
       </label>
+
+      <label class="toggle">
+        <input
+          type="checkbox"
+          checked={shadeMunis()}
+          onChange={(e) => setShadeMunis(e.currentTarget.checked)}
+        />
+        Shade by scorecard
+      </label>
+      <Show when={shadeMunis()}>
+        <div class="ramp">
+          <span class="muted">{matchingReport(measure())?.label ?? 'Custom measure'}</span>
+          <div class="ramp-bar">
+            <For each={SEQUENTIAL}>{(c) => <span style={{ background: c }} />}</For>
+          </div>
+          <div class="ramp-labels">
+            <span>0%</span>
+            <span>100%</span>
+          </div>
+        </div>
+      </Show>
 
       <Show when={hasAlt()}>
         <div class="compare">

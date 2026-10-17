@@ -7,6 +7,7 @@ import typer
 from . import export as export_mod
 from . import load as load_mod
 from . import sqlrun
+from . import stats as stats_mod
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 
@@ -40,6 +41,12 @@ def sql(
 def export():
     """Write every view in the `export` schema to data/build/export/<view>.geojsonl."""
     export_mod.export_views()
+
+
+@app.command()
+def stats():
+    """Write site/public/data/stats.json from the export.stats_* views."""
+    stats_mod.stats()
 
 
 @app.command()

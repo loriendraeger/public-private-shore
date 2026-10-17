@@ -11,9 +11,9 @@ STAMPS  := data/build/.stamps
 CONFIG  := $(wildcard config/*)
 SQL      = $(wildcard pipeline/sql/$(1)/*.sql)
 
-.PHONY: all db-up db-down db-reset psql image load init staging analysis export tiles basemap compare test lint
+.PHONY: all db-up db-down db-reset psql image load init staging analysis export stats tiles basemap compare test lint
 
-all: tiles
+all: tiles stats
 
 db-up:
 	$(COMPOSE) up -d --wait db
@@ -57,6 +57,9 @@ $(STAMPS)/analysis: $(STAMPS)/staging $(call SQL,20_analysis) $(CONFIG)
 export: $(STAMPS)/analysis
 	$(RUN) sql 30_export
 	$(RUN) export
+
+stats: export
+	$(RUN) stats
 
 tiles: export
 	$(RUN) tiles

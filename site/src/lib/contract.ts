@@ -1,5 +1,6 @@
 // The frontend half of the data contract with the pipeline.
-// Must match pipeline/sql/30_export/*.sql (tile layers + attributes). Change together.
+// Must match pipeline/sql/30_export/*.sql (tile layers + attributes) and
+// pipeline/src/shore/stats.py (stats.json). Change together.
 
 export const SHORE_LAYER = 'shore'
 export const SHORE_ALT_LAYER = 'shore_alt' // only present after `make compare`
@@ -18,24 +19,68 @@ export type OwnerClass =
   | 'school_district'
   | 'utility'
   | 'other_public'
+  | 'land_trust'
   | 'private'
   | 'row'
   | 'unknown'
 
-export type Access = 'open' | 'restricted' | 'none' | 'unknown'
+export type Access = 'open' | 'none' | 'unknown'
 
 export type AccessSource = 'default' | 'osm' | 'street_end' | 'override'
+
+/** Scorecard category (config/categories.csv): the one attribute the analysis uses. */
+export type Category =
+  | 'municipal'
+  | 'county'
+  | 'state_federal'
+  | 'university'
+  | 'land_trust'
+  | 'other_public'
+  | 'private_public_access'
+  | 'public_no_access'
+  | 'private'
+  | 'unknown'
+
+export type MuniType = 'city' | 'village' | 'town'
 
 /** Properties of a feature in the `shore` (and `shore_alt`) tile layer. */
 export interface ShoreProps {
   segment_id: number
   waterbody: string
+  category: Category
   owner_class: OwnerClass
   owner_label: string
   access: Access
   access_source: AccessSource
   access_note?: string
   muni_name: string
-  muni_type: 'city' | 'village' | 'town'
+  muni_type: MuniType
+  length_m: number
+}
+
+/** stats.json: tidy rows, lengths in meters. The site aggregates. */
+export interface Stats {
+  generated: string
+  sources: Record<string, { name: string; retrieved: string }>
+  municipalities: StatsMuni[]
+  shore: StatsShoreRow[]
+}
+
+export interface StatsMuni {
+  muni_id: number
+  name: string
+  muni_type: MuniType
+  /** WI DOA final estimate (Dane County part), 1/1/2026 */
+  population: number
+  pop_census_2020: number
+}
+
+export type WaterKind = 'lake' | 'river'
+
+export interface StatsShoreRow {
+  muni_id: number
+  waterbody: string
+  water_kind: WaterKind
+  category: Category
   length_m: number
 }

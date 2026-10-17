@@ -24,10 +24,12 @@ def export_view(view: str, out_name: str | None = None) -> Path:
 
 
 def export_views() -> list[Path]:
+    """Export every export view that has geometry (the tile layers)."""
     views = subprocess.run(
         ["psql", "-X", "-At", "-c",
-         "SELECT table_name FROM information_schema.views WHERE table_schema = 'export' "
-         "ORDER BY table_name"],
+         # Views with a geometry column are tile layers; the rest (stats_*) feed stats.json.
+         "SELECT f_table_name FROM geometry_columns WHERE f_table_schema = 'export' "
+         "ORDER BY f_table_name"],
         check=True, capture_output=True, text=True,
     ).stdout.split()
     return [export_view(v) for v in views]

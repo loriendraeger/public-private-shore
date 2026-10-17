@@ -22,8 +22,18 @@ import {
   SHORE_LAYER,
   type ShoreProps,
 } from '../lib/contract'
-import { colorBy, selected, setHasAlt, setSelected, showAlt, showMunis } from '../state/store'
-import { accessColorExpr, type Mode, ownerColorExpr } from './colors'
+import {
+  colorBy,
+  scores,
+  selected,
+  setHasAlt,
+  setSelected,
+  shadeMunis,
+  showAlt,
+  showMunis,
+  view,
+} from '../state/store'
+import { accessColorExpr, categoryColorExpr, type Mode, muniFillExpr } from './colors'
 
 function dataUrl(file: string): string {
   return new URL(`${import.meta.env.BASE_URL}data/${file}`, window.location.href).href
@@ -110,6 +120,19 @@ export default function MapView(): JSX.Element {
         },
       })
 
+      // Municipalities shaded by the current scorecard measure (under everything else).
+      m.addLayer(
+        {
+          id: 'muni-fill',
+          type: 'fill',
+          source: 'context',
+          'source-layer': MUNIS_LAYER,
+          layout: { visibility: 'none' },
+          paint: { 'fill-color': 'rgba(0,0,0,0)', 'fill-opacity': 0.55 },
+        },
+        'parks',
+      )
+
       const muniInk = mode === 'dark' ? '#c3c2b7' : '#52514e'
       m.addLayer({
         id: 'munis',
@@ -151,7 +174,7 @@ export default function MapView(): JSX.Element {
           'source-layer': sourceLayer,
           layout: { 'line-cap': 'round', 'line-join': 'round', visibility },
           paint: {
-            'line-color': ownerColorExpr(mode),
+            'line-color': categoryColorExpr(mode),
             'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.5, 16, 5],
           },
         })
@@ -230,7 +253,7 @@ export default function MapView(): JSX.Element {
 
   function bindSignals(m: MlMap, alt: boolean): void {
     createEffect(() => {
-      const expr = colorBy() === 'owner' ? ownerColorExpr(mode) : accessColorExpr()
+      const expr = colorBy() === 'category' ? categoryColorExpr(mode) : accessColorExpr()
       for (const id of SHORE_IDS) {
         if (m.getLayer(id)) {
           m.setPaintProperty(id, 'line-color', expr)
@@ -256,6 +279,22 @@ export default function MapView(): JSX.Element {
       const visibility = showMunis() ? 'visible' : 'none'
       m.setLayoutProperty('munis', 'visibility', visibility)
       m.setLayoutProperty('muni-labels', 'visibility', visibility)
+    })
+    createEffect(() => {
+      const on = shadeMunis()
+      m.setLayoutProperty('muni-fill', 'visibility', on ? 'visible' : 'none')
+      if (on) {
+        const values = scores().flatMap((s): [number, number][] =>
+          s.pct === null ? [] : [[s.muni.muni_id, s.pct]],
+        )
+        m.setPaintProperty('muni-fill', 'fill-color', muniFillExpr(values))
+      }
+    })
+    createEffect(() => {
+      // The map is hidden (display: none) on the scorecard tab; resize when it's back.
+      if (view() === 'map') {
+        m.resize()
+      }
     })
     createEffect(() => {
       m.setFilter('selected', ['==', ['get', 'segment_id'], selected()?.segment_id ?? -1])

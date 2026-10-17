@@ -297,6 +297,29 @@ Add to the access evidence list: leisure=marina, amenity=boat_rental,
   leisure=swimming_area, leisure=nature_reserve.
 """
 
+[population]
+name = "Official Final Population Estimates, 1/1/2026, Wisconsin Minor Civil Divisions"
+publisher = "Wisconsin Department of Administration, Demographic Services Center"
+url = "https://doa.wi.gov/DIR/Final_Ests_MCD_2026.xlsx"
+landing = "https://doa.wi.gov/Pages/LocalGovtsGrants/Population_Estimates_Long.aspx"
+local_path = "data/raw/population/Final_Ests_MCD_2026.xlsx"
+format = "xlsx"
+layer = "MCDPopulationEstimatebyCounty"
+table = "population"         # -> raw.population (no geometry)
+license = "Public data from a state agency; no license stated. Attribution: Wisconsin DOA Demographic Services Center"
+retrieved = "2026-10-17"
+verified = true
+notes = """
+One row per municipality x county part (a split municipality has a row per county;
+'*' in Split). Rows 1-3 are a title, row 4 the header, so ogr2ogr loads generic
+Field1..Field10 strings; staging parses them:
+  Field1 DOA code, Field2 'C Madison' / 'V Maple Bluff' / 'T Dunn', Field4 county,
+  Field5 final estimate 1/1/2026, Field6 Census 2020.
+Chosen over Census 2020 because DOA estimates follow current boundaries (the Town of
+Madison was dissolved into Madison and Fitchburg in 2022). The 'Final_Ests_MCD_2026'
+filename is the 1/1/2026 final release (published October 2026).
+"""
+
 [basemap]
 name = "Protomaps basemap (daily planet build)"
 publisher = "Protomaps"

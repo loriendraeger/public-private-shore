@@ -80,7 +80,7 @@ This is a **for-fun learning project**. The owner is interested in GIS.
 
 ## Data sources
 
-All four are used. Exact download URLs, layer names, and field names **must be verified
+All are used. Exact download URLs, layer names, and field names **must be verified
 when implementing**. Record them in `config/sources.toml` together with
 the license/attribution and retrieval date, rather than hardcoding them in scripts.
 
@@ -91,6 +91,7 @@ the license/attribution and retrieval date, rather than hardcoding them in scrip
 | **WI DNR 24K Hydrography** | Waterbody **identity** (WBIC, official names) via spatial join. Its geometry is 12–25 m+ off the parcels, so it is not used for shape |
 | **OpenStreetMap**: Geofabrik Wisconsin extract, filtered with `osmium` | Parks, boat launches (`leisure=slipway`), piers, beaches, access tags; cross-checking parcel results |
 | **Municipal boundaries**: LTSB or Dane County | Cities, villages, and towns, used to attribute shore segments to a municipality |
+| **Population**: WI DOA Demographic Services Center, final municipal estimates (1/1/2026) | Per-capita scorecard measures |
 
 Study area: **30 municipalities in central Dane County** (the Yahara lakes region plus
 Stoughton and the Village of Oregon), listed in `config/pipeline.toml` `[study_area]`.
@@ -467,6 +468,12 @@ changes), newest first, with the date and a one-line rationale.
   lakefront (college + schools), not a residential condo: label "Edgewood (campus common
   land)", private with public access (override). Edgewood College owns no shore itself.
   No other private college owns shore in the study area.
+- 2026-10-17: Population comes from WI DOA final estimates (1/1/2026, Dane County
+  part of each municipality), not Census 2020: DOA follows current boundaries (the Town
+  of Madison dissolved into Madison and Fitchburg in 2022).
+- 2026-10-17: The scorecard leaves `unknown` shore out of every measure for now
+  (reported per municipality), until the unknowns are cleaned up. Municipalities with
+  under 1 km of measured shore are flagged as fragile.
 - 2026-10-17: All data is stored and shipped in meters; the site offers a metric/imperial
   display switch (m/km ↔ ft/mi).
 - 2026-10-17: Scorecard lives on the site, computed in the browser from user-chosen

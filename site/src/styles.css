@@ -185,3 +185,176 @@ h2 {
 .details dd {
   margin: 0;
 }
+
+/* App shell: top bar with view tabs + units, then the active view. */
+.app {
+  flex-direction: column;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 14px;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+.tabs button {
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.tabs button[aria-selected='true'] {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+.body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+.body.hidden {
+  display: none;
+}
+.body.scroll {
+  overflow-y: auto;
+  background: var(--surface);
+}
+@media (max-width: 700px) {
+  .body:not(.scroll) {
+    flex-direction: column-reverse;
+  }
+}
+
+/* Map shading legend */
+.ramp {
+  margin: 8px 0 0 24px;
+  font-size: 12px;
+}
+.ramp-bar {
+  display: flex;
+  height: 10px;
+  margin-top: 4px;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.ramp-bar span {
+  flex: 1;
+}
+.ramp-labels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-2);
+}
+
+/* Scorecard */
+.scorecard {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.scorecard h1 {
+  font-size: 22px;
+}
+.label {
+  color: var(--ink-2);
+  margin-right: 8px;
+}
+.report select {
+  font: inherit;
+  padding: 4px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+}
+.report p {
+  margin: 6px 0 12px;
+}
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.builder {
+  margin: 12px 0;
+}
+.builder summary {
+  cursor: pointer;
+  color: var(--accent);
+}
+.cats {
+  margin-top: 8px;
+  border-collapse: collapse;
+}
+.cats th,
+.cats td {
+  padding: 3px 12px 3px 0;
+  text-align: left;
+}
+.cats th {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.cats input {
+  accent-color: var(--accent);
+}
+.summary {
+  margin: 16px 0;
+  padding: 10px 12px;
+  background: var(--plane);
+  border-radius: 8px;
+}
+.summary strong {
+  font-size: 18px;
+}
+.chart {
+  width: 100%;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+.scores {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.scores th,
+.scores td {
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+  white-space: nowrap;
+}
+.scores .num {
+  text-align: right;
+}
+.scores th button {
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink-2);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+.scores .sort {
+  display: inline-block;
+  width: 1em;
+  font-size: 10px;
+}

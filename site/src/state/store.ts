@@ -1,13 +1,19 @@
-import { createSignal } from 'solid-js'
+import { createMemo, createRoot, createSignal } from 'solid-js'
 
-import type { ShoreProps } from '../lib/contract'
+import type { ShoreProps, Stats } from '../lib/contract'
+import type { Units } from '../lib/units'
+import { computeScores, type Measure, REPORTS, type Score } from '../scorecard/measures'
 
 // App state as Solid signals. The map subscribes to these and updates paint/visibility
 // in place; it is never re-created on a state change.
 
-export type ColorBy = 'owner' | 'access'
+export type View = 'map' | 'scorecard'
+export const [view, setView] = createSignal<View>('map')
 
-export const [colorBy, setColorBy] = createSignal<ColorBy>('owner')
+export const [units, setUnits] = createSignal<Units>('metric')
+
+export type ColorBy = 'category' | 'access'
+export const [colorBy, setColorBy] = createSignal<ColorBy>('category')
 
 /** Show the `shore_alt` layer (alternative pipeline settings) instead of `shore`. */
 export const [showAlt, setShowAlt] = createSignal(false)
@@ -15,5 +21,33 @@ export const [showAlt, setShowAlt] = createSignal(false)
 export const [hasAlt, setHasAlt] = createSignal(false)
 
 export const [showMunis, setShowMunis] = createSignal(false)
+/** Shade municipalities on the map by the current scorecard measure. */
+export const [shadeMunis, setShadeMunis] = createSignal(false)
 
 export const [selected, setSelected] = createSignal<ShoreProps | null>(null)
+
+// Scorecard
+
+export const [stats, setStats] = createSignal<Stats | null>(null)
+
+export const [measure, setMeasure] = createSignal<Measure>(REPORTS[0].measure)
+
+/** What the chart shows and ranks by. */
+export type Metric = 'pct' | 'distance' | 'perThousand'
+export const [metric, setMetric] = createSignal<Metric>('pct')
+
+/** Scores for the current measure; shared by the scorecard and the map shading. */
+export const scores = createRoot(() =>
+  createMemo((): Score[] => {
+    const s = stats()
+    return s ? computeScores(s, measure()) : []
+  }),
+)
+
+export async function loadStats(url: string): Promise<void> {
+  const res = await fetch(url)
+  if (!res.ok) {
+    throw new Error(`stats.json: HTTP ${String(res.status)}`)
+  }
+  setStats((await res.json()) as Stats)
+}

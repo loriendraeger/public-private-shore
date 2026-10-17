@@ -14,11 +14,11 @@ data/raw/ (downloads, by hand)
    │  shore load         ogr2ogr / osmium            built
    ▼
 PostGIS  raw ──► staging ──► analysis ──► export     SQL stages, built
-   │  shore export (built) / stats (planned)
+   │  shore export / shore stats                    built
    ▼
 data/build/export/*.geojsonl ──► tippecanoe ──► site/public/data/{shore,context}.pmtiles   built
 Protomaps planet build ──► pmtiles extract (study-area region) ──► site/public/data/basemap.pmtiles built
-                                                site/public/data/stats.json  planned
+export.stats_* views ──► stats.py ──► site/public/data/stats.json     built
    │
    ▼
 site/ (Vite + Solid + MapLibre) ──► GitHub Pages                            built
@@ -38,6 +38,7 @@ cp .env.example .env     # once
 make staging             # db-up → init → load → staging (stamps skip finished steps)
 make analysis            # shoreline → segments → class → municipality → access
 make tiles               # export views → GeoJSONSeq → site/public/data/{shore,context}.pmtiles
+make stats               # export.stats_* views → site/public/data/stats.json (scorecard data)
 make basemap             # Protomaps extract (study-area bounding box + 2 km) → site/public/data/basemap.pmtiles (~22 MB)
 make compare SET=snap_tolerance_m=12   # extra `shore_alt` layer for side-by-side checks
 make test                # unit tests (no DB)
@@ -110,7 +111,7 @@ Python handles orchestration; geometry logic belongs in SQL.
 | `sqlrun.py` | built | Runs `pipeline/sql/<stage>/*.sql` in filename order with `psql -v ON_ERROR_STOP=1` and the config variables. Runs from the repo root so `\copy` can use `config/...` paths. |
 | `download.py` | planned | Fetch sources (downloads are currently by hand) |
 | `export.py` | built | `export`: every view in the `export` schema → `data/build/export/<view>.geojsonl`. `tiles`: builds one PMTiles file per `[tiles.files]` entry in pipeline.toml (`shore` = analysis output, so its bounds are the study area and the map fits to them; `context` = county-wide reference layers). Every exported layer must be assigned to a file. `basemap`: writes the bounding rectangle of the study area (buffered by `basemap_buffer_m`) to `data/build/basemap_region.geojson` and runs `pmtiles extract --region` on the Protomaps build URL in sources.toml, up to `basemap_maxzoom` (15: 22 MB; 14 would be ~10 MB). A rectangle, because the site limits the camera to the extract's bounds (`setMaxBounds`), so the extract must fill them. `compare` (in cli.py) reruns analysis with `--set` overrides, exports `shore` as `shore_alt`, then restores. |
-| `stats.py` | planned | analysis tables → `stats.json` |
+| `stats.py` | built | `stats`: `export.stats_municipalities` + `export.stats_shore` → `site/public/data/stats.json` (psycopg; source vintages from sources.toml). Shape = `Stats` in `site/src/lib/contract.ts`. `export_views` skips these views because they have no geometry. |
 
 ### `pipeline/sql/`: the analysis, one directory per schema
 
@@ -133,6 +134,7 @@ then `CREATE`), so rerunning is always safe.
 | `raw.county_lakesponds` | Dane County LakesPonds | 7599 (US ft) |
 | `raw.municipalities` | Dane County Municipal Boundaries | 7599 (US ft) |
 | `raw.osm_points` / `osm_lines` / `osm_multipolygons` | Geofabrik extract → osmium bbox | 4326 |
+| `raw.population` | WI DOA municipal population estimates (xlsx; generic `field1..10` columns, header in row 4) | none |
 
 #### `10_staging/` → cleaned, valid, in `:crs` (built)
 
@@ -142,6 +144,7 @@ then `CREATE`), so rerunning is always safe.
 | `20_county_boundary.sql` | `staging.county_boundary` | union of municipalities (they tile the county); the clip mask |
 | `30_hydro.sql` | `staging.dnr_waterbody`, `staging.water` (water_id, name, wbic, hydtype, area_m2, geom) | county geometry + DNR WBIC by largest overlap; drops `Island` but keeps NULL hydtype (the Yahara) |
 | `40_parcels.sql` | `staging.parcels` (parcel_id, owner1/2, placename, auxclass, propclass, geom) | owner names uppercased and trimmed; **stay in DB, never exported** |
+| `60_population.sql` | `staging.population` (muni_id, name, pop_estimate, pop_census_2020) | Dane County rows; `C Madison3` → `City of Madison` (trailing digits are footnotes); fails if any municipality has no population |
 | `50_osm.sql` | `staging.osm_access_features` (category, access, operator), `staging.osm_roads` (highway, is_street) | categories: park, nature_reserve, beach, swimming, slipway, marina, boat_rental, pier, fishing |
 
 #### `20_analysis/` → shoreline to classified segments (built)
@@ -173,14 +176,16 @@ Views, so they're always current with `analysis`. Each view = one tile layer.
 
 | File | View / tile layer | Attributes |
 |---|---|---|
-| `10_shore.sql` | `shore` (lines) | segment_id, waterbody, owner_class, owner_label, access, access_source, access_note, muni_name, muni_type, length_m |
+| `10_shore.sql` | `shore` (lines) | segment_id, waterbody, category, owner_class, owner_label, access, access_source, access_note, muni_name, muni_type, length_m |
 | `20_parks.sql` | `parks` (polygons) | feature_id, name, category (park / nature_reserve), within 100 m of in-scope shore |
 | `30_municipalities.sql` | `municipalities` (polygons), `municipality_labels` (points) | muni_id, name, muni_type. Separate label points so each name is placed once. In `context.pmtiles`. |
 | (via `make compare`) | `shore_alt` | same as `shore`, under alternative settings |
+| `40_stats.sql` | `stats_municipalities`, `stats_shore` (no geometry → not tiles) | study-area municipalities with population; shore length per municipality × waterbody × water_kind (lake/river, from the waterbody's largest polygon's hydtype) × category. Read by `shore stats`. |
 
-### `site/`: the map (built)
+### `site/`: the map and the scorecard (built)
 
-Vite 8 + Solid + TypeScript 6, MapLibre GL 6, `pmtiles`, `@protomaps/basemaps`.
+Vite 8 + Solid + TypeScript 6, MapLibre GL 6, `pmtiles`, `@protomaps/basemaps`,
+Observable Plot (scorecard chart), TanStack Table v9 (`@tanstack/solid-table`, headless).
 Node 24 (`site/.nvmrc`). It reads only `site/public/data/`.
 
 TypeScript is pinned to 6.0.x, the last JavaScript-based release: typescript-eslint
@@ -219,11 +224,18 @@ House rules on top:
 
 | File | Role |
 |---|---|
-| `src/lib/contract.ts` | Frontend half of the data contract: tile layer names, `ShoreProps`, class/access unions |
-| `src/state/store.ts` | Solid signals: `colorBy` (owner/access), `showAlt`, `hasAlt`, `showMunis`, `selected` |
-| `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); sources: basemap, `shore`, `context`; layers: parks (dashed outline), municipal boundaries (dashed, hidden by default), shore casing + line + invisible wide hit line, selection outline, municipal labels. Signals update paint/visibility/filter in place. |
-| `src/map/colors.ts` | Colors and MapLibre `match` expressions. Ownership folds 11 classes into 4 groups (a map is an all-pairs view, where only 3 hues stay CVD-safe). Access uses the status palette with icons. Validated with the dataviz validator. |
-| `src/components/Panel.tsx` | Title, color-by toggle, legend, tolerance toggle (only if `shore_alt` exists), selected-segment details, disclaimer |
+| `src/App.tsx` | Top bar (Map / Scorecard tabs, km / mi switch) and the active view. The map stays mounted while hidden, so it's never rebuilt |
+| `src/lib/contract.ts` | Frontend half of the data contract: tile layer names, `ShoreProps`, `Stats` (stats.json), class/access/category unions |
+| `src/lib/categories.ts` | Category labels, descriptions, which count as public access by default |
+| `src/lib/units.ts` | Display units: data is meters; format as km/mi (long) or m/ft (short) |
+| `src/state/store.ts` | Solid signals: `view`, `units`, `colorBy` (category/access), `showAlt`, `hasAlt`, `showMunis`, `shadeMunis`, `selected`, `stats`, `measure`, `metric`; `scores` (memo shared by the scorecard and the map shading); `loadStats` |
+| `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); sources: basemap, `shore`, `context`; layers: municipality shading (fill by the current measure, hidden by default), parks (dashed outline), municipal boundaries (dashed, hidden by default), shore casing + line + invisible wide hit line, selection outline, municipal labels. Signals update paint/visibility/filter in place. |
+| `src/map/colors.ts` | Colors and MapLibre `match` expressions. Categories fold into 4 groups (municipal access, other-provider access, no access, unknown; a map is an all-pairs view, where only 3 hues stay CVD-safe). Access uses the status palette with icons. Shading uses the sequential blue ramp in 5 classes. Validated with the dataviz validator. |
+| `src/components/Panel.tsx` | Map side panel: title, color-by toggle, legend, boundary and shading toggles, tolerance toggle (only if `shore_alt` exists), selected-segment details, disclaimer |
+| `src/scorecard/measures.ts` | `Measure` (numerator categories ⊆ denominator categories, water filter), preset `REPORTS`, `computeScores` / `totalScore` over stats.json rows. `unknown` is never counted (excluded until cleaned up) but reported per municipality |
+| `src/scorecard/Scorecard.tsx` | Report picker (a measure matching no preset shows as Custom), water filter, category builder (Counts / Out of checkboxes), study-area summary, rank-by switch, chart, table |
+| `src/scorecard/Chart.tsx` | Observable Plot ranked bars for the current metric (share, distance, per 1,000 residents); little-shore municipalities faded and starred; hover tip; redraws on resize |
+| `src/scorecard/ScoreTable.tsx` | TanStack Table: sortable columns (share, counted, out of, per 1,000 residents, population, unknown excluded) |
 | `vite.config.ts` | `base: '/public-private-land/'`; `worker.format: 'es'` |
 
 **MapLibre worker gotcha:** MapLibre 6 loads its Web Worker from a file next to its own
