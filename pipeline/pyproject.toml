@@ -1,0 +1,26 @@
+[project]
+name = "shore"
+version = "0.1.0"
+description = "Dane County shore access pipeline: raw data -> PostGIS -> tiles + stats"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "psycopg[binary]>=3.2",
+    "typer>=0.12",
+]
+
+[project.scripts]
+shore = "shore.cli:app"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

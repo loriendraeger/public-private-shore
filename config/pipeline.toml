@@ -1,11 +1,39 @@
-# Pipeline tunables. Passed to SQL as psql variables (e.g. -v crs=3071) by `shore sql run`.
+# Pipeline tunables. Passed to SQL as psql variables (e.g. -v crs=3071) by `shore sql`.
+# Keys must be unique across sections (they become flat psql variable names).
+
+[study_area]
+# Load-time bounding boxes only. The real clip mask is the union of the municipal
+# boundaries (they tile Dane County exactly; see sources.toml [municipalities]).
+bbox_3071 = [533141, 263801, 600599, 313653]   # SCO V12 Dane parcel extent
+bbox_4326 = [-89.85, 42.83, -88.99, 43.30]      # padded Dane County, for osmium
 
 [analysis]
 # NAD83(HARN) / Wisconsin Transverse Mercator, meters. Matches the SCO V12 parcels.
 crs = 3071
 
-# Max distance (m) between a shoreline and a parcel edge for that parcel to "own" it.
-# Dane County LakesPonds vs. parcels at Lake Wingra: p50 1.6 m, 85% within 5 m, and
-# max 3.8 m by hand along Vilas Park. Longer offsets are runs (creek mouths, marsh)
-# that need rules, not a wider tolerance.
+# Which water polygons become shoreline. Milestone 2 = Lake Wingra only. Later
+# milestones widen this, then switch to a minimum-area rule for all of Dane County.
+waterbodies = ["Lake Wingra"]
+
+# Max distance (m) between a shoreline and a parcel for that parcel to "own" it.
+# Measured on the unioned Wingra shoreline: 51% of points lie inside a parcel, 97.2%
+# within 5 m; 5 small inlets are 6-13 m off. Deferred: compare 5 m vs ~12 m outputs.
 snap_tolerance_m = 5
+
+# Segmentation samples the shoreline every sample_step_m and assigns each step to the
+# nearest parcel within snap_tolerance_m. Segment ends are accurate to about this much.
+sample_step_m = 1
+
+# Unparceled shoreline (a gap) is road right-of-way when an OSM road is this close;
+# otherwise it's unknown. The Wingra NE-corner gap reaches 37 m from parcels, with
+# roads/paths within 25 m.
+row_road_distance_m = 30
+
+# OSM access evidence (parks, beaches, slipways, ...) applies to segments this close.
+access_evidence_distance_m = 15
+
+[tiles]
+minzoom = 10
+maxzoom = 16           # shore lines; overzoomed beyond this by MapLibre
+basemap_maxzoom = 15   # keeps basemap.pmtiles under the ~50 MB budget (check on change)
+attribution = "Dane County LIO; WI DNR; SCO V12 parcels; © OpenStreetMap contributors"

@@ -9,6 +9,9 @@
 #   local_path  where the extracted download lives, relative to repo root
 #   format     as delivered (shp, gdb, gpkg, pbf, geojson, ...)
 #   layer       layer/table name inside the download, if multi-layer
+#   table       raw.<table> to load into (`shore load`); sources without it aren't loaded
+#   load_srs    EPSG code to assign on load when the file's own CRS doesn't map to one
+#   clip_to_study_area  load only features inside [study_area] bbox_3071
 #   crs         as delivered (EPSG code)
 #   license     license / terms of use, plus required attribution
 #   retrieved   date downloaded for the current build (YYYY-MM-DD)
@@ -22,6 +25,7 @@ url = "https://www.sco.wisc.edu/parcels/data-county/#v1200"
 local_path = "data/raw/parcels/V1200_Wisconsin_Parcels_DANE.gdb"
 format = "gdb"      # Esri file geodatabase; read via GDAL OpenFileGDB driver
 layer = "V1200_Wisconsin_Parcels_DANE"
+table = "parcels"            # -> raw.parcels
 geometry = "MultiPolygon"
 crs = "EPSG:3071"   # NAD83(HARN) / WTM83, meters. Same as our analysis CRS, so no reprojection.
 license = "Free of charge; no formal license. SCO asks users to complete their parcel feedback survey. Attribution: Wisconsin Statewide Parcel Map Initiative (V12), WI DOA / State Cartographer's Office"
@@ -83,6 +87,9 @@ url = "https://data-wi-dnr.opendata.arcgis.com/datasets/24k-hydro-full-file-geod
 local_path = "data/raw/hydro/WDNR_HYDRO_24K.gdb"
 format = "gdb"
 layer = "WD_HYDRO_WATERBODY_AR_24K"   # inside feature dataset WD_HYDRO_DATA_24K
+table = "dnr_waterbody"
+load_srs = "EPSG:3071"       # compound CRS (3071 + NAVD88) gets a junk SRID otherwise
+clip_to_study_area = true    # statewide file
 geometry = "MultiPolygon (Measured; M values dropped on read)"
 crs = "EPSG:3071"   # compound with NAVD88 height; horizontal = EPSG:3071, same as parcels
 # ogr2ogr assigns a custom SRID (900914) for the compound CRS; set 3071 on load.
@@ -136,6 +143,8 @@ rest_endpoint = "https://dcimapapps.danecounty.gov/arcgissrv/rest/services/DaneC
 local_path = "data/raw/hydro_county/LakesPonds/LakesPonds.shp"
 format = "shp"
 layer = "LakesPonds"
+table = "county_lakesponds"
+load_srs = "EPSG:7599"       # ESRI .prj; tag the EPSG code explicitly
 geometry = "Polygon"
 crs = "EPSG:7599"   # NAD83(2011) / WISCRS Dane (ftUS). US survey FEET; must reproject to 3071.
 # .prj is ESRI WKT; tag it with -a_srs EPSG:7599 on load so PostGIS gets a real SRID.
@@ -230,6 +239,8 @@ url = "https://gis-countyofdane.opendata.arcgis.com/pages/boundaries"
 local_path = "data/raw/municipalities/MunicipalBoundaries/MunicipalBoundaries.shp"
 format = "shp"
 layer = "MunicipalBoundaries"
+table = "municipalities"
+load_srs = "EPSG:7599"
 geometry = "Polygon (some multipart; load as MultiPolygon)"
 crs = "EPSG:7599"   # WISCRS Dane ftUS, ESRI .prj; tag with -a_srs EPSG:7599 and reproject to 3071
 license = "Metadata: 'Data is copyright and licensed for use. Refer to the License Agreement for Dane County Digital Geographic Data Sets' (https://lio.countyofdane.com/pdf/licenseagreement.pdf, now 404). Owner decided not to pursue (2026-10-17). Attribution: Dane County Land Information Office"
@@ -261,6 +272,7 @@ url = "https://download.geofabrik.de/north-america/us/wisconsin-latest.osm.pbf"
 local_path = "data/raw/osm/wisconsin-latest.osm.pbf"   # + .md5 from Geofabrik (verified)
 format = "pbf"
 layer = "points, lines, multipolygons"   # GDAL OSM driver layers
+table = "osm"                 # -> raw.osm_points / osm_lines / osm_multipolygons
 crs = "EPSG:4326"
 license = "ODbL 1.0 - attribution: (c) OpenStreetMap contributors"
 retrieved = "2026-10-17"
@@ -287,11 +299,12 @@ Add to the access evidence list: leisure=marina, amenity=boat_rental,
 [basemap]
 name = "Protomaps basemap (daily planet build)"
 publisher = "Protomaps"
-url = "https://maps.protomaps.com/builds/"
+url = "https://build.protomaps.com/20261015.pmtiles"   # list: https://build-metadata.protomaps.dev/builds.json
+build_version = "4.15.2"   # basemap schema version; must match @protomaps/basemaps styles in site/
 format = "pmtiles"
 layer = ""
 crs = "EPSG:3857"
 license = "ODbL (OSM data) - attribution: Protomaps, (c) OpenStreetMap contributors"
-retrieved = "TODO"
+retrieved = "2026-10-17"
 verified = false
-notes = "Extract Dane County bbox with `pmtiles extract`. Check output size against 50 MB budget."
+notes = "Extract Dane County bbox with `shore basemap` (pmtiles extract over HTTP). Check output size against 50 MB budget."

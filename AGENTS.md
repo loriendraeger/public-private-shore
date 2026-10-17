@@ -21,21 +21,15 @@ Two halves:
    map tiles plus stats come out.
 2. **Static site** (GitHub Pages, client-only): renders the committed outputs.
 
-**Status:** Milestone 1 (data recon) nearly done. All sources downloaded and inspected
-(see `config/sources.toml` notes). `docker-compose.yml` runs PostGIS. Recon data was
-loaded into its `raw` schema by hand with QGIS's bundled `ogr2ogr`. No pipeline code yet.
+**Status:** Milestone 2 (Lake Wingra thin slice) in progress. Built: pipeline
+container, `shore` CLI (`load`, `sql`), Makefile with stamps, SQL through
+`20_analysis` (classified Wingra segments), ownership/access config CSVs, unit tests.
+Export → `shore.pmtiles` and the basemap extract work. Next: site.
+`site/public/data/` is temporarily gitignored until the owner approves the output. Milestone 1 recon findings live in
+`config/sources.toml` notes and the Decisions log.
 
-Recon done (2026-10-17):
-- [x] Wingra runs > 5 m: mostly parcels extending into marsh (not a problem). Measure
-      distance to the parcel *polygon*, not its edge. One real ROW gap at the NE corner.
-- [x] Island polygons are land filling holes in water. Use the boundary of the unioned
-      water, interior rings included.
-- [x] Rivers and Streams: 575 km of named streams exist only as lines.
-- [x] DNR HYDROTYPE decoded via domains. HYDROCODE has no domain; not needed.
-- [x] Municipal boundaries tile the county (union = clip mask) and include lake water.
-- [x] OSM parks/beaches/marinas/piers/access tags checked, Dane-wide and at Wingra.
-- [x] Licenses: DNR = disclaimer only. County data = disclaimer; its license-agreement
-      link is dead. Owner decided not to pursue it further.
+**Code architecture:** see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). It covers what
+each piece does and where to change things. Keep it current as code changes.
 
 Deferred:
 - [ ] Snap tolerance: 5 m vs ~10–15 m (small inlets at Wingra are 6–13 m off). Decide
@@ -104,6 +98,7 @@ analysis happens in **PostGIS SQL**, and products are exported back out to **fil
 .
 ├── AGENTS.md                     # this file (CLAUDE.md just imports it)
 ├── README.md                     # human-facing overview + quickstart
+├── docs/ARCHITECTURE.md          # how the code pieces fit together (humans + agents)
 ├── Makefile                      # single entry point for the pipeline
 ├── docker-compose.yml            # services: db (PostGIS), pipeline (tools)
 ├── .env.example                  # PG* connection vars; copy to .env (gitignored)
@@ -130,8 +125,8 @@ analysis happens in **PostGIS SQL**, and products are exported back out to **fil
 │   ├── sql/                      # one directory per schema stage
 │   │   ├── 00_init/              # extensions, schemas, helper functions
 │   │   ├── 10_staging/           # clean, reproject, ST_MakeValid, index
-│   │   │   ├── 10_county_boundary.sql
-│   │   │   ├── 20_municipalities.sql
+│   │   │   ├── 10_municipalities.sql
+│   │   │   ├── 20_county_boundary.sql  # union of municipalities
 │   │   │   ├── 30_hydro.sql
 │   │   │   ├── 40_parcels.sql
 │   │   │   └── 50_osm.sql
@@ -140,7 +135,7 @@ analysis happens in **PostGIS SQL**, and products are exported back out to **fil
 │   │   │   ├── 20_shoreline.sql
 │   │   │   ├── 30_shore_segments.sql
 │   │   │   ├── 40_classify.sql
-│   │   │   ├── 50_split_municipal.sql
+│   │   │   ├── 50_municipality.sql
 │   │   │   └── 60_access.sql     # defaults → OSM evidence → street ends → overrides
 │   │   └── 30_export/            # views shaped for tiles + stats
 │   └── tests/
@@ -242,8 +237,10 @@ Structural rules:
    The parcel `AUXCLASS` exemption codes (X1 federal, X2 state, X3 county, X4 other
    exempt) are a **secondary signal** for flagging disagreements and filling gaps. They
    are applied too inconsistently to drive classification on their own.
-5. **Municipality:** split segments again at municipal boundaries and attach the
-   municipality name and type (city/village/town).
+5. **Municipality:** attach the municipality name and type (city/village/town) from
+   the **land side**: the municipality the adjacent parcel lies in. Municipal polygons
+   include lake water, so testing the shoreline itself mislabels shore. Gap segments
+   (no parcel) use a point just inland of the segment.
 6. **Access:** assign each segment an access status. See [Access model](#access-model).
 7. **Stats:** sum `ST_Length` per municipality × ownership class and per municipality ×
    access status, in meters and miles.
@@ -372,7 +369,8 @@ cd site && npm run dev
 - When a dataset's URL, schema, or field names are unknown, look them up and record
   them in `config/sources.toml`. Don't guess.
 - Never export raw owner names. Only ownership class and owner label leave the DB.
-- Update this file when a decision changes.
+- Update this file when a decision changes, and docs/ARCHITECTURE.md when code
+  structure changes.
 
 ## Milestones
 
@@ -390,6 +388,15 @@ cd site && npm run dev
 
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
+
+- 2026-10-17: OSM access evidence can open private land (e.g. the Edgewood Forest
+  reserve on condo-association land, which really is publicly accessible). Expect
+  some segments to need manual review; fix them in `config/access_overrides.csv`.
+- 2026-10-17: Condo/HOA common land is class `private` (label "Condo / HOA"), not a
+  separate class.
+- 2026-10-17: Piers are access evidence on non-private land only (`public_only` in
+  `config/access_osm.csv`); private docks don't open private shore. Marinas and boat
+  rentals count as `restricted` (fee-based).
 
 - 2026-10-17: Line-only streams are excluded for now (575 km of named creeks such as
   Pheasant Branch and Six Mile Creek; two banks would be ~1,150 km, more than all lake

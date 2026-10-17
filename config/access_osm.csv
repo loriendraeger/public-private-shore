@@ -1,0 +1,10 @@
+category,access,public_only,note
+park,open,false,
+nature_reserve,open,false,"Often has hours (e.g. UW Arboretum); still counted as open"
+beach,open,false,
+swimming,open,false,
+slipway,open,false,Boat launch
+fishing,open,false,
+pier,open,true,"Evidence only on non-private land: private docks don't make private shore accessible"
+marina,restricted,false,Slips and services are usually fee- or member-based
+boat_rental,restricted,false,Fee-based

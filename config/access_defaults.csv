@@ -1,0 +1,12 @@
+class,access,note
+federal,unknown,Could be a refuge (open) or a facility (none); needs evidence
+state,unknown,DNR land is usually open; DOT land usually not
+county,unknown,
+municipal,unknown,Parks are open but utilities and works yards aren't; OSM evidence decides
+university,unknown,
+school_district,restricted,School grounds
+utility,none,
+other_public,unknown,
+private,none,
+row,unknown,Street ends become open in 60_access.sql
+unknown,unknown,

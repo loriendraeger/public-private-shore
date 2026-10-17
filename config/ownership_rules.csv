@@ -1,0 +1,16 @@
+priority,pattern,class,label,note
+10,^NOT AVAILABLE$,unknown,Unknown,"Placeholder owner (~510 parcels, many in Town of Westport)"
+20,^DANE COUNTY GROWERS,private,Private,False positive for the county rule
+21,DANE COUNTY LLC$,private,Private,False positive for the county rule
+30,(^UNITED STATES|^USA |US FISH|FISH & WILDLIFE|NATIONAL PARK SERVICE|POSTAL SERVICE|^U S ),federal,Federal,
+40,(UW REGENTS|UNIV OF WIS|UNIVERSITY OF WISCONSIN|REGENTS OF THE UNIV),university,UW–Madison,UW System Board of Regents; in Dane County this is UW–Madison
+50,(WI DNR|WIS DNR|DEPT OF NATURAL RESOURCES|^STATE OF WISCONSIN|^WISCONSIN STATE OF|^WI DEPT|^WISCONSIN DEPT|^WIS DEPT),state,State of Wisconsin,
+60,"(^DANE COUNTY( |$)|^COUNTY OF DANE|^DANE[ ,]+COUNTY OF)",county,Dane County,
+70,"(^(CITY|VILLAGE|TOWN) OF |, (CITY|VILLAGE|TOWN) OF( |$))",municipal,{municipality},Label resolved to the municipality named in the owner string
+80,(SCHOOL DIST|SCHOOL DISTRICT|SCH DIST),school_district,School district,
+90,(MADISON METROPOLITAN SEWERAGE|MADISON GAS & ELEC|^MG&E|ALLIANT|WISCONSIN POWER & LIGHT|AMERICAN TRANSMISSION),utility,Utility,
+100,^EDGEWOOD COLLEGE,private,Edgewood College,Private college
+101,^EDGEWOOD (HIGH SCHOOL|CAMPUS SCHOOL),private,Edgewood schools,Private school
+110,(CONDO|CONDOMINIUM|HOME ?OWNERS|HOMEOWNERS|OWNERS ASSOC|NEIGHBORHOOD ASSOC),private,Condo / HOA,Common land of a condo or homeowners association
+120,(CHURCH|PARISH|DIOCESE|CONGREGATION|LUTHERAN|METHODIST|CATHOLIC),private,Church,
+1000,.*,private,Private,"Fallback: individuals and companies"
