@@ -34,14 +34,11 @@ Two halves:
    map tiles plus stats come out.
 2. **Static site** (GitHub Pages, client-only): renders the committed outputs.
 
-**Status:** Milestone 2 (Lake Wingra thin slice) in progress. Built: pipeline
-container, `shore` CLI (`load`, `sql`), Makefile with stamps, SQL through
-`20_analysis` (classified Wingra segments), ownership/access config CSVs, unit tests.
-Export → `shore.pmtiles`, the basemap extract, and the site (map with ownership/access
-coloring, click details, tolerance compare) work locally. Deploy workflow exists but is
+**Status:** milestones 1–3 done; next up are 4 (segment cleanup), 5 (access quality)
+and 6 (scorecard on the site). See [Milestones](#milestones). The full pipeline (load →
+staging → analysis → export → tiles) and the map run locally. `site/public/data/` is
+temporarily gitignored until the owner approves the output, and the deploy workflow is
 manual-only.
-`site/public/data/` is temporarily gitignored until the owner approves the output. Milestone 1 recon findings live in
-`config/sources.toml` notes and the Decisions log.
 
 **Code architecture:** see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). It covers what
 each piece does and where to change things. Keep it current as code changes.
@@ -75,6 +72,9 @@ This is a **for-fun learning project**. The owner is interested in GIS.
 | Frontend | **Vite + Solid + TypeScript** |
 | Frontend lint/format | **ESLint** (typescript-eslint, eslint-plugin-solid) + **Prettier** |
 | Map library | **MapLibre GL JS** + `pmtiles` protocol |
+| Scorecard charts | **Observable Plot** |
+| Scorecard tables | **TanStack Table** (`@tanstack/solid-table`, headless) |
+| Scorecard measures | Plain TypeScript over a tidy `stats.json` (no dataframe/SQL engine) |
 | Basemap | **Protomaps** basemap PMTiles extract clipped to Dane County (streets with names for orientation; swappable later) |
 | Hosting | **GitHub Pages**, deployed by GitHub Actions |
 
@@ -390,21 +390,49 @@ cd site && npm run dev
 
 ## Milestones
 
-1. **Data recon:** download each source by hand and inspect it in QGIS. Confirm formats,
-   fields, CRS, owner-name availability, and how well parcels align with hydro. Fill in
-   `config/sources.toml`.
-2. **Thin slice: Lake Wingra.** Run the whole path end to end (download → PostGIS →
-   segments → PMTiles → map on GitHub Pages), ugly but working.
-3. **Yahara chain:** Mendota, Monona, Waubesa, Kegonsa, and the Yahara River. Tune the
-   snap tolerance, grow the ownership rules, and add the access layers.
-4. **Whole study area:** all named water in the 30 municipalities, review the ownership
-   rules against real owner names, and stats. (The pipeline already runs on it.)
-5. **Polish:** public-definition presets, stats panel, methodology page, mobile layout.
+Rewritten 2026-10-17 around the municipal scorecard goal.
+
+1. ✅ **Data recon.** Every source inspected; findings in `config/sources.toml`.
+2. ✅ **Thin slice: Lake Wingra.** Download → PostGIS → segments → PMTiles → map, working
+   locally. (Deploying moved to milestone 7.)
+3. ✅ **Study-area analysis.** 30 municipalities, named water, islands excluded unless
+   bridged, first pass of ownership rules on real owner names.
+4. **Segment cleanup.** Merge adjacent private segments into one, whatever the owner:
+   individual private owners don't matter, only that the shore is private (and its
+   access). Public segments keep their owner labels.
+5. **Access quality.** Make access trustworthy enough to rank municipalities:
+   - **Barriers:** shore you can't reach from land even though the owner is public, e.g.
+     the rail corridor and the strip west of the John Nolen Drive causeway in Monona Bay
+     (state-owned, but you'd have to cross tracks). Use OSM railways (and other barriers)
+     as negative evidence, possibly a land-side reachability check from public ways.
+   - **Private land with public access:** e.g. the Edgewood condo shore on Lake Wingra.
+     The model already allows `private` + `open`; it needs evidence sources (candidates:
+     public paths along the shore, DNR stewardship and Managed Forest Law "open" lands,
+     conservation easements, plat-required lake access).
+   - **Unknowns:** shrink the 83 km of `unknown` access, municipality by municipality,
+     with `access_overrides.csv` for hand fixes.
+   - Re-check the 15 m snap tolerance on dense shores (Mendota, Monona).
+6. **Scorecard on the site.** Interactive tables and charts computed in the browser from
+   user-chosen numerators and denominators (e.g. "open shore ÷ all shore", "provided by the
+   municipality ÷ all shore", lakes only), plus default reports with preset choices. The
+   pipeline ships a tidy per-municipality breakdown (`stats.json`); the site aggregates.
+   Map: shade municipalities by the selected measure.
+7. **Ship.** Approve the output, commit `site/public/data/`, enable GitHub Pages, restore
+   the push trigger.
+8. **Explain and polish.** Methodology/about page (sources and vintages, coastline
+   paradox, public trust doctrine, how scores are computed, disclaimer), README,
+   data-validation tests, CI (ruff + unit tests), mobile layout.
 
 ## Decisions log
 
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
+
+- 2026-10-17: Scorecard lives on the site, computed in the browser from user-chosen
+  numerators/denominators plus default reports. Libraries: Observable Plot (charts),
+  TanStack Table (tables), plain TypeScript aggregation over a tidy `stats.json`.
+- 2026-10-17: Adjacent private segments will be merged regardless of owner; individual
+  private owners don't matter, only private vs. public and access.
 
 - 2026-10-17: Project goal reframed: a municipal scorecard of public water access, not a
   guide to access spots. Two measures (any public access; municipality-provided), each as
