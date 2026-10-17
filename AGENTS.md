@@ -33,9 +33,6 @@ manual-only.
 **Code architecture:** see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). It covers what
 each piece does and where to change things. Keep it current as code changes.
 
-Deferred:
-- [ ] Snap tolerance: 5 m vs ~10–15 m (small inlets at Wingra are 6–13 m off). Decide
-      in milestone 2 by comparing segment outputs at both tolerances.
 
 ### Spirit of the project
 
@@ -391,6 +388,11 @@ cd site && npm run dev
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-17: Snap tolerance 5 m → 15 m, chosen on the map. At Wingra, 15 m is the
+  smallest value that closes every small-inlet gap (max 13 m) while keeping the real
+  ROW gap (117 m at 5, 81 at 15; at 25 it shrinks to 51 and fragments). Re-check on
+  denser shores in milestone 3.
+
 - 2026-10-17: OSM access evidence can open private land (e.g. the Edgewood Forest
   reserve on condo-association land, which really is publicly accessible). Expect
   some segments to need manual review; fix them in `config/access_overrides.csv`.
@@ -403,8 +405,6 @@ changes), newest first, with the date and a one-line rationale.
 - 2026-10-17: Line-only streams are excluded for now (575 km of named creeks such as
   Pheasant Branch and Six Mile Creek; two banks would be ~1,150 km, more than all lake
   shore). Shoreline comes only from water polygons. Revisit later.
-- 2026-10-17: Snap tolerance stays at 5 m for now; compare outputs at 5 m vs 10–15 m
-  in milestone 2 before deciding.
 
 - 2026-10-17: Shore segments get their municipality from the land side (the adjacent
   parcel), not from the line. Municipal polygons include lake water, so the line itself

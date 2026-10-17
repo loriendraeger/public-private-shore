@@ -16,9 +16,10 @@ crs = 3071
 waterbodies = ["Lake Wingra"]
 
 # Max distance (m) between a shoreline and a parcel for that parcel to "own" it.
-# Measured on the unioned Wingra shoreline: 51% of points lie inside a parcel, 97.2%
-# within 5 m; 5 small inlets are 6-13 m off. Deferred: compare 5 m vs ~12 m outputs.
-snap_tolerance_m = 5
+# Wingra (2026-10-17): 15 m is the smallest value that closes every small-inlet gap
+# (max 13 m), while the real ROW gap at the NE corner stays (117 m at 5, 81 at 15,
+# 51 and fragmenting at 25). Re-check on denser shores (Mendota, Monona).
+snap_tolerance_m = 15
 
 # Segmentation samples the shoreline every sample_step_m and assigns each step to the
 # nearest parcel within snap_tolerance_m. Segment ends are accurate to about this much.

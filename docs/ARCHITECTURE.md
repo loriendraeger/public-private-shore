@@ -160,9 +160,9 @@ access_source, access_note, length_m, geom`.
 | `50_municipality.sql` | `muni_id` (gaps), `muni_name`, `muni_type` | Owned segments: the municipality containing the parcel (land side). Gaps: the municipality covering most land within 20 m. |
 | `60_access.sql` | `access`, `access_source`, `access_note` | default (class) → osm (area features must cover ≥ half the segment within `:access_evidence_distance_m`; explicit `access=*` tags win; the most open applies) → street_end (`row` segments) → override |
 
-Known rough edges (milestone 2): same-owner segments are split by tiny gaps at small
-inlets when the tolerance is 5 m; the Arboretum is two owner strings, so it isn't one
-segment; private land inside an OSM nature reserve becomes `open`.
+Known rough edges (milestone 2): the Arboretum is two owner strings, so it isn't one
+segment; private land inside an OSM nature reserve becomes `open` (by design; fix
+exceptions with overrides).
 
 #### `30_export/` → views for tiles (built)
 
