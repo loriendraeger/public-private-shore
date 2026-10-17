@@ -16,16 +16,32 @@
 -- this is about access from land. Exception: islands an OSM road or path crosses onto
 -- from outside (a bridge or causeway). analysis.islands records every island.
 
+-- In-scope water, and all water touching it (named or not), unioned once.
+-- In-scope polygons are ST_Subdivide'd (pieces of <= 256 vertices) for the "touching"
+-- test: ST_DWithin between whole polygons the size of Lake Mendota (~40k vertices) took
+-- over a minute; between small indexed pieces it takes a fraction of a second.
+DROP TABLE IF EXISTS analysis.in_scope_water CASCADE;
+CREATE TABLE analysis.in_scope_water AS
+SELECT w.* FROM staging.water w, analysis.study_area sa
+WHERE w.name IS NOT NULL AND ST_Intersects(w.geom, sa.geom);
+
+-- A table, not a CTE: the pieces need a spatial index.
+DROP TABLE IF EXISTS analysis.in_scope_pieces CASCADE;
+CREATE TABLE analysis.in_scope_pieces AS
+SELECT ST_Subdivide(geom, 256) AS geom FROM analysis.in_scope_water;
+CREATE INDEX ON analysis.in_scope_pieces USING gist (geom);
+ANALYZE analysis.in_scope_pieces;
+
+DROP TABLE IF EXISTS analysis.water_union CASCADE;
+CREATE TABLE analysis.water_union AS
+SELECT ST_Union(w.geom) AS geom
+FROM staging.water w
+WHERE EXISTS (SELECT 1 FROM analysis.in_scope_pieces p WHERE ST_DWithin(w.geom, p.geom, 0.5));
+
 DROP TABLE IF EXISTS analysis.islands CASCADE;
 CREATE TABLE analysis.islands AS
-WITH in_scope AS (
-    SELECT w.* FROM staging.water w, analysis.study_area sa
-    WHERE w.name IS NOT NULL AND ST_Intersects(w.geom, sa.geom)
-),
-water_union AS (
-    SELECT (ST_Dump(ST_Union(w.geom))).geom AS geom
-    FROM staging.water w
-    WHERE EXISTS (SELECT 1 FROM in_scope s WHERE ST_DWithin(w.geom, s.geom, 0.5))
+WITH water_union AS (
+    SELECT (ST_Dump(geom)).geom AS geom FROM analysis.water_union
 ),
 holes AS (
     SELECT r.geom
@@ -45,19 +61,10 @@ CREATE INDEX ON analysis.islands USING gist (geom);
 
 DROP TABLE IF EXISTS analysis.shoreline CASCADE;
 CREATE TABLE analysis.shoreline AS
--- MATERIALIZED: compute each step once. Inlined, the union is redone per waterbody.
-WITH in_scope AS (
-    SELECT w.* FROM staging.water w, analysis.study_area sa
-    WHERE w.name IS NOT NULL AND ST_Intersects(w.geom, sa.geom)
-),
-water_union AS MATERIALIZED (
-    SELECT ST_Union(w.geom) AS geom
-    FROM staging.water w
-    WHERE EXISTS (SELECT 1 FROM in_scope s WHERE ST_DWithin(w.geom, s.geom, 0.5))
-),
-rings AS MATERIALIZED (
+-- MATERIALIZED: compute each step once.
+WITH rings AS MATERIALIZED (
     SELECT r.path[1] AS ring_no, r.geom AS ring
-    FROM (SELECT (ST_Dump(geom)).geom AS geom FROM water_union) u,
+    FROM (SELECT (ST_Dump(geom)).geom AS geom FROM analysis.water_union) u,
          LATERAL ST_DumpRings(u.geom) r
 ),
 boundary AS MATERIALIZED (
@@ -71,7 +78,7 @@ boundary AS MATERIALIZED (
 waterbodies AS MATERIALIZED (
     -- One row per named waterbody; e.g. the Yahara is 16 polygons but one WBIC.
     SELECT name, wbic, ST_Buffer(ST_Union(geom), 0.5) AS zone
-    FROM in_scope GROUP BY name, wbic
+    FROM analysis.in_scope_water GROUP BY name, wbic
 ),
 lines AS (
     SELECT wb.name, wb.wbic,

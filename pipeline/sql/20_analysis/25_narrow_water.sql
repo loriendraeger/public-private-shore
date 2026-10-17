@@ -41,30 +41,41 @@ FROM analysis.water_parts wp,
                                :narrow_width_m / 2.0, 'quad_segs=4')) d;
 CREATE INDEX ON analysis.wide_water USING gist (geom);
 
--- 1. Centerlines.
+-- 1. Centerlines. Clip zone = the water plus half the narrow width. Buffering whole
+-- lakes was the slow part, so buffer small ST_Subdivide pieces and union them back
+-- (same shape, under a second). Clipping each line once against the unioned zone avoids
+-- the slivers that per-piece clipping leaves where piece buffers overlap.
+DROP TABLE IF EXISTS analysis.stream_zone CASCADE;
+CREATE TABLE analysis.stream_zone AS
+SELECT (ST_Dump(ST_Union(ST_Buffer(d.geom, :narrow_width_m / 2.0, 'quad_segs=4')))).geom AS geom
+FROM analysis.water_parts wp, LATERAL ST_Subdivide(wp.geom, 256) d(geom);
+CREATE INDEX ON analysis.stream_zone USING gist (geom);
+ANALYZE analysis.stream_zone;
+
 DROP TABLE IF EXISTS analysis.stream_lines CASCADE;
 CREATE TABLE analysis.stream_lines AS
-WITH lines AS (
+WITH lines AS MATERIALIZED (
     SELECT cs.fid, cs.name, ST_Transform(cs.geom, :crs) AS geom
     FROM raw.county_streams cs
     -- Not culverted / underground. coalesce: most lines have no dxflayer, and a NULL
     -- would make the whole condition NULL (= dropped).
     WHERE coalesce(cs.dxflayer, '') NOT ILIKE '%hidden%'
       AND coalesce(cs.hydtype, '') NOT ILIKE 'hidden%'
+      -- cheap prefilter in the source CRS, using raw's spatial index
+      -- (ST_Extent returns a box with no SRID; tag it before transforming)
+      AND cs.geom && (SELECT ST_Transform(ST_SetSRID(ST_Expand(ST_Extent(geom), 100)::geometry, :crs),
+                                   Find_SRID('raw', 'county_streams', 'geom'))
+                      FROM analysis.water_parts)
 ),
-zone AS MATERIALIZED (
-    SELECT ST_Intersection(ST_Buffer(wp.geom, :narrow_width_m / 2.0, 'quad_segs=4'),
-                           (SELECT geom FROM analysis.study_area)) AS geom
-    FROM analysis.water_parts wp
-),
-clipped AS (
+dumped AS (
     SELECT l.fid, l.name,
-           (ST_Dump(ST_LineMerge(ST_Intersection(l.geom, z.geom)))).geom AS geom
-    FROM lines l JOIN zone z ON ST_Intersects(l.geom, z.geom)
+           (ST_Dump(ST_LineMerge(ST_Intersection(ST_Intersection(l.geom, z.geom),
+                                                 (SELECT geom FROM analysis.study_area))))).geom AS geom
+    FROM lines l JOIN analysis.stream_zone z ON ST_Intersects(l.geom, z.geom)
 )
 SELECT row_number() OVER () AS line_id, fid AS stream_fid, name,
        geom::geometry(LineString, :crs) AS geom
-FROM clipped
+FROM dumped
 WHERE ST_GeometryType(geom) = 'ST_LineString' AND ST_Length(geom) > 5;
 CREATE INDEX ON analysis.stream_lines USING gist (geom);
 

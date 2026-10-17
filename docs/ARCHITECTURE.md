@@ -99,6 +99,16 @@ unique across sections. Lists become comma-joined strings. SQL refers to them as
 `:crs` (bare) or `:'waterbodies'` (quoted string literal) and splits lists with
 `string_to_array(:'waterbodies', ',')`. **SQL never hardcodes a CRS, tolerance or bbox.**
 
+**Performance notes** (`shore sql` prints per-file times and statements ≥ 1 s; the full
+log is `data/build/timings/<stage>.tsv`). The analysis stage takes ~50 s. Lessons:
+- Big polygons (Lake Mendota is ~40k vertices) make `ST_DWithin`/`ST_Buffer` slow.
+  `ST_Subdivide` them into small pieces first.
+- Pieces, sample points and anything joined spatially go in a **table with a GiST
+  index**, not a CTE (CTEs have no index, so the join becomes a nested loop).
+- Join on expressions the index can use (compute keys from one side only).
+- Postgres runs each statement on one core; `UPDATE ... SET x = (subquery)` never
+  runs in parallel. Docker CPUs are not the bottleneck.
+
 ### `pipeline/src/shore/`: the Python glue
 
 Python handles orchestration; geometry logic belongs in SQL.
@@ -159,8 +169,8 @@ access_source, access_note, length_m, geom`.
 |---|---|---|
 | `10_ownership_rules.sql` | `analysis.ownership_rules` | `\copy` from the CSV |
 | `15_study_area.sql` | `analysis.study_area_munis`, `analysis.study_area` | Municipalities named in `[study_area] municipalities` (fails on unknown names) and their union |
-| `20_shoreline.sql` | `analysis.islands` (island_id, area_m2, bridged, geom), `analysis.shoreline` (shore_id, waterbody, wbic, geom) | In scope = every **named** water polygon touching the study area. All water near it is `ST_Union`ed (seams dissolve). Islands = holes in that union; they're dropped unless `bridged` (an OSM road/path crosses onto them). Remaining rings → lines, split per named waterbody (name + WBIC), clipped to the study area. CTEs are `MATERIALIZED` so the big union runs once |
-| `25_narrow_water.sql` | `analysis.water_parts`, `wide_water`, `stream_lines`, `shore_points_2m`, `stream_width`, `stream_steps` | Decides where water is narrow, once, along the county stream centerlines: width every `:narrow_measure_step_m` = distance to the nearest shore on the left + right; rolling median over `:narrow_smoothing_m`; runs under `:narrow_min_run_m` take their neighbor's class; 1 m `stream_steps` carry the result. `wide_water` (morphological opening: buffer −w/2 then +w/2) is the fallback where there's no centerline |
+| `20_shoreline.sql` | `analysis.in_scope_water`, `in_scope_pieces` (ST_Subdivide'd, indexed), `water_union`, `islands` (island_id, area_m2, bridged, geom), `shoreline` (shore_id, waterbody, wbic, geom) | In scope = every **named** water polygon touching the study area. All water near it is `ST_Union`ed (seams dissolve). Islands = holes in that union; they're dropped unless `bridged` (an OSM road/path crosses onto them). Remaining rings → lines, split per named waterbody (name + WBIC), clipped to the study area. CTEs are `MATERIALIZED` so the big union runs once | Performance: the "water touching in-scope water" test runs against `ST_Subdivide` pieces (≤ 256 vertices) in an indexed table; against whole polygons it took 75 s.
+| `25_narrow_water.sql` | `analysis.water_parts`, `wide_water`, `stream_zone` (water + w/2, buffered as subdivided pieces then unioned), `stream_lines`, `shore_points_2m`, `stream_width`, `stream_steps` | Decides where water is narrow, once, along the county stream centerlines: width every `:narrow_measure_step_m` = distance to the nearest shore on the left + right; rolling median over `:narrow_smoothing_m`; runs under `:narrow_min_run_m` take their neighbor's class; 1 m `stream_steps` carry the result. `wide_water` (morphological opening: buffer −w/2 then +w/2) is the fallback where there's no centerline |
 | `30_shore_segments.sql` | `analysis.shore_steps`, `analysis.shore_parcels`, `analysis.shore_segments` | **Sampling:** steps of `:sample_step_m`; each step's midpoint → nearest parcel *polygon* within `:snap_tolerance_m` (none = gap) and a `narrow` flag (the class of the nearest centerline step within `:stream_bank_distance_m`, so banks and centerline agree; else the opening test: no `wide_water` within 0.225 × `narrow_width_m`). Consecutive steps with the same (owner name, parcel's municipality, narrow) collapse into a segment (gaps-and-islands), with exact `ST_LineSubstring` geometry. Runs that wrap around a closed ring's start are merged. |
 | `40_classify.sql` | `owner_class`, `owner_label` | First matching rule; gaps → `row` if an OSM street is within `:row_road_distance_m`, else `unknown` |
 | `50_municipality.sql` | `muni_id` (gaps), `muni_name`, `muni_type` | Owned segments: the municipality containing the parcel (land side). Gaps: the municipality covering most land within 20 m. Then drops segments whose land-side municipality is outside the study area. |
