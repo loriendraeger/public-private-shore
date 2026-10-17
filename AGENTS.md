@@ -21,7 +21,25 @@ Two halves:
    map tiles plus stats come out.
 2. **Static site** (GitHub Pages, client-only): renders the committed outputs.
 
-**Status:** planning. The stack below is decided, and nothing is implemented yet.
+**Status:** Milestone 1 (data recon) nearly done. All sources downloaded and inspected
+(see `config/sources.toml` notes). `docker-compose.yml` runs PostGIS. Recon data was
+loaded into its `raw` schema by hand with QGIS's bundled `ogr2ogr`. No pipeline code yet.
+
+Recon done (2026-10-17):
+- [x] Wingra runs > 5 m: mostly parcels extending into marsh (not a problem). Measure
+      distance to the parcel *polygon*, not its edge. One real ROW gap at the NE corner.
+- [x] Island polygons are land filling holes in water. Use the boundary of the unioned
+      water, interior rings included.
+- [x] Rivers and Streams: 575 km of named streams exist only as lines.
+- [x] DNR HYDROTYPE decoded via domains. HYDROCODE has no domain; not needed.
+- [x] Municipal boundaries tile the county (union = clip mask) and include lake water.
+- [x] OSM parks/beaches/marinas/piers/access tags checked, Dane-wide and at Wingra.
+- [x] Licenses: DNR = disclaimer only. County data = disclaimer; its license-agreement
+      link is dead. Owner decided not to pursue it further.
+
+Deferred:
+- [ ] Snap tolerance: 5 m vs ~10–15 m (small inlets at Wingra are 6–13 m off). Decide
+      in milestone 2 by comparing segment outputs at both tolerances.
 
 ### Spirit of the project
 
@@ -201,10 +219,11 @@ Structural rules:
 
 1. **Shoreline:** take county hydro water polygons (lakes, wide rivers) → `ST_Boundary`
    → lines. **Drop seams between water polygons** (e.g. where Lake Wingra meets the
-   Wingra Creek polygon). Those edges are water touching water, not shore. **Scope:** lakes above a minimum area plus **named** rivers and streams.
+   Wingra Creek polygon). Those edges are water touching water, not shore. **Scope:** lakes above a minimum area plus rivers and streams that the county maps
+   as **polygons** (e.g. the Yahara, Starkweather Creek, most of Black Earth Creek).
    Stormwater ponds, unnamed ditches, and wetland edges are excluded. Thresholds live in
-   `config/pipeline.toml`. Narrow streams that are only lines in the data are treated as lines with two
-   banks; decide on handling when implementing and document it here.
+   `config/pipeline.toml`. Narrow streams that exist only as lines (Rivers and Streams
+   layer) are **out of scope for now**; see the Decisions log.
 2. **Split by parcel:** parcel edges rarely coincide exactly with hydro shorelines.
    Assign shoreline to the adjacent parcel(s) within a **snapping tolerance** (start
    around 10–20 m and tune it). Split the shoreline wherever the adjacent parcel changes.
@@ -364,13 +383,23 @@ cd site && npm run dev
    segments → PMTiles → map on GitHub Pages), ugly but working.
 3. **Yahara chain:** Mendota, Monona, Waubesa, Kegonsa, and the Yahara River. Tune the
    snap tolerance, grow the ownership rules, and add the access layers.
-4. **All of Dane County:** named rivers and streams, every municipality, and stats.
+4. **All of Dane County:** every lake and polygon river, every municipality, and stats.
 5. **Polish:** public-definition presets, stats panel, methodology page, mobile layout.
 
 ## Decisions log
 
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
+
+- 2026-10-17: Line-only streams are excluded for now (575 km of named creeks such as
+  Pheasant Branch and Six Mile Creek; two banks would be ~1,150 km, more than all lake
+  shore). Shoreline comes only from water polygons. Revisit later.
+- 2026-10-17: Snap tolerance stays at 5 m for now; compare outputs at 5 m vs 10–15 m
+  in milestone 2 before deciding.
+
+- 2026-10-17: Shore segments get their municipality from the land side (the adjacent
+  parcel), not from the line. Municipal polygons include lake water, so the line itself
+  mislabels ~17% of Mendota's shore (e.g. Maple Bluff shore as City of Madison).
 
 - 2026-10-17: Dropped the DNR boat access sites dataset; not needed.
 - 2026-10-16: Shoreline geometry comes from Dane County hydrography, not DNR 24K. 24K

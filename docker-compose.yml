@@ -1,0 +1,20 @@
+# PostGIS for the pipeline. The `pipeline` tools container comes in milestone 2.
+services:
+  db:
+    # Multi-arch build by a postgis/postgis maintainer; the official image is amd64-only.
+    image: imresamu/postgis:17-3.5
+    environment:
+      POSTGRES_USER: ${PGUSER:-shore}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-shore}
+      POSTGRES_DB: ${PGDATABASE:-shore}
+    ports:
+      - "${PGPORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      retries: 20
+
+volumes:
+  pgdata:
