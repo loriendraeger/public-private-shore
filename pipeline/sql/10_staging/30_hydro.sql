@@ -7,7 +7,8 @@ CREATE TABLE staging.dnr_waterbody AS
 SELECT
     fid AS dnr_id,
     waterbody_wbic AS wbic,
-    nullif(trim(waterbody_name), '') AS name,
+    -- DNR writes the literal 'Unnamed' on ~1,200 Dane-area polygons; that's no name.
+    CASE WHEN trim(waterbody_name) IN ('', 'Unnamed') THEN NULL ELSE trim(waterbody_name) END AS name,
     hydrotype,                                    -- coded domain: 706 Lake/Pond, 602 Stream/River, ...
     ST_Multi(ST_CollectionExtract(ST_MakeValid(geom), 3))::geometry(MultiPolygon, :crs) AS geom
 FROM raw.dnr_waterbody;

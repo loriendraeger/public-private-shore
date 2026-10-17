@@ -37,9 +37,10 @@ notes = """
 mostly 2025 (a few 2026/2027).
 Bounds (EPSG:3071): 533141, 263801 to 600599, 313653.
 
-Owner names: OWNERNME1 is 100% populated, so Dane does NOT redact.
-OWNERNME2 is 56% blank. Watch for the placeholder owner 'NOT AVAILABLE'
-(~510 parcels, many in Town of Westport) and classify it as unknown.
+Owner names: OWNERNME1 is 100% populated, but 25,034 parcels (11%) carry the
+placeholder 'NOT AVAILABLE' (owner withheld), in every city (7,467 in Madison).
+(Corrected 2026-10-17; recon first said ~510.) Along the shore they're nearly all
+taxable residential (PROPCLASS 1, no AUXCLASS). OWNERNME2 is 56% blank.
 
 Useful classification fields:
   AUXCLASS: tax-exempt / special class codes (95% blank).

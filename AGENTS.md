@@ -4,12 +4,25 @@ Guidance for AI coding agents (and humans) working in this repo.
 
 ## Project
 
-An interactive map of **shore access in Dane County, Wisconsin**: every lake and river
-shoreline, split into segments, classified by **who owns the adjacent land** (public
-vs. private, with finer-grained classes) and **whether the public can actually get to
-the water there**, and attributed to the **municipality** it falls in. Alongside the
-map: stats such as linear shore length per municipality per ownership class and per
-access status.
+**Goal: compare how well municipalities in central Dane County, Wisconsin provide public
+access to their water.** The product is a **municipal scorecard**: for each city, village
+and town, how much of its shoreline the public can reach from land. It is not a guide to
+individual access spots.
+
+Under the scorecard: every in-scope shoreline, split into segments, classified by **who
+owns the adjacent land** (public vs. private, with finer-grained classes) and **whether
+the public can actually get to the water there**, and attributed to the **municipality**
+whose land it borders. The segment map is the evidence behind each municipality's score.
+
+Scorecard measures (decided 2026-10-17), each as **% of the municipality's shoreline and
+absolute km**:
+- **Public access available**: shore with public access, whoever provides it (state,
+  county, UW, land trusts, the municipality, street ends).
+- **Provided by the municipality**: the part it provides itself (its own land and street
+  ends).
+
+Because scores compare municipalities, uncertainty matters: report how much of each
+municipality's shore has `unknown` access, and flag municipalities with little shore.
 
 Ownership and access are **separate attributes**. Public ownership doesn't imply access
 (a water utility parcel, for example), and private ownership doesn't rule it out (a
@@ -79,7 +92,9 @@ the license/attribution and retrieval date, rather than hardcoding them in scrip
 | **OpenStreetMap**: Geofabrik Wisconsin extract, filtered with `osmium` | Parks, boat launches (`leisure=slipway`), piers, beaches, access tags; cross-checking parcel results |
 | **Municipal boundaries**: LTSB or Dane County | Cities, villages, and towns, used to attribute shore segments to a municipality |
 
-Study area: **all of Dane County**. Use the county boundary as the clip mask.
+Study area: **30 municipalities in central Dane County** (the Yahara lakes region plus
+Stoughton and the Village of Oregon), listed in `config/pipeline.toml` `[study_area]`.
+Shore is in scope when its land side lies in one of them. Staging stays county-wide.
 
 ## Architecture
 
@@ -122,6 +137,7 @@ analysis happens in **PostGIS SQL**, and products are exported back out to **fil
 │   │   ├── sqlrun.py             # runs sql/<stage>/*.sql in order w/ psql vars
 │   │   ├── export.py             # export views → GeoJSON(Seq) for tippecanoe
 │   │   └── stats.py              # analysis tables → stats.json
+│   ├── adhoc/                    # one-off review queries/exports; NOT run by make
 │   ├── sql/                      # one directory per schema stage
 │   │   ├── 00_init/              # extensions, schemas, helper functions
 │   │   ├── 10_staging/           # clean, reproject, ST_MakeValid, index
@@ -381,13 +397,35 @@ cd site && npm run dev
    segments → PMTiles → map on GitHub Pages), ugly but working.
 3. **Yahara chain:** Mendota, Monona, Waubesa, Kegonsa, and the Yahara River. Tune the
    snap tolerance, grow the ownership rules, and add the access layers.
-4. **All of Dane County:** every lake and polygon river, every municipality, and stats.
+4. **Whole study area:** all named water in the 30 municipalities, review the ownership
+   rules against real owner names, and stats. (The pipeline already runs on it.)
 5. **Polish:** public-definition presets, stats panel, methodology page, mobile layout.
 
 ## Decisions log
 
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
+
+- 2026-10-17: Project goal reframed: a municipal scorecard of public water access, not a
+  guide to access spots. Two measures (any public access; municipality-provided), each as
+  % of shoreline and absolute km.
+- 2026-10-17: Islands are excluded (reaching them needs a boat), unless an OSM road or
+  path crosses onto them (bridge or causeway). `analysis.islands` records each one.
+
+- 2026-10-17: Owner 'NOT AVAILABLE' (name withheld; 25,034 parcels, 11% of the county)
+  is `private`, label "Private (owner withheld)". Along the shore they're nearly all
+  taxable residential, and none bill to an institutional address.
+- 2026-10-17: Conservation land trusts (Groundswell / Natural Heritage Land Trust, The
+  Nature Conservancy, Driftless Area Land Conservancy) are `other_public`, label "Land
+  trust". Matched by trust name, since generic "CONSERVANCY" also hits HOAs and LLCs.
+
+- 2026-10-17: Study area = 30 municipalities chosen on the map (central Dane County
+  around the Yahara lakes, plus City of Stoughton and Village of Oregon; edge towns
+  Pleasant Springs, Cottage Grove, Bristol and Sun Prairie in). Replaces "all of Dane
+  County". Judged from the land side; segments whose adjacent land is outside are dropped.
+- 2026-10-17: Water scope = every named water polygon (lake, pond, polygon river;
+  county or DNR name) in the study area, any size. Unnamed water (mostly stormwater) out.
+  DNR's literal 'Unnamed' is treated as no name.
 
 - 2026-10-17: Snap tolerance 5 m → 15 m, chosen on the map. At Wingra, 15 m is the
   smallest value that closes every small-inlet gap (max 13 m) while keeping the real

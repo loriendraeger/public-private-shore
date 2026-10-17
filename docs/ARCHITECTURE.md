@@ -84,7 +84,7 @@ Editing `40_parcels.sql` reruns staging and everything after it, but not `load`.
 
 | File | Read by | Contents |
 |---|---|---|
-| `pipeline.toml` | `shore sql` → psql variables | analysis CRS, study-area bboxes, waterbodies in scope, snap tolerance |
+| `pipeline.toml` | `shore sql` → psql variables | study-area municipalities, load bboxes, analysis CRS, snap tolerance, tile files |
 | `sources.toml` | `shore load`, humans | per dataset: path, layer, CRS, `table`, license, recon notes |
 | `ownership_rules.csv` | `20_analysis/10_ownership_rules.sql`, unit tests | ordered regex over the uppercased owner name → class + label. First match by `priority` wins. Label `{municipality}` resolves to the municipality named in the owner string. Patterns must work in both Postgres and Python regex: **no `\b`** (backspace in Postgres). |
 | `access_defaults.csv` | `60_access.sql` | ownership class → default access |
@@ -154,10 +154,11 @@ access_source, access_note, length_m, geom`.
 | File | Creates / updates | How |
 |---|---|---|
 | `10_ownership_rules.sql` | `analysis.ownership_rules` | `\copy` from the CSV |
-| `20_shoreline.sql` | `analysis.shoreline` (shore_id, waterbody, wbic, geom) | In-scope water (`:'waterbodies'`) plus touching water polygons → `ST_Union` (seams dissolve, island rings survive) → `ST_Boundary`, kept only where it bounds in-scope water |
+| `15_study_area.sql` | `analysis.study_area_munis`, `analysis.study_area` | Municipalities named in `[study_area] municipalities` (fails on unknown names) and their union |
+| `20_shoreline.sql` | `analysis.islands` (island_id, area_m2, bridged, geom), `analysis.shoreline` (shore_id, waterbody, wbic, geom) | In scope = every **named** water polygon touching the study area. All water near it is `ST_Union`ed (seams dissolve). Islands = holes in that union; they're dropped unless `bridged` (an OSM road/path crosses onto them). Remaining rings → lines, split per named waterbody (name + WBIC), clipped to the study area. CTEs are `MATERIALIZED` so the big union runs once |
 | `30_shore_segments.sql` | `analysis.shore_steps`, `analysis.shore_parcels`, `analysis.shore_segments` | **Sampling:** steps of `:sample_step_m`; each step's midpoint → nearest parcel *polygon* within `:snap_tolerance_m` (none = gap). Consecutive steps with the same (owner name, parcel's municipality) collapse into a segment (gaps-and-islands), with exact `ST_LineSubstring` geometry. Runs that wrap around a closed ring's start are merged. |
 | `40_classify.sql` | `owner_class`, `owner_label` | First matching rule; gaps → `row` if an OSM street is within `:row_road_distance_m`, else `unknown` |
-| `50_municipality.sql` | `muni_id` (gaps), `muni_name`, `muni_type` | Owned segments: the municipality containing the parcel (land side). Gaps: the municipality covering most land within 20 m. |
+| `50_municipality.sql` | `muni_id` (gaps), `muni_name`, `muni_type` | Owned segments: the municipality containing the parcel (land side). Gaps: the municipality covering most land within 20 m. Then drops segments whose land-side municipality is outside the study area. |
 | `60_access.sql` | `access`, `access_source`, `access_note` | default (class) → osm (area features must cover ≥ half the segment within `:access_evidence_distance_m`; explicit `access=*` tags win; the most open applies) → street_end (`row` segments) → override |
 
 Known rough edges (milestone 2): the Arboretum is two owner strings, so it isn't one
@@ -234,6 +235,13 @@ build). `MapView.tsx` imports the worker with `?worker&url` and passes it to
 (`workflow_dispatch`) while `site/public/data/` is gitignored; restore the `push`
 trigger when the data is committed. The repo's Pages source must be set to
 "GitHub Actions".
+
+### `pipeline/adhoc/`: one-off analysis (not the pipeline)
+
+Queries and exports used to make decisions, kept so they can be rerun. Make never runs
+them and they never feed the site. Outputs go to `data/build/review/` (gitignored) and
+may contain owner names and billing addresses, so they stay local. Example:
+`pipeline/adhoc/review_exports/export.sh` writes review GeoJSON for QGIS.
 
 ## The data contract
 

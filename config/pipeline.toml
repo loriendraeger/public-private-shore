@@ -2,8 +2,23 @@
 # Keys must be unique across sections (they become flat psql variable names).
 
 [study_area]
-# Load-time bounding boxes only. The real clip mask is the union of the municipal
-# boundaries (they tile Dane County exactly; see sources.toml [municipalities]).
+# What we analyze: shore whose land side lies in these municipalities (names exactly
+# as in the county Municipal Boundaries layer). Chosen 2026-10-17 on the map: central
+# Dane County around the Yahara lakes, plus Stoughton and the Village of Oregon.
+municipalities = [
+    "City of Fitchburg", "City of Madison", "City of Middleton", "City of Monona",
+    "City of Stoughton", "City of Sun Prairie", "City of Verona",
+    "Village of Cottage Grove", "Village of Cross Plains", "Village of Dane",
+    "Village of DeForest", "Village of Maple Bluff", "Village of McFarland",
+    "Village of Oregon", "Village of Shorewood Hills", "Village of Waunakee",
+    "Village of Windsor",
+    "Town of Blooming Grove", "Town of Bristol", "Town of Burke", "Town of Cottage Grove",
+    "Town of Dane", "Town of Dunn", "Town of Middleton", "Town of Pleasant Springs",
+    "Town of Springfield", "Town of Sun Prairie", "Town of Verona", "Town of Vienna",
+    "Town of Westport",
+]
+
+# Load-time bounding boxes only (whole county; staging stays county-wide).
 bbox_3071 = [533141, 263801, 600599, 313653]   # SCO V12 Dane parcel extent
 bbox_4326 = [-89.85, 42.83, -88.99, 43.30]      # padded Dane County, for osmium
 
@@ -11,9 +26,9 @@ bbox_4326 = [-89.85, 42.83, -88.99, 43.30]      # padded Dane County, for osmium
 # NAD83(HARN) / Wisconsin Transverse Mercator, meters. Matches the SCO V12 parcels.
 crs = 3071
 
-# Which water polygons become shoreline. Milestone 2 = Lake Wingra only. Later
-# milestones widen this, then switch to a minimum-area rule for all of Dane County.
-waterbodies = ["Lake Wingra"]
+# Which water becomes shoreline: every NAMED lake, pond and polygon river (county or
+# DNR name) inside the study area, any size. Unnamed water (mostly stormwater ponds)
+# is excluded. The rule lives in 20_analysis/20_shoreline.sql.
 
 # Max distance (m) between a shoreline and a parcel for that parcel to "own" it.
 # Wingra (2026-10-17): 15 m is the smallest value that closes every small-inlet gap

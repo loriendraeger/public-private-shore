@@ -105,8 +105,8 @@ export default function Panel(): JSX.Element {
     <aside class="panel">
       <h1>Dane County shore access</h1>
       <p class="lede">
-        Who owns the land along the water, and whether the public can reach it. Lake Wingra only,
-        for now.
+        Who owns the land along the water, and whether the public can reach it. Named lakes, ponds
+        and rivers in central Dane County.
       </p>
 
       <div class="segmented" role="radiogroup" aria-label="Color shoreline by">

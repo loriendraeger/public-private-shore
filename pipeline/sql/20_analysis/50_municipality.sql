@@ -17,6 +17,12 @@ SET muni_id = (
 )
 WHERE s.muni_id IS NULL;
 
+-- The study area is defined by municipality (pipeline.toml [study_area]), judged from
+-- the land side: shore inside the study area whose adjacent land belongs to an excluded
+-- municipality (e.g. where a study-area boundary follows a shoreline) is dropped.
+DELETE FROM analysis.shore_segments
+WHERE muni_id IS NULL OR muni_id NOT IN (SELECT muni_id FROM analysis.study_area_munis);
+
 ALTER TABLE analysis.shore_segments
     ADD COLUMN IF NOT EXISTS muni_name text,
     ADD COLUMN IF NOT EXISTS muni_type text;
