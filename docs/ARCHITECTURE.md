@@ -16,7 +16,7 @@ data/raw/ (downloads, by hand)
 PostGIS  raw ──► staging ──► analysis ──► export     SQL stages, built
    │  shore export (built) / stats (planned)
    ▼
-data/build/export/*.geojsonl ──► tippecanoe ──► site/public/data/shore.pmtiles   built
+data/build/export/*.geojsonl ──► tippecanoe ──► site/public/data/{shore,context}.pmtiles   built
 Protomaps planet build ──► pmtiles extract ──► site/public/data/basemap.pmtiles built
                                                 site/public/data/stats.json  planned
    │
@@ -37,7 +37,7 @@ Two halves meet at `site/public/data/`:
 cp .env.example .env     # once
 make staging             # db-up → init → load → staging (stamps skip finished steps)
 make analysis            # shoreline → segments → class → municipality → access
-make tiles               # export views → GeoJSONSeq → site/public/data/shore.pmtiles
+make tiles               # export views → GeoJSONSeq → site/public/data/{shore,context}.pmtiles
 make basemap             # Protomaps extract → site/public/data/basemap.pmtiles (~29 MB)
 make compare SET=snap_tolerance_m=12   # extra `shore_alt` layer for side-by-side checks
 make test                # unit tests (no DB)
@@ -108,7 +108,7 @@ Python handles orchestration; geometry logic belongs in SQL.
 | `load.py` | built | For each `sources.toml` entry with a `table`: `ogr2ogr` into `raw.<table>`. It honors `load_srs` (assigns an EPSG code when the .prj is ESRI-only or compound) and `clip_to_study_area`. OSM: `osmium extract` to the bbox, then three ogr2ogr layers with `other_tags` as hstore. |
 | `sqlrun.py` | built | Runs `pipeline/sql/<stage>/*.sql` in filename order with `psql -v ON_ERROR_STOP=1` and the config variables. Runs from the repo root so `\copy` can use `config/...` paths. |
 | `download.py` | planned | Fetch sources (downloads are currently by hand) |
-| `export.py` | built | `export`: every view in the `export` schema → `data/build/export/<view>.geojsonl`. `tiles`: every `.geojsonl` there becomes a layer of `shore.pmtiles` (zooms from `[tiles]`). `basemap`: `pmtiles extract` of the Protomaps build URL in sources.toml. `compare` (in cli.py) reruns analysis with `--set` overrides, exports `shore` as `shore_alt`, then restores. |
+| `export.py` | built | `export`: every view in the `export` schema → `data/build/export/<view>.geojsonl`. `tiles`: builds one PMTiles file per `[tiles.files]` entry in pipeline.toml (`shore` = analysis output, so its bounds are the study area and the map fits to them; `context` = county-wide reference layers). Every exported layer must be assigned to a file. `basemap`: `pmtiles extract` of the Protomaps build URL in sources.toml. `compare` (in cli.py) reruns analysis with `--set` overrides, exports `shore` as `shore_alt`, then restores. |
 | `stats.py` | planned | analysis tables → `stats.json` |
 
 ### `pipeline/sql/`: the analysis, one directory per schema
@@ -172,6 +172,7 @@ Views, so they're always current with `analysis`. Each view = one tile layer.
 |---|---|---|
 | `10_shore.sql` | `shore` (lines) | segment_id, waterbody, owner_class, owner_label, access, access_source, access_note, muni_name, muni_type, length_m |
 | `20_parks.sql` | `parks` (polygons) | feature_id, name, category (park / nature_reserve), within 100 m of in-scope shore |
+| `30_municipalities.sql` | `municipalities` (polygons), `municipality_labels` (points) | muni_id, name, muni_type. Separate label points so each name is placed once. In `context.pmtiles`. |
 | (via `make compare`) | `shore_alt` | same as `shore`, under alternative settings |
 
 ### `site/`: the map (built)
@@ -216,8 +217,8 @@ House rules on top:
 | File | Role |
 |---|---|
 | `src/lib/contract.ts` | Frontend half of the data contract: tile layer names, `ShoreProps`, class/access unions |
-| `src/state/store.ts` | Solid signals: `colorBy` (owner/access), `showAlt`, `hasAlt`, `selected` |
-| `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); layers: parks (dashed outline), shore casing + line + invisible wide hit line, selection outline. Signals update paint/visibility/filter in place. |
+| `src/state/store.ts` | Solid signals: `colorBy` (owner/access), `showAlt`, `hasAlt`, `showMunis`, `selected` |
+| `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); sources: basemap, `shore`, `context`; layers: parks (dashed outline), municipal boundaries (dashed, hidden by default), shore casing + line + invisible wide hit line, selection outline, municipal labels. Signals update paint/visibility/filter in place. |
 | `src/map/colors.ts` | Colors and MapLibre `match` expressions. Ownership folds 11 classes into 4 groups (a map is an all-pairs view, where only 3 hues stay CVD-safe). Access uses the status palette with icons. Validated with the dataviz validator. |
 | `src/components/Panel.tsx` | Title, color-by toggle, legend, tolerance toggle (only if `shore_alt` exists), selected-segment details, disclaimer |
 | `vite.config.ts` | `base: '/public-private-land/'`; `worker.format: 'es'` |

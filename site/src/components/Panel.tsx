@@ -1,7 +1,16 @@
 import { For, type JSX, Show } from 'solid-js'
 
 import { ACCESS, entries, type Mode, OWNER_GROUPS } from '../map/colors'
-import { colorBy, hasAlt, selected, setColorBy, setShowAlt, showAlt } from '../state/store'
+import {
+  colorBy,
+  hasAlt,
+  selected,
+  setColorBy,
+  setShowAlt,
+  setShowMunis,
+  showAlt,
+  showMunis,
+} from '../state/store'
 
 const mode: Mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 
@@ -117,6 +126,15 @@ export default function Panel(): JSX.Element {
         </button>
       </div>
       <Legend />
+
+      <label class="toggle">
+        <input
+          type="checkbox"
+          checked={showMunis()}
+          onChange={(e) => setShowMunis(e.currentTarget.checked)}
+        />
+        Municipal boundaries
+      </label>
 
       <Show when={hasAlt()}>
         <div class="compare">

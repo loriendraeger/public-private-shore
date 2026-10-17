@@ -153,6 +153,18 @@ h2 {
   color: var(--ink-2);
 }
 
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  cursor: pointer;
+}
+.toggle input {
+  accent-color: var(--accent);
+  margin: 0;
+}
+
 .compare {
   display: flex;
   align-items: center;

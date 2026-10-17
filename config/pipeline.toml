@@ -38,3 +38,10 @@ minzoom = 10
 maxzoom = 16           # shore lines; overzoomed beyond this by MapLibre
 basemap_maxzoom = 15   # keeps basemap.pmtiles under the ~50 MB budget (check on change)
 attribution = "Dane County LIO; WI DNR; SCO V12 parcels; © OpenStreetMap contributors"
+
+# Which exported layers go into which site/public/data/<name>.pmtiles. shore.pmtiles holds
+# only the analysis output, so its bounds are the study area (the map fits to them);
+# context layers cover the whole county and change rarely.
+[tiles.files]
+shore = ["shore", "shore_alt", "parks"]
+context = ["municipalities", "municipality_labels"]

@@ -14,8 +14,15 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { PMTiles, Protocol } from 'pmtiles'
 import { createEffect, getOwner, type JSX, onCleanup, onMount, runWithOwner } from 'solid-js'
 
-import { PARKS_LAYER, SHORE_ALT_LAYER, SHORE_LAYER, type ShoreProps } from '../lib/contract'
-import { colorBy, selected, setHasAlt, setSelected, showAlt } from '../state/store'
+import {
+  MUNI_LABELS_LAYER,
+  MUNIS_LAYER,
+  PARKS_LAYER,
+  SHORE_ALT_LAYER,
+  SHORE_LAYER,
+  type ShoreProps,
+} from '../lib/contract'
+import { colorBy, selected, setHasAlt, setSelected, showAlt, showMunis } from '../state/store'
 import { accessColorExpr, type Mode, ownerColorExpr } from './colors'
 
 function dataUrl(file: string): string {
@@ -64,6 +71,8 @@ export default function MapView(): JSX.Element {
             attribution:
               '<a href="https://protomaps.com">Protomaps</a> © <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
           },
+          // County-wide reference layers (municipal boundaries); attribution as above.
+          context: { type: 'vector', url: `pmtiles://${dataUrl('context.pmtiles')}` },
           shore: {
             type: 'vector',
             url: `pmtiles://${shore.source.getKey()}`,
@@ -97,6 +106,16 @@ export default function MapView(): JSX.Element {
           'line-dasharray': [2, 2],
           'line-opacity': 0.6,
         },
+      })
+
+      const muniInk = mode === 'dark' ? '#c3c2b7' : '#52514e'
+      m.addLayer({
+        id: 'munis',
+        type: 'line',
+        source: 'context',
+        'source-layer': MUNIS_LAYER,
+        layout: { visibility: 'none', 'line-join': 'round' },
+        paint: { 'line-color': muniInk, 'line-width': 1.5, 'line-dasharray': [4, 2] },
       })
 
       const meta = (await shore.getMetadata()) as { vector_layers?: { id: string }[] }
@@ -164,6 +183,24 @@ export default function MapView(): JSX.Element {
         },
       })
 
+      m.addLayer({
+        id: 'muni-labels',
+        type: 'symbol',
+        source: 'context',
+        'source-layer': MUNI_LABELS_LAYER,
+        layout: {
+          visibility: 'none',
+          'text-field': ['get', 'name'],
+          'text-font': ['Noto Sans Medium'],
+          'text-size': 13,
+        },
+        paint: {
+          'text-color': muniInk,
+          'text-halo-color': surface,
+          'text-halo-width': 1.5,
+        },
+      })
+
       const h = await shore.getHeader()
       m.fitBounds(
         [
@@ -203,6 +240,11 @@ export default function MapView(): JSX.Element {
       }
       m.setLayoutProperty('selected', 'visibility', useAlt ? 'none' : 'visible')
       setSelected(null)
+    })
+    createEffect(() => {
+      const visibility = showMunis() ? 'visible' : 'none'
+      m.setLayoutProperty('munis', 'visibility', visibility)
+      m.setLayoutProperty('muni-labels', 'visibility', visibility)
     })
     createEffect(() => {
       m.setFilter('selected', ['==', ['get', 'segment_id'], selected()?.segment_id ?? -1])

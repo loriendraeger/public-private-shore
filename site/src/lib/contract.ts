@@ -5,6 +5,10 @@ export const SHORE_LAYER = 'shore'
 export const SHORE_ALT_LAYER = 'shore_alt' // only present after `make compare`
 export const PARKS_LAYER = 'parks'
 
+// context.pmtiles: county-wide reference layers (pipeline/sql/30_export/30_municipalities.sql)
+export const MUNIS_LAYER = 'municipalities'
+export const MUNI_LABELS_LAYER = 'municipality_labels'
+
 export type OwnerClass =
   | 'federal'
   | 'state'

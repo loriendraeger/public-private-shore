@@ -14,4 +14,6 @@ export const [showAlt, setShowAlt] = createSignal(false)
 /** Whether shore.pmtiles contains a `shore_alt` layer at all. */
 export const [hasAlt, setHasAlt] = createSignal(false)
 
+export const [showMunis, setShowMunis] = createSignal(false)
+
 export const [selected, setSelected] = createSignal<ShoreProps | null>(null)

@@ -34,20 +34,27 @@ def export_views() -> list[Path]:
 
 
 def tiles() -> None:
-    """Every *.geojsonl in data/build/export becomes a layer of shore.pmtiles."""
+    """Build one PMTiles file per [tiles.files] entry from data/build/export/*.geojsonl.
+    Missing layers are skipped (e.g. shore_alt only exists after `shore compare`)."""
     t = config.pipeline()["tiles"]
-    layers = sorted(EXPORT_DIR.glob("*.geojsonl"))
-    if not layers:
+    if not any(EXPORT_DIR.glob("*.geojsonl")):
         raise SystemExit("nothing exported yet; run `shore export` first")
+    assigned = {layer for layers in t["files"].values() for layer in layers}
+    unassigned = sorted(f.stem for f in EXPORT_DIR.glob("*.geojsonl") if f.stem not in assigned)
+    if unassigned:
+        raise SystemExit(f"exported layers not assigned to a file in [tiles.files]: {unassigned}")
     SITE_DATA.mkdir(parents=True, exist_ok=True)
-    cmd = ["tippecanoe", "-o", str(SITE_DATA / "shore.pmtiles"), "--force",
-           "-Z", str(t["minzoom"]), "-z", str(t["maxzoom"]),
-           # Shore lines are the point of the map; never drop them to fit a tile budget.
-           "--no-feature-limit", "--no-tile-size-limit",
-           "--attribution", t["attribution"]]
-    for f in layers:
-        cmd += ["-L", f"{f.stem}:{f}"]
-    run(cmd)
+    for name, layers in t["files"].items():
+        cmd = ["tippecanoe", "-o", str(SITE_DATA / f"{name}.pmtiles"), "--force",
+               "-Z", str(t["minzoom"]), "-z", str(t["maxzoom"]),
+               # Shore lines are the point of the map; never drop them to fit a tile budget.
+               "--no-feature-limit", "--no-tile-size-limit",
+               "--attribution", t["attribution"]]
+        for layer in layers:
+            f = EXPORT_DIR / f"{layer}.geojsonl"
+            if f.exists():
+                cmd += ["-L", f"{layer}:{f}"]
+        run(cmd)
 
 
 def basemap() -> None:

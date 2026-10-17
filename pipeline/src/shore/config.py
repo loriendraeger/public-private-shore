@@ -31,6 +31,8 @@ def psql_vars() -> dict[str, str]:
     out: dict[str, str] = {}
     for section, values in pipeline().items():
         for key, value in values.items():
+            if isinstance(value, dict):
+                continue  # nested tables (e.g. [tiles.files]) are Python-only config
             if key in out:
                 raise ValueError(f"duplicate config key {key!r} (in [{section}])")
             if isinstance(value, list):
