@@ -1,0 +1,11 @@
+# Pipeline tunables. Passed to SQL as psql variables (e.g. -v crs=3071) by `shore sql run`.
+
+[analysis]
+# NAD83(HARN) / Wisconsin Transverse Mercator, meters. Matches the SCO V12 parcels.
+crs = 3071
+
+# Max distance (m) between a shoreline and a parcel edge for that parcel to "own" it.
+# Dane County LakesPonds vs. parcels at Lake Wingra: p50 1.6 m, 85% within 5 m, and
+# max 3.8 m by hand along Vilas Park. Longer offsets are runs (creek mouths, marsh)
+# that need rules, not a wider tolerance.
+snap_tolerance_m = 5

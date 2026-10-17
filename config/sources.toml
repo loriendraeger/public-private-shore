@@ -59,6 +59,18 @@ Owner-name variety to handle in ownership_rules.csv:
   HOAs: '... HOME OWNERS ASSOCIATION INC' / '... NEIGHBORHOOD ASSOCIATION INC'
   Beware false positives: 'DANE COUNTY GROWERS', 'BECKS ENTERPRISES OF DANE COUNTY LLC'.
 
+Geometry recon (QGIS, Lake Wingra, 2026-10-16):
+  - Lakes are NOT parceled; clicking the water returns nothing.
+  - Road right-of-way is NOT parceled; streets are gaps between parcels.
+  - Parcel edges follow the shore but sit a few meters inland of the OSM waterline
+    (thin unparceled strip along Vilas Park). Measured in EPSG:3071 against the OSM
+    waterline: 1.9, 2.6, 1.3, 1.1 m (max 2.6, mean ~1.7). Re-measure against DNR
+    hydro, which is the line the pipeline actually uses.
+  - Piers are not parceled.
+  - Large holdings (UW Arboretum) are split along straight PLSS lines.
+  - Vilas Park parcel: owner CITY OF MADISON, PROPCLASS=1, AUXCLASS=NULL, $0
+    assessed, so PROPCLASS/AUXCLASS can't be trusted for public land.
+
 Not a legal record of ownership; cite that in the methodology page.
 Alternative source: Dane County open data portal (gis-countyofdane.opendata.arcgis.com).
 Not needed. V12 is recent and complete.
@@ -68,16 +80,102 @@ Not needed. V12 is recent and complete.
 name = "WI DNR 24K Hydro (full file geodatabase)"
 publisher = "Wisconsin DNR"
 url = "https://data-wi-dnr.opendata.arcgis.com/datasets/24k-hydro-full-file-geodatabase"
+local_path = "data/raw/hydro/WDNR_HYDRO_24K.gdb"
 format = "gdb"
-layer = "TODO"      # expect waterbody polygons + flowlines; pick the shoreline-bearing layer
-crs = "TODO"        # likely EPSG:3071 (WTM83). Confirm.
+layer = "WD_HYDRO_WATERBODY_AR_24K"   # inside feature dataset WD_HYDRO_DATA_24K
+geometry = "MultiPolygon (Measured; M values dropped on read)"
+crs = "EPSG:3071"   # compound with NAVD88 height; horizontal = EPSG:3071, same as parcels
+license = "TODO"
+retrieved = "2026-10-16"
+verified = true
+notes = """
+Statewide. 1,295 waterbody polygons intersect the Dane parcel extent.
+Key fields: WATERBODY_NAME, WATERBODY_WBIC (DNR waterbody ID), HYDROID, HYDROCODE,
+HYDROTYPE, LANDLOCK_CODE, ORIG_HRZ_SRC_YR, ORIG_HRZ_SRC_DNOM_AMT (source scale).
+
+Observed codes (Dane): lakes = HYDROCODE 7061 / HYDROTYPE 706; river polygons =
+6021 / 602. 7062 (271 features) etc. TODO: decode via the gdb's Field Domains.
+
+Accuracy: 1,269 of 1,295 polygons are from 1:24,000 sources, mostly 1975-1983.
+Expect larger parcel-vs-hydro offsets than parcel-vs-OSM.
+QGIS recon (Lake Wingra, 2026-10-16): parcel edge to hydro edge is 12-25 m along
+Vilas Park, and worse near the Wingra Creek outlet, where the polygon overlaps
+parcels and misses water. Too inaccurate to assign shoreline to parcels: a tolerance
+big enough to bridge it would catch the second row of parcels.
+=> Use 24K hydro for identity (WBIC, official names) only, not geometry.
+   Candidate geometry source: [hydro_county] below.
+
+Reference polygons:
+  Lake Wingra   WBIC 805000  136 ha    perimeter  8.8 km
+  Lake Mendota  WBIC 805400  3,958 ha  perimeter 38.4 km (23.9 mi)
+  Lake Monona   WBIC 804600  1,359 ha  perimeter 27.1 km
+  Lake Waubesa  WBIC 803700  840 ha    perimeter 16.3 km
+  Lake Kegonsa  WBIC 802600  1,295 ha  perimeter 16.5 km
+  Yahara River  WBIC 798300  several polygons (river drawn as area)
+
+Other layers in the gdb:
+  WD_HYDRO_WATERBODY_WBIC_AR_24K: same water dissolved by WBIC; no names/types.
+  WD_HYDRO_FLOWLINE_LN_24K / _WBIC_LN_24K: centerlines, for narrow named streams.
+  WD_HYDRO_BANK_LN_24K: bank lines; Wingra's sum to 15.1 km vs 8.8 km perimeter.
+    Meaning unclear. TODO: check the data dictionary before using.
+"""
+
+[hydro_county]
+name = "Dane County Lakes and Ponds (polygons)"
+publisher = "Dane County Land Information Office"
+url = "https://gis-countyofdane.opendata.arcgis.com/"   # Water Resources category
+rest_endpoint = "https://dcimapapps.danecounty.gov/arcgissrv/rest/services/DaneCountyBase/MapServer/10"
+local_path = "data/raw/hydro_county/LakesPonds/LakesPonds.shp"
+format = "shp"
+layer = "LakesPonds"
+geometry = "Polygon"
+crs = "EPSG:7599"   # NAD83(2011) / WISCRS Dane (ftUS). US survey FEET; must reproject to 3071.
+license = "TODO"
+retrieved = "2026-10-16"
+source_date = "2026-01"   # "January 2026" on the portal
+verified = true
+notes = """
+SHORELINE GEOMETRY SOURCE (replaces DNR 24K for geometry).
+4,979 polygons. HYDTYPE: Lake 4308, River 392, Island 270. Only 183 have NAME.
+Fields: DXFLAYER, HYDTYPE, HYDELEV, CARTOUSE, DATEMODIFE, NAME, DNRDesigna,
+Shape_STAr / Shape_STLe (in sq ft / ft. Ignore; recompute in 3071).
+Wide rivers ARE polygons (Yahara River: 14 polys, 482 ha).
+'Island' polygons exist. Check whether they're holes or overlaps when building shoreline.
+
+Lakes (in EPSG:3071):  area_ha  perimeter_km   (DNR 24K perimeter)
+  Lake Wingra           139.3      9.15 (2 polys)   8.8
+  Lake Mendota         3968.7     38.20            38.4
+  Lake Monona          1365.4     26.39            27.1
+  Lake Waubesa          844.3     17.94            16.3
+  Lake Kegonsa         1297.8     16.04            16.5
+
+Alignment vs. parcels (Lake Wingra outer shoreline, 8.02 km, sampled every 5 m):
+  distance to nearest parcel edge: p50 1.6 m, p75 3.3, p90 6.6, p95 11.1, max 36.8
+  within 2 m: 59%, 5 m: 85%, 10 m: 94%. Manual QGIS check: max 3.8 m along Vilas.
+  Runs > 5 m to inspect in QGIS (EPSG:3071 x,y):
+    568347,287412  ~120 m, max 36.8  Wingra Creek outlet (lake/river polygon seam)
+    567581,286579  ~280 m, max 20.3  south shore, Arboretum (marsh?)
+    566233,286844  ~120 m, max 33.0  west end
+    566972,286555   ~85 m, max 15.4  south shore
+Joins to DNR 24K by spatial overlap (names match for big lakes) to get WBIC.
+"""
+
+[streams_county]
+name = "Dane County Rivers and Streams (lines)"
+publisher = "Dane County Land Information Office"
+url = "https://gis-countyofdane.opendata.arcgis.com/"   # Water Resources category
+rest_endpoint = "https://dcimapapps.danecounty.gov/arcgissrv/rest/services/DaneCountyBase/MapServer/9"
+local_path = "data/raw/hydro_county/rivers_streams/"
+format = "shp"
+layer = "TODO"
+crs = "TODO"
 license = "TODO"
 retrieved = "TODO"
+source_date = "2026-01"
 verified = false
 notes = """
-Latest release seen is 2023. Check the portal for newer.
-Statewide download; clip to Dane County in staging.
-Look for: waterbody name field, area field, WBIC (waterbody ID), navigability attrs.
+Lines incl. "artificial flow through water", likely centerlines that also run
+through lakes. Needed for named narrow streams (two-bank handling), not lakes.
 """
 
 [municipalities]
@@ -94,21 +192,6 @@ notes = """
 Reportedly updated weekly (annexations). Record retrieval date.
 Look for: name field, type field (city/village/town).
 Does this layer include the county boundary, or do we need a separate source?
-"""
-
-[boat_access]
-name = "WI DNR Public Boat Access Sites"
-publisher = "Wisconsin DNR"
-url = "https://data-wi-dnr.opendata.arcgis.com/"   # TODO: find exact dataset page
-format = "TODO"
-layer = "TODO"
-crs = "TODO"        # archived 2019 copy was EPSG:3071
-license = "TODO"
-retrieved = "TODO"
-verified = false
-notes = """
-Ramp and carry-in sites owned by state or local government; no private sites.
-Archived copies at UW-Madison GeoData@Wisconsin (2019, 2021, 2022).
 """
 
 [osm]

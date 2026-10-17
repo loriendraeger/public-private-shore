@@ -62,7 +62,8 @@ the license/attribution and retrieval date, rather than hardcoding them in scrip
 | Source | Used for |
 |---|---|
 | **Dane County parcels**: Dane County Land Information Office, or the Wisconsin Statewide Parcel Map (SCO/LTSB "V-series") | Parcel polygons with **owner names** (e.g. `OWNERNME1`). This is the primary signal for public vs. private. |
-| **WI DNR 24K Hydrography** | Authoritative lake and river polygons and lines, used to define and measure shoreline |
+| **Dane County hydrography**: Lakes and Ponds polygons, Rivers and Streams lines (~1:2,400, county LIO) | **Shoreline geometry.** Aligns with parcels to a few meters. Delivered in EPSG:7599 (feet) and reprojected to 3071 |
+| **WI DNR 24K Hydrography** | Waterbody **identity** (WBIC, official names) via spatial join. Its geometry is 12–25 m+ off the parcels, so it is not used for shape |
 | **OpenStreetMap**: Geofabrik Wisconsin extract, filtered with `osmium` | Parks, boat launches (`leisure=slipway`), piers, beaches, access tags; cross-checking parcel results |
 | **Municipal boundaries**: LTSB or Dane County | Cities, villages, and towns, used to attribute shore segments to a municipality |
 
@@ -198,8 +199,9 @@ Structural rules:
 
 ### Core analysis method: parcel-intersected shoreline
 
-1. **Shoreline:** take DNR hydro water polygons (lakes, wide rivers) → `ST_Boundary` →
-   lines. **Scope:** lakes above a minimum area plus **named** rivers and streams.
+1. **Shoreline:** take county hydro water polygons (lakes, wide rivers) → `ST_Boundary`
+   → lines. **Drop seams between water polygons** (e.g. where Lake Wingra meets the
+   Wingra Creek polygon). Those edges are water touching water, not shore. **Scope:** lakes above a minimum area plus **named** rivers and streams.
    Stormwater ponds, unnamed ditches, and wetland edges are excluded. Thresholds live in
    `config/pipeline.toml`. Narrow streams that are only lines in the data are treated as lines with two
    banks; decide on handling when implementing and document it here.
@@ -209,6 +211,12 @@ Structural rules:
 3. **Gaps:** shoreline with no adjacent parcel within tolerance is usually road
    right-of-way or unparceled land. Classify it as `row` when it touches a road (OSM or
    parcel ROW), otherwise `unknown`.
+   Note: in Dane County data, parcel edges often sit a few meters **inland** of the
+   waterline, leaving a thin unparceled strip (seen along Vilas Park at Lake Wingra).
+   The snap tolerance must bridge that strip, so it is never classified as a gap.
+   **Merge** adjacent segments that share the same owner and class. Large holdings are
+   split into several parcels along survey (PLSS) lines, e.g. the UW Arboretum, and
+   those splits shouldn't fragment the shoreline.
 4. **Classify:** map each owner name to an ownership class using
    `config/ownership_rules.csv` (ordered regex patterns loaded into a table, so the rules
    are data, not code).
@@ -222,7 +230,7 @@ Structural rules:
    access status, in meters and miles.
 
 Shore length depends on the scale of the source data (the coastline paradox). All
-lengths come from 24K hydro, and the site says so.
+lengths come from the county's ~1:2,400 hydrography, and the site says so.
 
 ### Ownership classes
 
@@ -263,11 +271,10 @@ Each segment also carries `access_source`, which records which layer set the sta
    `unknown` and `private` → `none`.
 2. **OSM evidence** overrides the default: `leisure=park`, `leisure=slipway`,
    `leisure=beach_resort`, `natural=beach`, and `access=*` tags on adjacent features.
-3. **DNR public boat access sites**, which count as `open`.
-4. **Street ends:** public road right-of-way that meets the water counts as `open`
+3. **Street ends:** public road right-of-way that meets the water counts as `open`
    (Wisconsin generally treats these as public access; note that some are posted or
    vacated).
-5. **Manual overrides** (`config/access_overrides.csv`) always win. Each row has a note
+4. **Manual overrides** (`config/access_overrides.csv`) always win. Each row has a note
    explaining the reason.
 
 **Public trust doctrine:** in Wisconsin, the beds of navigable waters are held in trust
@@ -279,7 +286,8 @@ land" ≠ "can't be on the water", plus a **not-legal-advice** disclaimer.
 Written to `site/public/data/` and committed to git:
 
 - `shore.pmtiles`: shore segments (class, owner label, access, access source,
-  municipality, length), parks, and POIs. **No raw owner names.**
+  municipality, length) and parks. **No raw owner names.** Access evidence (boat
+  launches, beaches, etc.) feeds the access attribute but is not exported as map features.
 - `basemap.pmtiles`: Protomaps extract for Dane County
 - `stats.json`: per-municipality × class and × access lengths, plus totals and dataset metadata
   (source dates)
@@ -298,7 +306,8 @@ GitHub Release asset.
   - Shoreline colored by **ownership class or access status** (toggle), with
     **presets for what counts as "public"** (e.g. strict public vs. including ROW and
     utility).
-  - Parks layer.
+  - Parks layer. No boat launch or other POI markers. Boat launches only inform
+    segment access.
   - Click a segment to see owner label, class, access (and why), municipality, and
     length.
   - A methodology/about view: data sources and vintages, the coastline-paradox caveat,
@@ -363,6 +372,13 @@ cd site && npm run dev
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-17: Dropped the DNR boat access sites dataset; not needed.
+- 2026-10-16: Shoreline geometry comes from Dane County hydrography, not DNR 24K. 24K
+  was 12–25 m+ off the parcels; the county layer is p50 1.6 m (85% within 5 m) at
+  Wingra. Snap tolerance starts at 5 m. DNR 24K is kept for WBIC and names.
+- 2026-10-16: Lake Wingra recon: lakes are unparceled; road ROW is unparceled (gaps
+  between parcels, not ROW parcels); parcel edges sit a few meters inland of the
+  waterline. Merge same-owner adjacent segments because of PLSS-line parcel splits.
 - 2026-10-16: Parcels come from SCO V12 (file geodatabase, EPSG:3071). Dane does not
   redact owner names. Owner-name rules are primary and AUXCLASS is secondary, because
   e.g. only ~5% of City of Madison parcels carry X4.
