@@ -84,7 +84,7 @@ export interface StatsMuni {
   shore_bbox: [number, number, number, number] | null
 }
 
-/** wide: lakes and wide rivers. narrow: narrower than 20 m, counted once (centerline). */
+/** wide: lakes and wide rivers. narrow: narrower than 30 m, counted once (centerline). */
 export type WaterKind = 'wide' | 'narrow'
 
 export interface StatsShoreRow {

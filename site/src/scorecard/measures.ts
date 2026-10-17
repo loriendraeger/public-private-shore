@@ -49,7 +49,7 @@ export const REPORTS: Report[] = [
     id: 'public_wide',
     label: 'Public access on lakes & wide rivers',
     description:
-      'Public access from any provider, counting only lakes, ponds and rivers at least 20 m wide.',
+      'Public access from any provider, counting only lakes, ponds and rivers at least 30 m wide.',
     measure: { numerator: PUBLIC_ACCESS_CATEGORIES, denominator: KNOWN_CATEGORIES, water: 'wide' },
   },
   {

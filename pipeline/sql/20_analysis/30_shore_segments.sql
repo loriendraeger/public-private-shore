@@ -47,14 +47,21 @@ SET parcel_id = (
     LIMIT 1
 );
 
--- Narrow: no wide water near the step. The margin (0.225 x width, i.e. 0.45 x the
--- opening radius) absorbs the rounding the opening applies to convex corners of wide
--- water, so lake corners aren't mistaken for narrow channels.
+-- Narrow (25_narrow_water.sql): the class of the nearest centerline step within
+-- :stream_bank_distance_m, so banks and centerline always agree. Shore with no
+-- centerline nearby falls back to the opening test: no wide water near the step. Its
+-- margin (0.225 x width, i.e. 0.45 x the opening radius) absorbs the rounding the
+-- opening applies to convex corners, so lake corners aren't mistaken for channels.
 ALTER TABLE analysis.shore_steps ADD COLUMN narrow boolean;
 UPDATE analysis.shore_steps st
-SET narrow = NOT EXISTS (
-    SELECT 1 FROM analysis.wide_water w
-    WHERE ST_DWithin(w.geom, st.pt, greatest(1.5, :narrow_width_m * 0.225))
+SET narrow = coalesce(
+    (SELECT c.narrow FROM analysis.stream_steps c
+     WHERE ST_DWithin(c.pt, st.pt, :stream_bank_distance_m)
+     ORDER BY c.pt <-> st.pt LIMIT 1),
+    NOT EXISTS (
+        SELECT 1 FROM analysis.wide_water w
+        WHERE ST_DWithin(w.geom, st.pt, greatest(1.5, :narrow_width_m * 0.225))
+    )
 );
 
 -- Gaps-and-islands: consecutive steps with the same key form one run.

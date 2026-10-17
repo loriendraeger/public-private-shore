@@ -52,9 +52,20 @@ access_evidence_distance_m = 15
 # banks collapse onto the stream's centerline (Dane County Rivers and Streams lines) and
 # count once, with access if EITHER bank has it. Width is local: the diameter of the
 # largest circle that fits in the water there (morphological opening, 25_narrow_water.sql).
-# 20 m: most creeks here are 6-15 m wide; at 10/20/30/50 m, 38/55/59/63% of all shore
-# is narrow, so the curve flattens after 20.
-narrow_width_m = 20
+# 30 m (was 20): most creeks here are 6-15 m wide; at 10/20/30/50 m, 38/55/59/63% of
+# all shore is narrow, so the curve flattens after 20. 20 left the Yahara through
+# Cherokee Marsh (20-26 m wide after smoothing) as two banks between collapsed reaches;
+# 30 adds only ~6 km of centerline, most of it that reach.
+narrow_width_m = 30
+
+# The width is measured along each centerline every narrow_measure_step_m, smoothed with
+# a rolling median over narrow_smoothing_m (one wide bend or pool doesn't break up a
+# narrow reach), and narrow/wide runs shorter than narrow_min_run_m take their
+# neighbor's class. Stops the Yahara in Cherokee Marsh flickering between two banks and
+# one line.
+narrow_measure_step_m = 5
+narrow_smoothing_m = 100
+narrow_min_run_m = 100
 
 # A centerline point looks for the bank segment on each side within this distance.
 # Half the narrow width plus slack for centerlines that aren't centered.

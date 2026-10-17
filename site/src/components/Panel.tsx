@@ -124,7 +124,7 @@ function SegmentDetails(): JSX.Element {
               {s().owner_label}
               <Show when={s().kind === 'stream'}>
                 <div class="muted">
-                  Narrow stream (under 20 m wide): counted once, with access if either bank has it.
+                  Narrow stream (under 30 m wide): counted once, with access if either bank has it.
                   <Show when={s().other_bank_label} fallback=" Only one bank is in the study area.">
                     {(o) => ` Other bank: ${o()}.`}
                   </Show>

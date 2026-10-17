@@ -471,12 +471,16 @@ changes), newest first, with the date and a one-line rationale.
   lakefront (college + schools), not a residential condo: label "Edgewood (campus common
   land)", private with public access (override). Edgewood College owns no shore itself.
   No other private college owns shore in the study area.
-- 2026-10-17: Narrow water (under 20 m, local width by morphological opening) counts
-  ONCE: the two banks collapse onto the Dane County stream centerline, which takes the
-  better bank (public access if EITHER bank has it; priority in `pipeline.toml`) and its
-  municipality. Narrow banks with no centerline (~21 km, marsh channels) count half.
-  Measured shore drops from 531 to ~385 km. The scorecard's lake/river split is now
-  wide/narrow (the county hydtype mislabeled ~87 km of the Yahara as lake).
+- 2026-10-17: Narrow water (under 30 m) counts ONCE: the two banks collapse onto the
+  Dane County stream centerline, which takes the better bank (public access if EITHER
+  bank has it; priority in `pipeline.toml`) and its municipality. Width is measured
+  along the centerline (left + right distance to shore), smoothed (100 m rolling median,
+  100 m minimum run), and banks take the nearest centerline's decision; morphological
+  opening is the fallback where there's no centerline (those banks count half, ~29 km).
+  Tried 20 m first: the Yahara through Cherokee Marsh (20-26 m) stayed two banks
+  between collapsed reaches; 30 m adds only ~6 km of centerline. Measured shore drops
+  from 531 to ~374 km. The scorecard's lake/river split is now wide/narrow (the county
+  hydtype mislabeled ~87 km of the Yahara as lake).
 - 2026-10-17: Population comes from WI DOA final estimates (1/1/2026, Dane County
   part of each municipality), not Census 2020: DOA follows current boundaries (the Town
   of Madison dissolved into Madison and Fitchburg in 2022).

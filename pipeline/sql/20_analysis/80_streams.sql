@@ -4,59 +4,17 @@
 -- does. Centerlines come from the Dane County Rivers and Streams lines, which run
 -- through the county's own water polygons.
 --
--- 1. analysis.stream_lines: county stream lines in (or within half the narrow width of)
---    in-scope water, in the study area. Not clipped to the water exactly: on 6 m creeks
---    the separately digitized centerline often strays a few meters outside the polygon.
--- 2. analysis.stream_steps: the lines sampled every :sample_step_m, kept where the water
---    is narrow. Each step finds the nearest NARROW bank segment on its left and on its
---    right (within :stream_bank_distance_m; side = sign of the cross product of the
---    line's direction and the vector to the bank).
+-- 1. 25_narrow_water.sql made analysis.stream_lines and analysis.stream_steps (every
+--    :sample_step_m, with a smoothed narrow flag).
+-- 2. Each narrow step finds the nearest narrow bank segment on its left and on its right
+--    (within :stream_bank_distance_m; side = sign of the cross product of the line's
+--    direction and the vector to the bank).
 -- 3. Each step takes the better bank by :stream_category_priority (access first) and
 --    inherits its category, owner label, access and municipality. Steps with no bank on
 --    either side (e.g. the banks lie outside the study area) are dropped.
 -- 4. analysis.stream_segments: consecutive steps with the same result, as one segment.
 -- 5. Bank segments a step matched are marked `replaced` and leave the map and stats.
 --    Narrow banks no step matched (no centerline nearby) stay, at half weight in stats.
-
-DROP TABLE IF EXISTS analysis.stream_lines CASCADE;
-CREATE TABLE analysis.stream_lines AS
-WITH lines AS (
-    SELECT cs.fid, cs.name, ST_Transform(cs.geom, :crs) AS geom
-    FROM raw.county_streams cs
-    -- Not culverted / underground. coalesce: most lines have no dxflayer, and a NULL
-    -- would make the whole condition NULL (= dropped).
-    WHERE coalesce(cs.dxflayer, '') NOT ILIKE '%hidden%'
-      AND coalesce(cs.hydtype, '') NOT ILIKE 'hidden%'
-),
-zone AS MATERIALIZED (
-    SELECT ST_Intersection(ST_Buffer(wp.geom, :narrow_width_m / 2.0, 'quad_segs=4'),
-                           (SELECT geom FROM analysis.study_area)) AS geom
-    FROM analysis.water_parts wp
-),
-clipped AS (
-    SELECT l.fid, l.name,
-           (ST_Dump(ST_LineMerge(ST_Intersection(l.geom, z.geom)))).geom AS geom
-    FROM lines l JOIN zone z ON ST_Intersects(l.geom, z.geom)
-)
-SELECT row_number() OVER () AS line_id, fid AS stream_fid, name,
-       geom::geometry(LineString, :crs) AS geom
-FROM clipped
-WHERE ST_GeometryType(geom) = 'ST_LineString' AND ST_Length(geom) > 5;
-CREATE INDEX ON analysis.stream_lines USING gist (geom);
-
-DROP TABLE IF EXISTS analysis.stream_steps CASCADE;
-CREATE TABLE analysis.stream_steps AS
-SELECT l.line_id, i, n,
-       ST_LineInterpolatePoint(l.geom, (i + 0.5) / n) AS pt,
-       ST_LineInterpolatePoint(l.geom, i::float / n) AS p0,
-       ST_LineInterpolatePoint(l.geom, (i + 1)::float / n) AS p1
-FROM analysis.stream_lines l
-CROSS JOIN LATERAL (SELECT greatest(1, round(ST_Length(l.geom) / :sample_step_m))::int AS n) k
-CROSS JOIN LATERAL generate_series(0, k.n - 1) i;
-DELETE FROM analysis.stream_steps st
-WHERE EXISTS (SELECT 1 FROM analysis.wide_water w
-              WHERE ST_DWithin(w.geom, st.pt, greatest(1.5, :narrow_width_m * 0.225)));
-CREATE INDEX ON analysis.stream_steps USING gist (pt);
 
 -- Nearest narrow bank on each side of every step.
 DROP TABLE IF EXISTS analysis.stream_bank_matches CASCADE;
@@ -70,6 +28,7 @@ WITH cand AS (
     JOIN analysis.shore_segments s
       ON s.narrow AND ST_DWithin(s.geom, st.pt, :stream_bank_distance_m)
     CROSS JOIN LATERAL (SELECT ST_ClosestPoint(s.geom, st.pt) AS cp) c
+    WHERE st.narrow
 )
 SELECT DISTINCT ON (line_id, i, side) line_id, i, side, segment_id, dist
 FROM cand
@@ -133,6 +92,8 @@ ALTER TABLE analysis.stream_segments ADD PRIMARY KEY (stream_segment_id);
 ALTER TABLE analysis.stream_segments ADD COLUMN length_m double precision
     GENERATED ALWAYS AS (ST_Length(geom)) STORED;
 CREATE INDEX ON analysis.stream_segments USING gist (geom);
+
+CREATE INDEX ON analysis.stream_bank_matches (segment_id);
 
 -- Banks represented by a centerline leave the map and the stats.
 ALTER TABLE analysis.shore_segments ADD COLUMN IF NOT EXISTS replaced boolean;
