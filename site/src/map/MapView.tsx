@@ -164,7 +164,7 @@ export default function MapView(): JSX.Element {
           layout: { 'line-cap': 'round', 'line-join': 'round', visibility },
           paint: {
             'line-color': surface,
-            'line-width': ['interpolate', ['linear'], ['zoom'], 10, 3, 16, 9],
+            'line-width': ['interpolate', ['linear'], ['zoom'], 10, 6, 16, 18],
           },
         })
         m.addLayer({
@@ -175,7 +175,7 @@ export default function MapView(): JSX.Element {
           layout: { 'line-cap': 'round', 'line-join': 'round', visibility },
           paint: {
             'line-color': categoryColorExpr(mode),
-            'line-width': ['interpolate', ['linear'], ['zoom'], 10, 1.5, 16, 5],
+            'line-width': ['interpolate', ['linear'], ['zoom'], 10, 3, 16, 10],
           },
         })
         // Invisible wide line: a click target bigger than the mark.
@@ -185,7 +185,7 @@ export default function MapView(): JSX.Element {
           source: 'shore',
           'source-layer': sourceLayer,
           layout: { visibility },
-          paint: { 'line-color': '#000', 'line-opacity': 0, 'line-width': 18 },
+          paint: { 'line-color': '#000', 'line-opacity': 0, 'line-width': 24 },
         })
         m.on('click', `${id}-hit`, (e) => {
           const props = e.features?.[0]?.properties
@@ -204,7 +204,8 @@ export default function MapView(): JSX.Element {
         paint: {
           'line-color': mode === 'dark' ? '#f0efec' : '#0b0b0b',
           'line-width': 2,
-          'line-gap-width': 6,
+          // Outline just outside the shore line, at every zoom.
+          'line-gap-width': ['interpolate', ['linear'], ['zoom'], 10, 4, 16, 12],
         },
       })
 
