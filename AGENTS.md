@@ -24,7 +24,9 @@ Two halves:
 **Status:** Milestone 2 (Lake Wingra thin slice) in progress. Built: pipeline
 container, `shore` CLI (`load`, `sql`), Makefile with stamps, SQL through
 `20_analysis` (classified Wingra segments), ownership/access config CSVs, unit tests.
-Export → `shore.pmtiles` and the basemap extract work. Next: site.
+Export → `shore.pmtiles`, the basemap extract, and the site (map with ownership/access
+coloring, click details, tolerance compare) work locally. Deploy workflow exists but is
+manual-only.
 `site/public/data/` is temporarily gitignored until the owner approves the output. Milestone 1 recon findings live in
 `config/sources.toml` notes and the Decisions log.
 

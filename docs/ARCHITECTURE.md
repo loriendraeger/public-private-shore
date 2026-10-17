@@ -21,7 +21,7 @@ Protomaps planet build ──► pmtiles extract ──► site/public/data/base
                                                 site/public/data/stats.json  planned
    │
    ▼
-site/ (Vite + Solid + MapLibre) ──► GitHub Pages                            planned
+site/ (Vite + Solid + MapLibre) ──► GitHub Pages                            built
 ```
 
 Two halves meet at `site/public/data/`:
@@ -174,10 +174,37 @@ Views, so they're always current with `analysis`. Each view = one tile layer.
 | `20_parks.sql` | `parks` (polygons) | feature_id, name, category (park / nature_reserve), within 100 m of in-scope shore |
 | (via `make compare`) | `shore_alt` | same as `shore`, under alternative settings |
 
-### `site/` (planned)
+### `site/`: the map (built)
 
-Vite + Solid + TypeScript with MapLibre GL and the `pmtiles` protocol. It reads only
-`site/public/data/`. `site/src/lib/` holds the frontend half of the data contract.
+Vite 8 + Solid + TypeScript 7, MapLibre GL 6, `pmtiles`, `@protomaps/basemaps`.
+Node 24 (`site/.nvmrc`). It reads only `site/public/data/`.
+
+```sh
+cd site && nvm use && npm install
+npm run dev        # http://localhost:5173/public-private-land/
+npm run build      # tsc --noEmit + vite build → site/dist/
+```
+
+| File | Role |
+|---|---|
+| `src/lib/contract.ts` | Frontend half of the data contract: tile layer names, `ShoreProps`, class/access unions |
+| `src/state/store.ts` | Solid signals: `colorBy` (owner/access), `showAlt`, `hasAlt`, `selected` |
+| `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); layers: parks (dashed outline), shore casing + line + invisible wide hit line, selection outline. Signals update paint/visibility/filter in place. |
+| `src/map/colors.ts` | Colors and MapLibre `match` expressions. Ownership folds 11 classes into 4 groups (a map is an all-pairs view, where only 3 hues stay CVD-safe). Access uses the status palette with icons. Validated with the dataviz validator. |
+| `src/components/Panel.tsx` | Title, color-by toggle, legend, tolerance toggle (only if `shore_alt` exists), selected-segment details, disclaimer |
+| `vite.config.ts` | `base: '/public-private-land/'`; `worker.format: 'es'` |
+
+**MapLibre worker gotcha:** MapLibre 6 loads its Web Worker from a file next to its own
+module, which breaks once Vite moves the module (pre-bundling in dev, bundling in
+build). `MapView.tsx` imports the worker with `?worker&url` and passes it to
+`setWorkerUrl()`.
+
+### `.github/workflows/deploy.yml`
+
+`npm ci` → `npm run build` → `upload-pages-artifact` → `deploy-pages`. It's **manual only**
+(`workflow_dispatch`) while `site/public/data/` is gitignored; restore the `push`
+trigger when the data is committed. The repo's Pages source must be set to
+"GitHub Actions".
 
 ## The data contract
 
