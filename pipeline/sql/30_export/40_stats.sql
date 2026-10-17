@@ -2,13 +2,20 @@
 -- they aren't tile layers. Tidy: one row per municipality x waterbody x category; the
 -- site sums them however the user asks. Lengths in meters (the site converts units).
 
-CREATE OR REPLACE VIEW export.stats_municipalities AS
+DROP VIEW IF EXISTS export.stats_municipalities;
+CREATE VIEW export.stats_municipalities AS
 SELECT
     m.muni_id,
     m.name,
     m.muni_type,
     p.pop_estimate AS population,
-    p.pop_census_2020
+    p.pop_census_2020,
+    -- [west, south, east, north] of the municipality's shore (EPSG:4326), for zooming
+    -- the map to it; NULL when it has none.
+    (SELECT ARRAY[ST_XMin(e), ST_YMin(e), ST_XMax(e), ST_YMax(e)]
+     FROM (SELECT ST_Extent(ST_Transform(s.geom, 4326)) AS e
+           FROM analysis.shore_segments s WHERE s.muni_id = m.muni_id) x
+     WHERE e IS NOT NULL) AS shore_bbox
 FROM analysis.study_area_munis sa
 JOIN staging.municipalities m USING (muni_id)
 JOIN staging.population p USING (muni_id);

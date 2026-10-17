@@ -1,21 +1,24 @@
 import { For, type JSX, Show } from 'solid-js'
 
 import { CATEGORIES } from '../lib/categories'
-import { formatShort } from '../lib/units'
+import { formatLong, formatPct, formatShort } from '../lib/units'
 import { ACCESS, CATEGORY_GROUPS, entries, type Mode, SEQUENTIAL } from '../map/colors'
-import { matchingReport } from '../scorecard/measures'
+import { computeScores, matchingReport } from '../scorecard/measures'
 import {
   colorBy,
+  focusMuni,
   hasAlt,
   measure,
   selected,
   setColorBy,
+  setFocusMuni,
   setShadeMunis,
   setShowAlt,
   setShowMunis,
   shadeMunis,
   showAlt,
   showMunis,
+  stats,
   units,
 } from '../state/store'
 
@@ -57,6 +60,48 @@ function Legend(): JSX.Element {
         </For>
       </Show>
     </ul>
+  )
+}
+
+/** Pick a municipality to focus the map on, with its score for the current measure. */
+function MuniFocus(): JSX.Element {
+  function munis(): { muni_id: number; name: string }[] {
+    return (stats()?.municipalities ?? [])
+      .filter((m) => m.shore_bbox !== null)
+      .sort((a, b) => a.name.localeCompare(b.name))
+  }
+  function score(): ReturnType<typeof computeScores>[number] | undefined {
+    const s = stats()
+    const id = focusMuni()
+    return s && id !== null
+      ? computeScores(s, measure()).find((x) => x.muni.muni_id === id)
+      : undefined
+  }
+  return (
+    <div class="focus">
+      <label>
+        <span class="label">Municipality</span>
+        <select
+          value={focusMuni() ?? ''}
+          onChange={(e) => {
+            const v = e.currentTarget.value
+            setFocusMuni(v === '' ? null : Number(v))
+          }}
+        >
+          <option value="">All</option>
+          <For each={munis()}>{(m) => <option value={m.muni_id}>{m.name}</option>}</For>
+        </select>
+      </label>
+      <Show when={score()}>
+        {(s) => (
+          <p class="muted">
+            {matchingReport(measure())?.label ?? 'Custom measure'}:{' '}
+            <strong>{s().pct === null ? '—' : formatPct(s().pct ?? 0)}</strong> (
+            {formatLong(s().numeratorM, units())} of {formatLong(s().denominatorM, units())})
+          </p>
+        )}
+      </Show>
+    </div>
   )
 }
 
@@ -123,6 +168,8 @@ export default function Panel(): JSX.Element {
         </button>
       </div>
       <Legend />
+
+      <MuniFocus />
 
       <label class="toggle">
         <input

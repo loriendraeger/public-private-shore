@@ -32,6 +32,9 @@ export const [shadeMunis, setShadeMunis] = createSignal(false)
 
 export const [selected, setSelected] = createSignal<ShoreProps | null>(null)
 
+/** Municipality the map is focused on (muni_id): its shore stands out, the rest fades. */
+export const [focusMuni, setFocusMuni] = createSignal<number | null>(null)
+
 // Scorecard
 
 export const [stats, setStats] = createSignal<Stats | null>(null)

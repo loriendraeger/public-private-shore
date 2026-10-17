@@ -376,3 +376,30 @@ h2 {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
 }
+.focus {
+  margin-top: 16px;
+}
+.focus select {
+  font: inherit;
+  padding: 3px 6px;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  max-width: 200px;
+}
+.focus p {
+  margin: 6px 0 0;
+}
+button.link {
+  font: inherit;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+button.link:hover {
+  text-decoration: underline;
+}

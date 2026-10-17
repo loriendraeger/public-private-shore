@@ -73,6 +73,8 @@ export interface StatsMuni {
   /** WI DOA final estimate (Dane County part), 1/1/2026 */
   population: number
   pop_census_2020: number
+  /** [west, south, east, north] of its shore (EPSG:4326); null when it has none. */
+  shore_bbox: [number, number, number, number] | null
 }
 
 export type WaterKind = 'lake' | 'river'

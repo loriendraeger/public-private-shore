@@ -4,6 +4,8 @@ import { layers, namedFlavor } from '@protomaps/basemaps'
 import {
   addProtocol,
   AttributionControl,
+  type ExpressionSpecification,
+  type FilterSpecification,
   Map as MlMap,
   NavigationControl,
   setWorkerUrl,
@@ -12,7 +14,15 @@ import {
 // once a bundler moves the module. Let Vite bundle the worker and pass its URL instead.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import { PMTiles, Protocol } from 'pmtiles'
-import { createEffect, getOwner, type JSX, onCleanup, onMount, runWithOwner } from 'solid-js'
+import {
+  createEffect,
+  getOwner,
+  type JSX,
+  onCleanup,
+  onMount,
+  runWithOwner,
+  untrack,
+} from 'solid-js'
 
 import {
   MUNI_LABELS_LAYER,
@@ -24,6 +34,7 @@ import {
 } from '../lib/contract'
 import {
   colorBy,
+  focusMuni,
   scores,
   selected,
   setHasAlt,
@@ -31,6 +42,7 @@ import {
   shadeMunis,
   showAlt,
   showMunis,
+  stats,
   view,
 } from '../state/store'
 import { accessColorExpr, categoryColorExpr, type Mode, muniFillExpr } from './colors'
@@ -141,6 +153,16 @@ export default function MapView(): JSX.Element {
         'source-layer': MUNIS_LAYER,
         layout: { visibility: 'none', 'line-join': 'round' },
         paint: { 'line-color': muniInk, 'line-width': 1.5, 'line-dasharray': [4, 2] },
+      })
+      // Outline of the focused municipality.
+      m.addLayer({
+        id: 'muni-focus',
+        type: 'line',
+        source: 'context',
+        'source-layer': MUNIS_LAYER,
+        filter: ['==', ['get', 'muni_id'], -1],
+        layout: { 'line-join': 'round' },
+        paint: { 'line-color': muniInk, 'line-width': 2.5 },
       })
 
       const meta = (await shore.getMetadata()) as { vector_layers?: { id: string }[] }
@@ -280,6 +302,39 @@ export default function MapView(): JSX.Element {
       const visibility = showMunis() ? 'visible' : 'none'
       m.setLayoutProperty('munis', 'visibility', visibility)
       m.setLayoutProperty('muni-labels', 'visibility', visibility)
+    })
+    createEffect(() => {
+      // Focus on one municipality: fade the other shore, click only its own, zoom to it.
+      const id = focusMuni()
+      const muni = stats()?.municipalities.find((x) => x.muni_id === id) ?? null
+      const name = muni?.name ?? null
+      const opacity: ExpressionSpecification | number =
+        name === null ? 1 : ['case', ['==', ['get', 'muni_name'], name], 1, 0.15]
+      const hitFilter: FilterSpecification | null =
+        name === null ? null : ['==', ['get', 'muni_name'], name]
+      for (const id of SHORE_IDS) {
+        if (m.getLayer(id)) {
+          m.setPaintProperty(id, 'line-opacity', opacity)
+          m.setPaintProperty(`${id}-casing`, 'line-opacity', opacity)
+          m.setFilter(`${id}-hit`, hitFilter)
+        }
+      }
+      m.setFilter('muni-focus', ['==', ['get', 'muni_id'], muni?.muni_id ?? -1])
+      // untrack: picking a segment mustn't re-run this effect (and re-zoom).
+      const sel = untrack(selected)
+      if (name !== null && sel && sel.muni_name !== name) {
+        setSelected(null)
+      }
+      if (muni?.shore_bbox) {
+        const [w, s, e, n] = muni.shore_bbox
+        m.fitBounds(
+          [
+            [w, s],
+            [e, n],
+          ],
+          { padding: 60, maxZoom: 15 },
+        )
+      }
     })
     createEffect(() => {
       const on = shadeMunis()

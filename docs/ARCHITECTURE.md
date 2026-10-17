@@ -180,7 +180,7 @@ Views, so they're always current with `analysis`. Each view = one tile layer.
 | `20_parks.sql` | `parks` (polygons) | feature_id, name, category (park / nature_reserve), within 100 m of in-scope shore |
 | `30_municipalities.sql` | `municipalities` (polygons), `municipality_labels` (points) | muni_id, name, muni_type. Separate label points so each name is placed once. In `context.pmtiles`. |
 | (via `make compare`) | `shore_alt` | same as `shore`, under alternative settings |
-| `40_stats.sql` | `stats_municipalities`, `stats_shore` (no geometry → not tiles) | study-area municipalities with population; shore length per municipality × waterbody × water_kind (lake/river, from the waterbody's largest polygon's hydtype) × category. Read by `shore stats`. |
+| `40_stats.sql` | `stats_municipalities`, `stats_shore` (no geometry → not tiles) | study-area municipalities with population and `shore_bbox` (extent of their shore, 4326); shore length per municipality × waterbody × water_kind (lake/river, from the waterbody's largest polygon's hydtype) × category. Read by `shore stats`. |
 
 ### `site/`: the map and the scorecard (built)
 
@@ -228,14 +228,14 @@ House rules on top:
 | `src/lib/contract.ts` | Frontend half of the data contract: tile layer names, `ShoreProps`, `Stats` (stats.json), class/access/category unions |
 | `src/lib/categories.ts` | Category labels, descriptions, which count as public access by default |
 | `src/lib/units.ts` | Display units: data is meters; format as km/mi (long) or m/ft (short) |
-| `src/state/store.ts` | Solid signals: `view`, `units`, `colorBy` (category/access), `showAlt`, `hasAlt`, `showMunis`, `shadeMunis`, `selected`, `stats`, `measure`, `metric`; `scores` (memo shared by the scorecard and the map shading); `loadStats` |
-| `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); sources: basemap, `shore`, `context`; layers: municipality shading (fill by the current measure, hidden by default), parks (dashed outline), municipal boundaries (dashed, hidden by default), shore casing + line + invisible wide hit line, selection outline, municipal labels. Signals update paint/visibility/filter in place. |
+| `src/state/store.ts` | Solid signals: `view`, `units`, `colorBy` (category/access), `showAlt`, `hasAlt`, `showMunis`, `shadeMunis`, `selected`, `focusMuni`, `stats`, `measure`, `metric`; `scores` (memo shared by the scorecard and the map shading); `loadStats` |
+| `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); sources: basemap, `shore`, `context`; layers: municipality shading (fill by the current measure, hidden by default), parks (dashed outline), municipal boundaries (dashed, hidden by default), focused-municipality outline, shore casing + line + invisible wide hit line, selection outline, municipal labels. Signals update paint/visibility/filter in place. Focusing a municipality fades other shore (`line-opacity`), limits clicks to its shore, and fits the map to its `shore_bbox`. |
 | `src/map/colors.ts` | Colors and MapLibre `match` expressions. Categories fold into 4 groups (municipal access, other-provider access, no access, unknown; a map is an all-pairs view, where only 3 hues stay CVD-safe). Access uses the status palette with icons. Shading uses the sequential blue ramp in 5 classes. Validated with the dataviz validator. |
-| `src/components/Panel.tsx` | Map side panel: title, color-by toggle, legend, boundary and shading toggles, tolerance toggle (only if `shore_alt` exists), selected-segment details, disclaimer |
+| `src/components/Panel.tsx` | Map side panel: title, color-by toggle, legend, municipality picker (with its score for the current measure), boundary and shading toggles, tolerance toggle (only if `shore_alt` exists), selected-segment details, disclaimer |
 | `src/scorecard/measures.ts` | `Measure` (numerator categories ⊆ denominator categories, water filter), preset `REPORTS`, `computeScores` / `totalScore` over stats.json rows. `unknown` is never counted (excluded until cleaned up) but reported per municipality |
 | `src/scorecard/Scorecard.tsx` | Report picker (a measure matching no preset shows as Custom), water filter, shore-floor slider (`minShoreM`, default 1 km; also filters the map shading), category builder (Counts / Out of checkboxes), study-area summary, rank-by switch, chart, table |
 | `src/scorecard/Chart.tsx` | Observable Plot ranked bars for the current metric (share, distance, per 1,000 residents); hover tip; redraws on resize |
-| `src/scorecard/ScoreTable.tsx` | TanStack Table: sortable columns (share, counted, out of, per 1,000 residents, population, unknown excluded) |
+| `src/scorecard/ScoreTable.tsx` | TanStack Table: municipality names jump to the map focused on them; sortable columns (share, counted, out of, per 1,000 residents, population, unknown excluded) |
 | `vite.config.ts` | `base: '/public-private-land/'`; `worker.format: 'es'` |
 
 **MapLibre worker gotcha:** MapLibre 6 loads its Web Worker from a file next to its own

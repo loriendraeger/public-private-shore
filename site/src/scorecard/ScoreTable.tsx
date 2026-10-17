@@ -11,7 +11,7 @@ import {
 import { For, type JSX } from 'solid-js'
 
 import { formatLong, formatPct, formatShort } from '../lib/units'
-import { units } from '../state/store'
+import { setFocusMuni, setView, units } from '../state/store'
 import type { Score } from './measures'
 
 const features = tableFeatures({
@@ -32,6 +32,21 @@ const columns = helper.columns([
     id: 'name',
     header: 'Municipality',
     sortFn: 'alphanumeric',
+    // Jump to the map, focused on this municipality.
+    cell: (c) =>
+      c.row.original.muni.shore_bbox ? (
+        <button
+          class="link"
+          onClick={() => {
+            setFocusMuni(c.row.original.muni.muni_id)
+            setView('map')
+          }}
+        >
+          {c.getValue()}
+        </button>
+      ) : (
+        c.getValue()
+      ),
   }),
   helper.accessor((s) => s.muni.muni_type, {
     id: 'type',
