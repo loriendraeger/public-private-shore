@@ -245,6 +245,9 @@ Structural rules:
    Note: in Dane County data, parcel edges often sit a few meters **inland** of the
    waterline, leaving a thin unparceled strip (seen along Vilas Park at Lake Wingra).
    The snap tolerance must bridge that strip, so it is never classified as a gap.
+   **Narrow water** (under `narrow_width_m`, measured locally by morphological opening)
+   is represented once, by the county stream centerline, which takes the better of its
+   two banks; see `25_narrow_water.sql` and `80_streams.sql`.
    **Merge** adjacent segments that share the same owner and class. Large holdings are
    split into several parcels along survey (PLSS) lines, e.g. the UW Arboretum, and
    those splits shouldn't fragment the shoreline.
@@ -468,6 +471,12 @@ changes), newest first, with the date and a one-line rationale.
   lakefront (college + schools), not a residential condo: label "Edgewood (campus common
   land)", private with public access (override). Edgewood College owns no shore itself.
   No other private college owns shore in the study area.
+- 2026-10-17: Narrow water (under 20 m, local width by morphological opening) counts
+  ONCE: the two banks collapse onto the Dane County stream centerline, which takes the
+  better bank (public access if EITHER bank has it; priority in `pipeline.toml`) and its
+  municipality. Narrow banks with no centerline (~21 km, marsh channels) count half.
+  Measured shore drops from 531 to ~385 km. The scorecard's lake/river split is now
+  wide/narrow (the county hydtype mislabeled ~87 km of the Yahara as lake).
 - 2026-10-17: Population comes from WI DOA final estimates (1/1/2026, Dane County
   part of each municipality), not Census 2020: DOA follows current boundaries (the Town
   of Madison dissolved into Madison and Fitchburg in 2022).

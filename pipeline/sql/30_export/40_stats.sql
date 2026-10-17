@@ -20,21 +20,21 @@ FROM analysis.study_area_munis sa
 JOIN staging.municipalities m USING (muni_id)
 JOIN staging.population p USING (muni_id);
 
--- lake or river: the county hydro type of the waterbody's largest polygon.
-CREATE OR REPLACE VIEW export.stats_shore AS
-WITH kinds AS (
-    SELECT DISTINCT ON (name, wbic) name, wbic,
-           CASE WHEN hydtype = 'River' THEN 'river' ELSE 'lake' END AS water_kind
-    FROM staging.water
-    WHERE name IS NOT NULL
-    ORDER BY name, wbic, area_m2 DESC
+-- water_kind: 'wide' (lakes, wide rivers) or 'narrow' (narrower than :narrow_width_m).
+-- Narrow water counts once: stream centerlines stand in for both banks; narrow banks
+-- with no centerline (rare) count at half weight so the two banks add up to one.
+DROP VIEW IF EXISTS export.stats_shore;
+CREATE VIEW export.stats_shore AS
+WITH pieces AS (
+    SELECT muni_id, waterbody, CASE WHEN narrow THEN 'narrow' ELSE 'wide' END AS water_kind,
+           category, CASE WHEN narrow THEN 0.5 ELSE 1 END * length_m AS length_m
+    FROM analysis.shore_segments
+    WHERE NOT replaced
+    UNION ALL
+    SELECT muni_id, waterbody, 'narrow', category, length_m
+    FROM analysis.stream_segments
 )
-SELECT
-    s.muni_id,
-    s.waterbody,
-    k.water_kind,
-    s.category,
-    round(sum(s.length_m)::numeric, 1)::float AS length_m
-FROM analysis.shore_segments s
-LEFT JOIN kinds k ON k.name = s.waterbody AND k.wbic IS NOT DISTINCT FROM s.wbic
+SELECT muni_id, waterbody, water_kind, category,
+       round(sum(length_m)::numeric, 1)::float AS length_m
+FROM pieces
 GROUP BY 1, 2, 3, 4;

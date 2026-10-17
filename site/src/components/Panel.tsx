@@ -120,7 +120,22 @@ function SegmentDetails(): JSX.Element {
             <dt>Category</dt>
             <dd>{CATEGORIES[s().category].label}</dd>
             <dt>Owner</dt>
-            <dd>{s().owner_label}</dd>
+            <dd>
+              {s().owner_label}
+              <Show when={s().kind === 'stream'}>
+                <div class="muted">
+                  Narrow stream (under 20 m wide): counted once, with access if either bank has it.
+                  <Show when={s().other_bank_label} fallback=" Only one bank is in the study area.">
+                    {(o) => ` Other bank: ${o()}.`}
+                  </Show>
+                </div>
+              </Show>
+              <Show when={s().kind === 'bank' && s().narrow}>
+                <div class="muted">
+                  Narrow water with no mapped centerline: each bank counts half.
+                </div>
+              </Show>
+            </dd>
             <dt>Access</dt>
             <dd>
               <span aria-hidden="true">{access().icon}</span> {access().label}

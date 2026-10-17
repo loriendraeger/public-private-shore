@@ -48,6 +48,22 @@ row_road_distance_m = 30
 # OSM access evidence (parks, beaches, slipways, ...) applies to segments this close.
 access_evidence_distance_m = 15
 
+# Narrow water (decision 2026-10-17): where the water is narrower than this, the two
+# banks collapse onto the stream's centerline (Dane County Rivers and Streams lines) and
+# count once, with access if EITHER bank has it. Width is local: the diameter of the
+# largest circle that fits in the water there (morphological opening, 25_narrow_water.sql).
+# 20 m: most creeks here are 6-15 m wide; at 10/20/30/50 m, 38/55/59/63% of all shore
+# is narrow, so the curve flattens after 20.
+narrow_width_m = 20
+
+# A centerline point looks for the bank segment on each side within this distance.
+# Half the narrow width plus slack for centerlines that aren't centered.
+stream_bank_distance_m = 25
+
+# When a stream's banks differ, the one earlier in this list wins (access first, then
+# unknown, since unknown may still be open).
+stream_category_priority = ["municipal", "county", "state_federal", "university", "land_trust", "other_public", "private_public_access", "unknown", "public_no_access", "private"]
+
 [tiles]
 minzoom = 10
 maxzoom = 16           # shore lines; overzoomed beyond this by MapLibre

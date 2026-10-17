@@ -46,10 +46,17 @@ export type MuniType = 'city' | 'village' | 'town'
 /** Properties of a feature in the `shore` (and `shore_alt`) tile layer. */
 export interface ShoreProps {
   segment_id: number
+  /** bank: shore of lakes and wide rivers. stream: the centerline of narrow water,
+   * standing in for both banks (access if either bank has it). */
+  kind: 'bank' | 'stream'
+  /** Narrower than the pipeline's narrow_width_m. A narrow `bank` had no centerline. */
+  narrow: boolean
   waterbody: string
   category: Category
   owner_class: OwnerClass
   owner_label: string
+  /** stream only: the owner label of the bank that didn't win, if any. */
+  other_bank_label?: string
   access: Access
   access_source: AccessSource
   access_note?: string
@@ -77,7 +84,8 @@ export interface StatsMuni {
   shore_bbox: [number, number, number, number] | null
 }
 
-export type WaterKind = 'lake' | 'river'
+/** wide: lakes and wide rivers. narrow: narrower than 20 m, counted once (centerline). */
+export type WaterKind = 'wide' | 'narrow'
 
 export interface StatsShoreRow {
   muni_id: number

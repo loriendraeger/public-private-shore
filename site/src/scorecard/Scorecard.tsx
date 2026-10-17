@@ -19,7 +19,11 @@ import Chart from './Chart'
 import { matchingReport, REPORTS, totalScore, type WaterFilter } from './measures'
 import ScoreTable from './ScoreTable'
 
-const WATER: Record<WaterFilter, string> = { all: 'All water', lake: 'Lakes', river: 'Rivers' }
+const WATER: Record<WaterFilter, string> = {
+  all: 'All water',
+  wide: 'Lakes & wide rivers',
+  narrow: 'Narrow streams',
+}
 const METRICS: Record<Metric, string> = {
   pct: 'Share of shore',
   distance: 'Distance',

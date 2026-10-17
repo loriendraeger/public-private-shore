@@ -46,10 +46,11 @@ export const REPORTS: Report[] = [
     },
   },
   {
-    id: 'public_lakes',
-    label: 'Public access on lakes',
-    description: 'Public access from any provider, counting lake and pond shore only (no rivers).',
-    measure: { numerator: PUBLIC_ACCESS_CATEGORIES, denominator: KNOWN_CATEGORIES, water: 'lake' },
+    id: 'public_wide',
+    label: 'Public access on lakes & wide rivers',
+    description:
+      'Public access from any provider, counting only lakes, ponds and rivers at least 20 m wide.',
+    measure: { numerator: PUBLIC_ACCESS_CATEGORIES, denominator: KNOWN_CATEGORIES, water: 'wide' },
   },
   {
     id: 'no_access',

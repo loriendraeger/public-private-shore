@@ -160,11 +160,13 @@ access_source, access_note, length_m, geom`.
 | `10_ownership_rules.sql` | `analysis.ownership_rules` | `\copy` from the CSV |
 | `15_study_area.sql` | `analysis.study_area_munis`, `analysis.study_area` | Municipalities named in `[study_area] municipalities` (fails on unknown names) and their union |
 | `20_shoreline.sql` | `analysis.islands` (island_id, area_m2, bridged, geom), `analysis.shoreline` (shore_id, waterbody, wbic, geom) | In scope = every **named** water polygon touching the study area. All water near it is `ST_Union`ed (seams dissolve). Islands = holes in that union; they're dropped unless `bridged` (an OSM road/path crosses onto them). Remaining rings → lines, split per named waterbody (name + WBIC), clipped to the study area. CTEs are `MATERIALIZED` so the big union runs once |
-| `30_shore_segments.sql` | `analysis.shore_steps`, `analysis.shore_parcels`, `analysis.shore_segments` | **Sampling:** steps of `:sample_step_m`; each step's midpoint → nearest parcel *polygon* within `:snap_tolerance_m` (none = gap). Consecutive steps with the same (owner name, parcel's municipality) collapse into a segment (gaps-and-islands), with exact `ST_LineSubstring` geometry. Runs that wrap around a closed ring's start are merged. |
+| `25_narrow_water.sql` | `analysis.water_parts`, `analysis.wide_water` | Morphological opening: buffer the unioned water by −`narrow_width_m`/2, then +same. What survives is water at least that wide; shore away from it borders narrow water |
+| `30_shore_segments.sql` | `analysis.shore_steps`, `analysis.shore_parcels`, `analysis.shore_segments` | **Sampling:** steps of `:sample_step_m`; each step's midpoint → nearest parcel *polygon* within `:snap_tolerance_m` (none = gap) and a `narrow` flag (no `wide_water` within 0.225 × `narrow_width_m`). Consecutive steps with the same (owner name, parcel's municipality, narrow) collapse into a segment (gaps-and-islands), with exact `ST_LineSubstring` geometry. Runs that wrap around a closed ring's start are merged. |
 | `40_classify.sql` | `owner_class`, `owner_label` | First matching rule; gaps → `row` if an OSM street is within `:row_road_distance_m`, else `unknown` |
 | `50_municipality.sql` | `muni_id` (gaps), `muni_name`, `muni_type` | Owned segments: the municipality containing the parcel (land side). Gaps: the municipality covering most land within 20 m. Then drops segments whose land-side municipality is outside the study area. |
 | `60_access.sql` | `access`, `access_source`, `access_note` | default (class) → osm (area features must cover ≥ half the segment within `:access_evidence_distance_m`; explicit `access=*` tags win; the most open applies) → street_end (`row` segments) → override |
 | `70_category.sql` | `category` | the scorecard category from `config/categories.csv`; the only attribute the analysis uses |
+| `80_streams.sql` | `analysis.stream_lines`, `stream_steps`, `stream_bank_matches`, `stream_segments`; `shore_segments.replaced` | County stream centerlines within narrow water (not clipped exactly to the polygon: they stray a few m outside on small creeks), sampled every `:sample_step_m`. Each step finds the nearest narrow bank segment on each side within `:stream_bank_distance_m` (side = cross product sign), takes the better one by `:stream_category_priority`, and runs collapse into stream segments. Matched banks are marked `replaced`. |
 
 Known rough edges (milestone 2): the Arboretum is two owner strings, so it isn't one
 segment; private land inside an OSM nature reserve becomes `open` (by design; fix
@@ -176,11 +178,11 @@ Views, so they're always current with `analysis`. Each view = one tile layer.
 
 | File | View / tile layer | Attributes |
 |---|---|---|
-| `10_shore.sql` | `shore` (lines) | segment_id, waterbody, category, owner_class, owner_label, access, access_source, access_note, muni_name, muni_type, length_m |
+| `10_shore.sql` | `shore` (lines) | `kind` = bank (not-replaced bank segments) or stream (centerlines; segment_id + 10,000,000), narrow, other_bank_label (stream), segment_id, waterbody, category, owner_class, owner_label, access, access_source, access_note, muni_name, muni_type, length_m |
 | `20_parks.sql` | `parks` (polygons) | feature_id, name, category (park / nature_reserve), within 100 m of in-scope shore |
 | `30_municipalities.sql` | `municipalities` (polygons), `municipality_labels` (points) | muni_id, name, muni_type. Separate label points so each name is placed once. In `context.pmtiles`. |
 | (via `make compare`) | `shore_alt` | same as `shore`, under alternative settings |
-| `40_stats.sql` | `stats_municipalities`, `stats_shore` (no geometry → not tiles) | study-area municipalities with population and `shore_bbox` (extent of their shore, 4326); shore length per municipality × waterbody × water_kind (lake/river, from the waterbody's largest polygon's hydtype) × category. Read by `shore stats`. |
+| `40_stats.sql` | `stats_municipalities`, `stats_shore` (no geometry → not tiles) | study-area municipalities with population and `shore_bbox` (extent of their shore, 4326); shore length per municipality × waterbody × water_kind (`wide` / `narrow`) × category. Narrow water counts once: stream centerlines, plus unmatched narrow banks at half weight. Read by `shore stats`. |
 
 ### `site/`: the map and the scorecard (built)
 

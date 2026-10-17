@@ -1,5 +1,5 @@
 -- Split the shoreline into segments wherever the adjacent owner (or its municipality)
--- changes.
+-- changes, or the water changes between narrow and wide (25_narrow_water.sql).
 --
 -- Method: sampling. Cut each shoreline into steps of about :sample_step_m, assign each
 -- step's midpoint to the nearest parcel within :snap_tolerance_m (none = a gap), then
@@ -47,13 +47,24 @@ SET parcel_id = (
     LIMIT 1
 );
 
+-- Narrow: no wide water near the step. The margin (0.225 x width, i.e. 0.45 x the
+-- opening radius) absorbs the rounding the opening applies to convex corners of wide
+-- water, so lake corners aren't mistaken for narrow channels.
+ALTER TABLE analysis.shore_steps ADD COLUMN narrow boolean;
+UPDATE analysis.shore_steps st
+SET narrow = NOT EXISTS (
+    SELECT 1 FROM analysis.wide_water w
+    WHERE ST_DWithin(w.geom, st.pt, greatest(1.5, :narrow_width_m * 0.225))
+);
+
 -- Gaps-and-islands: consecutive steps with the same key form one run.
 DROP TABLE IF EXISTS analysis.shore_segments CASCADE;
 CREATE TABLE analysis.shore_segments AS
 WITH keyed AS (
-    SELECT st.shore_id, st.i, st.n, st.parcel_id, p.owner1, p.muni_id,
+    SELECT st.shore_id, st.i, st.n, st.parcel_id, p.owner1, p.muni_id, st.narrow,
            -- Gaps get a NULL owner; coalesce so consecutive gap steps share a key.
-           coalesce(p.owner1, '') || '|' || coalesce(p.muni_id::text, '') AS run_key
+           coalesce(p.owner1, '') || '|' || coalesce(p.muni_id::text, '') || '|'
+               || st.narrow::text AS run_key
     FROM analysis.shore_steps st
     LEFT JOIN analysis.shore_parcels p USING (parcel_id)
 ),
@@ -63,7 +74,7 @@ runs AS (
 ),
 segs AS (
     SELECT shore_id, run_key, grp,
-           min(owner1) AS owner1, min(muni_id) AS muni_id,
+           min(owner1) AS owner1, min(muni_id) AS muni_id, bool_and(narrow) AS narrow,
            array_agg(DISTINCT parcel_id) FILTER (WHERE parcel_id IS NOT NULL) AS parcel_ids,
            min(i) AS i0, max(i) AS i1, min(n) AS n
     FROM runs GROUP BY shore_id, run_key, grp
@@ -85,7 +96,7 @@ pieces AS (
 SELECT
     row_number() OVER (ORDER BY h.shore_id, h.i0) AS segment_id,
     h.shore_id, sh.waterbody, sh.wbic,
-    h.owner1, h.muni_id,
+    h.owner1, h.muni_id, h.narrow,
     (SELECT array_agg(DISTINCT x ORDER BY x) FROM unnest(h.parcel_ids || coalesce(t.parcel_ids, '{}')) x) AS parcel_ids,
     CASE WHEN t.geom IS NULL THEN h.geom
          ELSE ST_LineMerge(ST_Collect(t.geom, h.geom)) END::geometry(LineString, :crs) AS geom
