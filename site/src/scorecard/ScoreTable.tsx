@@ -32,12 +32,6 @@ const columns = helper.columns([
     id: 'name',
     header: 'Municipality',
     sortFn: 'alphanumeric',
-    cell: (c) => (
-      <>
-        {c.getValue()}
-        {c.row.original.littleShore ? <span title="Little shore: fragile score"> *</span> : null}
-      </>
-    ),
   }),
   helper.accessor((s) => s.muni.muni_type, {
     id: 'type',

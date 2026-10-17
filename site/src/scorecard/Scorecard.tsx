@@ -2,19 +2,21 @@ import { For, type JSX, Show } from 'solid-js'
 
 import { CATEGORIES, KNOWN_CATEGORIES } from '../lib/categories'
 import type { Category } from '../lib/contract'
-import { formatLong, formatPct, formatShort } from '../lib/units'
+import { formatLong, formatPct, formatShort, fromLong, longUnit, toLong } from '../lib/units'
 import {
   measure,
   type Metric,
   metric,
+  minShoreM,
   scores,
   setMeasure,
   setMetric,
+  setMinShoreM,
   stats,
   units,
 } from '../state/store'
 import Chart from './Chart'
-import { LITTLE_SHORE_M, matchingReport, REPORTS, totalScore, type WaterFilter } from './measures'
+import { matchingReport, REPORTS, totalScore, type WaterFilter } from './measures'
 import ScoreTable from './ScoreTable'
 
 const WATER: Record<WaterFilter, string> = { all: 'All water', lake: 'Lakes', river: 'Rivers' }
@@ -148,14 +150,43 @@ function Segmented<T extends string>(props: {
   )
 }
 
+/** Floor on measured shore, set in the display unit (km or mi). */
+function ShoreFloor(): JSX.Element {
+  function value(): number {
+    return toLong(minShoreM(), units())
+  }
+  return (
+    <label class="floor">
+      <span class="label">Only municipalities with at least</span>
+      <input
+        type="range"
+        min="0"
+        max="10"
+        step="0.25"
+        value={value()}
+        onInput={(e) => {
+          setMinShoreM(fromLong(e.currentTarget.valueAsNumber, units()))
+        }}
+      />
+      <output>
+        {value().toLocaleString(undefined, { maximumFractionDigits: 2 })} {longUnit(units())}
+      </output>
+      <span>of measured shore</span>
+      <span class="muted">(below that, one park or street end swings the share a lot)</span>
+    </label>
+  )
+}
+
 function Summary(): JSX.Element {
   function t(): ReturnType<typeof totalScore> {
     return totalScore(scores())
   }
   return (
     <p class="summary">
-      All {scores().length} municipalities:{' '}
-      <strong>{t().pct === null ? '—' : formatPct(t().pct ?? 0)}</strong> (
+      {scores().length === (stats()?.municipalities.length ?? 0)
+        ? `All ${String(scores().length)} municipalities`
+        : `${String(scores().length)} of ${String(stats()?.municipalities.length ?? 0)} municipalities`}
+      : <strong>{t().pct === null ? '—' : formatPct(t().pct ?? 0)}</strong> (
       {formatLong(t().numeratorM, units())} of {formatLong(t().denominatorM, units())}),{' '}
       {formatShort(t().perThousandM, units())} per 1,000 residents.{' '}
       <span class="muted">{formatLong(t().unknownM, units())} of unknown shore left out.</span>
@@ -181,6 +212,7 @@ export default function Scorecard(): JSX.Element {
             value={measure().water}
             onChange={(w) => setMeasure({ ...measure(), water: w })}
           />
+          <ShoreFloor />
         </div>
         <Builder />
 
@@ -191,10 +223,6 @@ export default function Scorecard(): JSX.Element {
           <Segmented label="Rank by" options={METRICS} value={metric()} onChange={setMetric} />
         </div>
         <Chart scores={scores()} />
-        <p class="fine">
-          * Less than {formatLong(LITTLE_SHORE_M, units())} of measured shore: one park or street
-          end swings the share a lot.
-        </p>
 
         <h2>All municipalities</h2>
         <ScoreTable scores={scores()} />

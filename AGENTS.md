@@ -22,7 +22,7 @@ absolute km**:
   ends).
 
 Because scores compare municipalities, uncertainty matters: report how much of each
-municipality's shore has `unknown` access, and flag municipalities with little shore.
+municipality's shore has `unknown` access, and let users leave out municipalities with little shore.
 
 Ownership and access are **separate attributes**. Public ownership doesn't imply access
 (a water utility parcel, for example), and private ownership doesn't rule it out (a
@@ -472,8 +472,9 @@ changes), newest first, with the date and a one-line rationale.
   part of each municipality), not Census 2020: DOA follows current boundaries (the Town
   of Madison dissolved into Madison and Fitchburg in 2022).
 - 2026-10-17: The scorecard leaves `unknown` shore out of every measure for now
-  (reported per municipality), until the unknowns are cleaned up. Municipalities with
-  under 1 km of measured shore are flagged as fragile.
+  (reported per municipality), until the unknowns are cleaned up. A shore-floor slider
+  (default 1 km of measured shore) leaves out municipalities whose share would swing on
+  one park or street end.
 - 2026-10-17: All data is stored and shipped in meters; the site offers a metric/imperial
   display switch (m/km ↔ ft/mi).
 - 2026-10-17: Scorecard lives on the site, computed in the browser from user-chosen

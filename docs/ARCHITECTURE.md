@@ -233,8 +233,8 @@ House rules on top:
 | `src/map/colors.ts` | Colors and MapLibre `match` expressions. Categories fold into 4 groups (municipal access, other-provider access, no access, unknown; a map is an all-pairs view, where only 3 hues stay CVD-safe). Access uses the status palette with icons. Shading uses the sequential blue ramp in 5 classes. Validated with the dataviz validator. |
 | `src/components/Panel.tsx` | Map side panel: title, color-by toggle, legend, boundary and shading toggles, tolerance toggle (only if `shore_alt` exists), selected-segment details, disclaimer |
 | `src/scorecard/measures.ts` | `Measure` (numerator categories ⊆ denominator categories, water filter), preset `REPORTS`, `computeScores` / `totalScore` over stats.json rows. `unknown` is never counted (excluded until cleaned up) but reported per municipality |
-| `src/scorecard/Scorecard.tsx` | Report picker (a measure matching no preset shows as Custom), water filter, category builder (Counts / Out of checkboxes), study-area summary, rank-by switch, chart, table |
-| `src/scorecard/Chart.tsx` | Observable Plot ranked bars for the current metric (share, distance, per 1,000 residents); little-shore municipalities faded and starred; hover tip; redraws on resize |
+| `src/scorecard/Scorecard.tsx` | Report picker (a measure matching no preset shows as Custom), water filter, shore-floor slider (`minShoreM`, default 1 km; also filters the map shading), category builder (Counts / Out of checkboxes), study-area summary, rank-by switch, chart, table |
+| `src/scorecard/Chart.tsx` | Observable Plot ranked bars for the current metric (share, distance, per 1,000 residents); hover tip; redraws on resize |
 | `src/scorecard/ScoreTable.tsx` | TanStack Table: sortable columns (share, counted, out of, per 1,000 residents, population, unknown excluded) |
 | `vite.config.ts` | `base: '/public-private-land/'`; `worker.format: 'es'` |
 

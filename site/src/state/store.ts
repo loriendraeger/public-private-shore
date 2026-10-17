@@ -2,7 +2,13 @@ import { createMemo, createRoot, createSignal } from 'solid-js'
 
 import type { ShoreProps, Stats } from '../lib/contract'
 import type { Units } from '../lib/units'
-import { computeScores, type Measure, REPORTS, type Score } from '../scorecard/measures'
+import {
+  computeScores,
+  DEFAULT_MIN_SHORE_M,
+  type Measure,
+  REPORTS,
+  type Score,
+} from '../scorecard/measures'
 
 // App state as Solid signals. The map subscribes to these and updates paint/visibility
 // in place; it is never re-created on a state change.
@@ -36,11 +42,16 @@ export const [measure, setMeasure] = createSignal<Measure>(REPORTS[0].measure)
 export type Metric = 'pct' | 'distance' | 'perThousand'
 export const [metric, setMetric] = createSignal<Metric>('pct')
 
-/** Scores for the current measure; shared by the scorecard and the map shading. */
+/** Leave out municipalities with less measured shore than this (meters; 0 = all). */
+export const [minShoreM, setMinShoreM] = createSignal(DEFAULT_MIN_SHORE_M)
+
+/** Scores for the current measure, above the shore floor; shared by the scorecard and
+ * the map shading. */
 export const scores = createRoot(() =>
   createMemo((): Score[] => {
     const s = stats()
-    return s ? computeScores(s, measure()) : []
+    const floor = minShoreM()
+    return s ? computeScores(s, measure()).filter((x) => x.denominatorM >= floor) : []
   }),
 )
 

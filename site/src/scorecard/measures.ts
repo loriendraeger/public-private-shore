@@ -77,8 +77,9 @@ export function matchingReport(m: Measure): Report | undefined {
   )
 }
 
-/** Below this much (measured) shore, a municipality's percentages are flagged as fragile. */
-export const LITTLE_SHORE_M = 1000
+/** Default shore floor: below this much measured shore, one park or street end swings
+ * a municipality's share a lot, so it's left out unless the user lowers the floor. */
+export const DEFAULT_MIN_SHORE_M = 1000
 
 export interface Score {
   muni: StatsMuni
@@ -90,7 +91,6 @@ export interface Score {
   perThousandM: number
   /** Unknown shore left out of the measure (same water filter). */
   unknownM: number
-  littleShore: boolean
 }
 
 export function computeScores(stats: Stats, m: Measure): Score[] {
@@ -122,13 +122,12 @@ export function computeScores(stats: Stats, m: Measure): Score[] {
       pct: acc.den > 0 ? acc.num / acc.den : null,
       perThousandM: muni.population > 0 ? (acc.num / muni.population) * 1000 : 0,
       unknownM: acc.unk,
-      littleShore: acc.den < LITTLE_SHORE_M,
     }
   })
 }
 
 /** All municipalities together. */
-export function totalScore(scores: Score[]): Omit<Score, 'muni' | 'littleShore'> & {
+export function totalScore(scores: Score[]): Omit<Score, 'muni'> & {
   population: number
 } {
   const t = scores.reduce(

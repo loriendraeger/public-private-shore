@@ -22,6 +22,11 @@ export function toLong(m: number, units: Units): number {
   return units === 'metric' ? m / 1000 : m / M_PER_MI
 }
 
+/** Inverse of toLong: a long distance in the display unit back to meters. */
+export function fromLong(v: number, units: Units): number {
+  return units === 'metric' ? v * 1000 : v * M_PER_MI
+}
+
 export function toShort(m: number, units: Units): number {
   return units === 'metric' ? m : m * FT_PER_M
 }

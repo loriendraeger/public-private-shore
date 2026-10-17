@@ -9,7 +9,6 @@ interface Datum {
   name: string
   value: number
   label: string
-  littleShore: boolean
 }
 
 function cssVar(name: string): string {
@@ -18,25 +17,21 @@ function cssVar(name: string): string {
 
 function datum(s: Score, m: Metric): Datum | null {
   const u = units()
-  const name = s.muni.name + (s.littleShore ? ' *' : '')
+  const name = s.muni.name
   switch (m) {
     case 'pct':
-      return s.pct === null
-        ? null
-        : { name, value: s.pct * 100, label: formatPct(s.pct), littleShore: s.littleShore }
+      return s.pct === null ? null : { name, value: s.pct * 100, label: formatPct(s.pct) }
     case 'distance':
       return {
         name,
         value: toLong(s.numeratorM, u),
         label: formatLong(s.numeratorM, u),
-        littleShore: s.littleShore,
       }
     case 'perThousand':
       return {
         name,
         value: toShort(s.perThousandM, u),
         label: formatShort(s.perThousandM, u),
-        littleShore: s.littleShore,
       }
   }
 }
@@ -96,8 +91,6 @@ export default function Chart(props: { scores: Score[] }): JSX.Element {
           x: 'value',
           y: 'name',
           fill: accent,
-          // Fragile scores (little shore) are faded, and starred in the label.
-          fillOpacity: (d: Datum) => (d.littleShore ? 0.4 : 1),
           rx: 3,
           insetTop: 2,
           insetBottom: 2,
@@ -116,8 +109,8 @@ export default function Chart(props: { scores: Score[] }): JSX.Element {
           Plot.pointerY({
             x: 'value',
             y: 'name',
-            title: (d: Datum) =>
-              `${d.name.replace(/ \*$/, '')}\n${d.label}${d.littleShore ? '\nLittle shore: fragile score' : ''}`,
+            title: (d: Datum) => `${d.name}
+${d.label}`,
           }),
         ),
       ],

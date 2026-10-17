@@ -358,3 +358,21 @@ h2 {
   width: 1em;
   font-size: 10px;
 }
+.floor {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+}
+.floor .label {
+  margin-right: 0;
+}
+.floor input {
+  width: 160px;
+  accent-color: var(--accent);
+}
+.floor output {
+  min-width: 4.5em;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
