@@ -29,13 +29,13 @@ WHERE s.owner_class = c.owner_class;
 -- 2. OSM evidence. Areas (parks, beaches) must cover at least half the segment, within
 -- :access_evidence_distance_m, so a house next to a park doesn't inherit the park's
 -- access. Points and lines (slipways) only need to be that close. An explicit OSM
--- access=* tag beats the category: private/customers/members -> restricted, no -> none.
+-- access=* tag beats the category: no/private/customers/members/permit -> none (members-
+-- or customers-only isn't public access; decision 2026-10-17).
 -- When several features apply, the most open status wins. Categories flagged
 -- public_only (piers) count only on non-private land.
 WITH evidence AS (
     SELECT s.segment_id,
-           CASE WHEN f.access IN ('no') THEN 'none'
-                WHEN f.access IN ('private', 'customers', 'members', 'permit') THEN 'restricted'
+           CASE WHEN f.access IN ('no', 'private', 'customers', 'members', 'permit') THEN 'none'
                 ELSE o.access END AS access,
            f.category || coalesce(': ' || f.name, '') AS why
     FROM analysis.shore_segments s
@@ -50,7 +50,7 @@ WITH evidence AS (
 best AS (
     SELECT DISTINCT ON (segment_id) segment_id, access, why
     FROM evidence
-    ORDER BY segment_id, array_position(ARRAY['open', 'restricted', 'none'], access), why
+    ORDER BY segment_id, array_position(ARRAY['open', 'none'], access), why
 )
 UPDATE analysis.shore_segments s
 SET access = b.access, access_source = 'osm', access_note = b.why

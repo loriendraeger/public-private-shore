@@ -290,7 +290,8 @@ exported** to tiles or stats. Only class and label ship to the site.
 
 Ownership classes and access are inputs. **The analysis (scorecard, stats) uses one
 category per segment**, derived from both after access is assigned. Owner labels and
-access reasons are map-only detail. (Decided 2026-10-17; implementation pending.)
+access reasons are map-only detail. (Decided 2026-10-17; mapping in `config/categories.csv`,
+applied by `20_analysis/70_category.sql`.)
 
 | Category | Meaning | Map shows | Public access? |
 |---|---|---|---|

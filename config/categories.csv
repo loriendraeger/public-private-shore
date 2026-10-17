@@ -1,0 +1,23 @@
+owner_class,access,category,note
+municipal,open,municipal,
+row,open,municipal,"Street ends: road right-of-way, provided by the municipality (decision 2026-10-17)"
+county,open,county,
+state,open,state_federal,
+federal,open,state_federal,
+university,open,university,UW–Madison
+land_trust,open,land_trust,"Private nonprofit, counted as public (decision 2026-10-17)"
+other_public,open,other_public,Lake districts
+utility,open,other_public,"Sewerage / sanitary districts"
+school_district,open,other_public,
+private,open,private_public_access,"Privately owned, publicly accessible (e.g. Edgewood campus shore)"
+private,none,private,
+municipal,none,public_no_access,
+row,none,public_no_access,
+county,none,public_no_access,
+state,none,public_no_access,
+federal,none,public_no_access,
+university,none,public_no_access,
+land_trust,none,public_no_access,
+other_public,none,public_no_access,
+utility,none,public_no_access,
+school_district,none,public_no_access,

@@ -4,6 +4,7 @@ CREATE OR REPLACE VIEW export.shore AS
 SELECT
     segment_id,
     waterbody,
+    category,
     owner_class,
     owner_label,
     access,

@@ -10,7 +10,7 @@ priority,pattern,class,label,note
 80,(SCHOOL DIST|SCHOOL DISTRICT|SCH DIST),school_district,School district,
 90,(MADISON METRO(POLITAN)? SEWERAGE|SANITARY DIST|MADISON GAS & ELEC|^MG&E|ALLIANT|WISCONSIN POWER & LIGHT|AMERICAN TRANSMISSION),utility,Utility,
 95,(PROTECTION (&|AND) REHABILITATION DIST|LAKE DISTRICT),other_public,Lake district,Public inland lake protection & rehabilitation districts
-96,(GROUNDSWELL CONSERVANCY|NATURAL HERITAGE LAND TRUST|NATURE CONSERVANCY|DRIFTLESS AREA LAND CONSERVANCY),other_public,Land trust,"Conservation land trusts count as public (decision 2026-10-17). Named trusts only: generic CONSERVANCY also matches HOAs and LLCs"
+96,(GROUNDSWELL CONSERVANCY|NATURAL HERITAGE LAND TRUST|NATURE CONSERVANCY|DRIFTLESS AREA LAND CONSERVANCY),land_trust,Land trust,"Conservation land trusts: own class, counted as public (decision 2026-10-17). Named trusts only: generic CONSERVANCY also matches HOAs and LLCs"
 100,^EDGEWOOD COLLEGE,private,Edgewood College,Private college
 101,^EDGEWOOD (HIGH SCHOOL|CAMPUS SCHOOL),private,Edgewood schools,Private school
 102,^EDGEWOOD CONDO ASSN,private,Edgewood (campus common land),"Shared lakefront of the Edgewood campus (college + schools), not a residential condo; publicly accessible shore path"

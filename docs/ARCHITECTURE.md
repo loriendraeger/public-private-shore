@@ -90,6 +90,7 @@ Editing `40_parcels.sql` reruns staging and everything after it, but not `load`.
 | `access_defaults.csv` | `60_access.sql` | ownership class → default access |
 | `access_osm.csv` | `60_access.sql` | OSM feature category → access. `public_only=true` (piers) = evidence only on non-private land |
 | `access_overrides.csv` | `60_access.sql` | hand fixes: `lon,lat,access,note`; applies to the nearest segment within 20 m |
+| `categories.csv` | `70_category.sql` | (ownership class, access) → scorecard category; unlisted pairs → `unknown` |
 
 **pipeline.toml → SQL:** `shore sql` flattens every key into a psql variable, ignoring
 the section (`[analysis] crs = 3071` becomes `-v crs=3071`). Keys must therefore be
@@ -160,6 +161,7 @@ access_source, access_note, length_m, geom`.
 | `40_classify.sql` | `owner_class`, `owner_label` | First matching rule; gaps → `row` if an OSM street is within `:row_road_distance_m`, else `unknown` |
 | `50_municipality.sql` | `muni_id` (gaps), `muni_name`, `muni_type` | Owned segments: the municipality containing the parcel (land side). Gaps: the municipality covering most land within 20 m. Then drops segments whose land-side municipality is outside the study area. |
 | `60_access.sql` | `access`, `access_source`, `access_note` | default (class) → osm (area features must cover ≥ half the segment within `:access_evidence_distance_m`; explicit `access=*` tags win; the most open applies) → street_end (`row` segments) → override |
+| `70_category.sql` | `category` | the scorecard category from `config/categories.csv`; the only attribute the analysis uses |
 
 Known rough edges (milestone 2): the Arboretum is two owner strings, so it isn't one
 segment; private land inside an OSM nature reserve becomes `open` (by design; fix
