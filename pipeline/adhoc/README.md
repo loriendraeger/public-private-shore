@@ -11,4 +11,4 @@ audited. **Nothing here is run by `make`, and nothing here feeds the site.**
 | Directory | What it's for |
 |---|---|
 | `review_exports/` | GeoJSON of parcels behind an ownership decision, for review in QGIS |
-| `access_review/` | `review.sh` → `data/build/review/access_review.md`: railway-barrier and unknown-access segments by municipality, each with a site link (`bbox` + `seg`) and a Google Maps satellite link |
+| `access_review/` | `review.sh` → `data/build/review/access_review.md`: railway barriers, short public strips between private lots (possible lake-access lots), and other unknowns, by municipality, each with a site link (`bbox` + `seg`) and a Google Maps satellite link |

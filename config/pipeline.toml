@@ -92,6 +92,11 @@ rail_shore_m = 10
 # (two 1 m pieces on Nine Springs Creek); they keep their access.
 barrier_min_length_m = 5
 
+# A still-unknown segment shorter than this, between two segments with the same owner
+# class, label and (known) access, takes theirs (60_access.sql, decision 2026-10-18).
+# 10 m: catches 12 segments (38 m); 20 m would be 17 (108 m).
+neighbor_fill_max_m = 10
+
 # Rail causeways (20_shoreline.sql): land narrower than this with water on both sides
 # and at least causeway_min_length_m of railway on it isn't shore (like an unbridged
 # island). Monona Bay's rail crossing is ~20 m wide; the John Nolen Drive causeway, with

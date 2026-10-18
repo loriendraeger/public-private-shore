@@ -334,8 +334,10 @@ Each segment also carries `access_source`, which records which layer set the sta
 4. **Street ends:** public road right-of-way that meets the water counts as `open`
    (Wisconsin generally treats these as public access; note that some are posted or
    vacated).
-5. **Barriers:** open shore cut off from the land by a railway becomes `none`.
-6. **Manual overrides** (`config/access_overrides.csv`) always win. Each row has a note
+5. **Barriers:** open or unknown shore cut off from the land by a railway becomes `none`.
+6. **Short gaps:** a short unknown between two matching, known segments takes theirs,
+   access source included (it isn't a source of its own).
+7. **Manual overrides** (`config/access_overrides.csv`) always win. Each row has a note
    explaining the reason.
 
 **Public trust doctrine:** in Wisconsin, the beds of navigable waters are held in trust
@@ -464,6 +466,11 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-18: Unknowns under 10 m between two segments with the same owner class,
+  label and known access take theirs (access source and note too), if they're gaps or already share the class (12
+  segments, 38 m; map tidying more than a dent in the unknowns). Public strips between
+  two private lots never inherit "private": they're often public lake-access lots and
+  get their own section in the review list.
 - 2026-10-18: **Rail causeways aren't shore**, like unbridged islands: land under 30 m
   wide with water on both sides and at least 50 m of railway on it (found by opening
   the land near tracks). Removes ~1.2 km of track bed across Monona Bay (the Wisconsin

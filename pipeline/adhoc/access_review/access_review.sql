@@ -1,6 +1,7 @@
 -- AD HOC (not part of the pipeline). Run with ./review.sh.
 -- Access review list as Markdown: every segment the map shows that needs a human look
--- (railway barriers, to confirm; unknown access or category, to decide), each with a
+-- (railway barriers, to confirm; short public strips between private lots, which are
+-- often public lake-access lots; other unknown access or category, to decide), each with a
 -- link to the site framed on it (bbox + seg) and a Google Maps satellite link.
 -- Reads export.shore, so segment ids are the ones the map draws. They change on every
 -- pipeline run: regenerate the list after rerunning the pipeline.
@@ -8,11 +9,24 @@ WITH items AS (
     SELECT
         s.segment_id, s.kind, s.muni_name, s.waterbody, s.owner_label, s.owner_class,
         s.category, s.access, s.access_source, s.access_note, s.length_m,
-        CASE WHEN s.access_source = 'barrier' THEN 'Railway barriers (confirm)'
-             ELSE 'Unknown (decide)' END AS section,
+        CASE WHEN s.access_source = 'barrier' THEN '1. Railway barriers (confirm)'
+             WHEN nb.between_private THEN '2. Public strips between private lots (lake access?)'
+             ELSE '3. Unknown (decide)' END AS section,
         ST_Transform(ST_Expand(ST_Transform(s.geom, :crs), 100), 4326) AS box,
         ST_ClosestPoint(s.geom, ST_Centroid(s.geom)) AS mid
     FROM export.shore s
+    -- Bank segments keep their analysis id in export.shore. Public land under 50 m whose
+    -- neighbors at both ends are private.
+    LEFT JOIN LATERAL (
+        SELECT b.length_m < 50 AND b.owner_class NOT IN ('private', 'unknown', 'row')
+               AND (SELECT count(*) FROM analysis.shore_segments n
+                    WHERE n.shore_id = b.shore_id AND n.segment_id <> b.segment_id
+                      AND n.owner_class = 'private'
+                      AND (ST_DWithin(n.geom, ST_StartPoint(b.geom), 0.5)
+                           OR ST_DWithin(n.geom, ST_EndPoint(b.geom), 0.5))) >= 2 AS between_private
+        FROM analysis.shore_segments b
+        WHERE s.kind = 'bank' AND b.segment_id = s.segment_id
+    ) nb ON true
     WHERE s.access_source = 'barrier' OR s.access = 'unknown' OR s.category = 'unknown'
 ),
 lines AS (

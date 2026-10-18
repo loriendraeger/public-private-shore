@@ -5,7 +5,9 @@
 --   3. path       a public footpath or cycleway reaches public land that is still unknown
 --   4. street_end road right-of-way that meets the water
 --   5. barrier    a railway cuts open or unknown shore off from the land
---   6. override   config/access_overrides.csv, hand-curated; always wins
+--   6. (fill)     a short unknown between two matching segments takes theirs,
+--                 source and note included
+--   7. override   config/access_overrides.csv, hand-curated; always wins
 
 DROP TABLE IF EXISTS analysis.access_defaults, analysis.access_osm, analysis.access_overrides;
 CREATE TABLE analysis.access_defaults (class text PRIMARY KEY, access text NOT NULL, note text);
@@ -152,7 +154,43 @@ SET access = 'none', access_source = 'barrier',
 FROM cut_off c
 WHERE s.segment_id = c.segment_id AND s.access_source <> 'override';
 
--- 6. Manual overrides: each applies to the segment nearest its point, within 20 m.
+-- 6. Short unknowns between matching neighbors (decision 2026-10-18): a segment shorter
+-- than :neighbor_fill_max_m that is still unknown (no owner, or access undecided) takes
+-- the owner class, label and access of the segments at both its ends, when those two
+-- agree on all three and are fully known. It also takes their access source and note
+-- (from the start-side neighbor if the two differ): it is part of that same stretch,
+-- not a decision of its own. The short segment must be a gap (no parcel)
+-- or already share their class: a city or town strip between two private lots is often
+-- a public lake-access lot, and must not become private (it goes to manual review).
+WITH ends AS (
+    SELECT s.segment_id, a.owner_class, a.owner_label, a.access, a.access_source, a.access_note,
+           b.owner_label AS b_label, b.access AS b_access,
+           b.owner_class AS b_owner_class
+    FROM analysis.shore_segments s
+    CROSS JOIN LATERAL (
+        SELECT n.owner_class, n.owner_label, n.access, n.access_source, n.access_note
+        FROM analysis.shore_segments n
+        WHERE n.shore_id = s.shore_id AND n.segment_id <> s.segment_id
+          AND ST_DWithin(n.geom, ST_StartPoint(s.geom), 0.5)
+        ORDER BY n.geom <-> ST_StartPoint(s.geom) LIMIT 1) a
+    CROSS JOIN LATERAL (
+        SELECT n.owner_class, n.owner_label, n.access FROM analysis.shore_segments n
+        WHERE n.shore_id = s.shore_id AND n.segment_id <> s.segment_id
+          AND ST_DWithin(n.geom, ST_EndPoint(s.geom), 0.5)
+        ORDER BY n.geom <-> ST_EndPoint(s.geom) LIMIT 1) b
+    WHERE s.length_m < :neighbor_fill_max_m
+      AND (s.owner_class = 'unknown' OR s.access = 'unknown')
+      AND (s.owner_class = 'unknown' OR s.owner_class = a.owner_class)
+)
+UPDATE analysis.shore_segments s
+SET owner_class = e.owner_class, owner_label = e.owner_label, access = e.access,
+    access_source = e.access_source, access_note = e.access_note
+FROM ends e
+WHERE s.segment_id = e.segment_id
+  AND e.owner_class = e.b_owner_class AND e.owner_label = e.b_label AND e.access = e.b_access
+  AND e.owner_class <> 'unknown' AND e.access <> 'unknown';
+
+-- 7. Manual overrides: each applies to the segment nearest its point, within 20 m.
 UPDATE analysis.shore_segments s
 SET access = o.access, access_source = 'override', access_note = o.note
 FROM analysis.access_overrides o
