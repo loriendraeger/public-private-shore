@@ -95,6 +95,10 @@ export function UrlSync(): null {
   // them). Until then the store mustn't write back, or it would wipe params it hasn't
   // read yet.
   const [applied, setApplied] = createSignal(false)
+  // The last URL this component wrote. When the URL is that, it says nothing new: during
+  // a router transition the params can lag a step behind, and re-applying them made the
+  // map and the URL chase each other (100 navigations, "Too many redirects").
+  let lastWrite: string | null = null
 
   createEffect(() => {
     setView(location.pathname.startsWith('/scorecard') ? 'scorecard' : 'map')
@@ -105,6 +109,9 @@ export function UrlSync(): null {
   createEffect(
     on([() => location.pathname, () => location.search, stats], ([path, , s]) => {
       if (path.startsWith('/scorecard')) {
+        return
+      }
+      if (lastWrite !== null && decodeURIComponent(path + location.search) === lastWrite) {
         return
       }
       const color = params.color === 'access' ? 'access' : 'category'
@@ -154,7 +161,9 @@ export function UrlSync(): null {
     const keys = Object.keys(next) as (keyof MapParams)[]
     if (keys.some((k) => next[k] !== params[k])) {
       // In place: no history entry per pan. Our own serializer, so commas stay commas.
-      navigate(mapPath(), { replace: true, scroll: false })
+      const to = mapPath()
+      lastWrite = decodeURIComponent(to)
+      navigate(to, { replace: true, scroll: false })
     }
   })
 

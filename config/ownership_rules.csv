@@ -1,5 +1,5 @@
 priority,pattern,class,label,note
-10,^NOT AVAILABLE$,private,Private (owner withheld),"Owner name withheld (25,034 parcels county-wide). Along our shore: nearly all taxable residential, no institutional billing addresses (review 2026-10-17)"
+10,^NOT AVAILABLE$,private,Private,"Owner name withheld (25,034 parcels county-wide). Along our shore: nearly all taxable residential, no institutional billing addresses (review 2026-10-17)"
 20,^DANE COUNTY GROWERS,private,Private,False positive for the county rule
 21,DANE COUNTY LLC$,private,Private,False positive for the county rule
 30,(^UNITED STATES|^USA |US FISH|FISH & WILDLIFE|NATIONAL PARK SERVICE|POSTAL SERVICE|^U S ),federal,Federal,

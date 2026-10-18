@@ -294,7 +294,11 @@ export default function MapView(): JSX.Element {
       setMapBbox([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()] satisfies Bbox)
     }
     m.on('moveend', reportBbox)
-    reportBbox()
+    // With a camera move pending (a URL bbox), wait for it: reporting the start view
+    // first would write that view into the URL.
+    if (!untrack(cameraRequest)) {
+      reportBbox()
+    }
     createEffect(() => {
       // Only while the map is visible: hidden (display: none) it has no size, so
       // fitBounds would frame the box wrong. Cleared once applied, so coming back from

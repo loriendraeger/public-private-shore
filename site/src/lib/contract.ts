@@ -61,7 +61,10 @@ export interface ShoreProps {
   other_bank_label?: string
   access: Access
   access_source: AccessSource
-  access_note?: string
+  /** Display text from config/access_display.csv, e.g. "Open to the public", "None". */
+  access_label: string
+  /** Why, e.g. "Park: Olin Park", "Public path"; absent when there's nothing to add. */
+  access_reason?: string
   muni_name: string
   muni_type: MuniType
   length_m: number

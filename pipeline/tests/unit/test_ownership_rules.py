@@ -87,7 +87,7 @@ def test_class(owner, expected_class):
         ("ST MARYS CATHOLIC CHURCH", "Church"),
         ("UW REGENTS ARBORETUM RE DEV & ADMIN UW MADISON", "UW–Madison"),
         ("SMITH, JOHN", "Private"),
-        ("NOT AVAILABLE", "Private (owner withheld)"),
+        ("NOT AVAILABLE", "Private"),
         ("GROUNDSWELL CONSERVANCY INC", "Land trust"),
     ],
 )

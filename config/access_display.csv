@@ -1,0 +1,19 @@
+priority,access,access_source,access_kind,owner_class,access_label,reason,reason_unnamed,note
+10,none,default,*,private,None,,,"Private shore: nothing more to say"
+20,unknown,*,*,*,Unknown,Not yet reviewed,Not yet reviewed,
+30,none,barrier,*,*,No access from land,Cut off by railway tracks,Cut off by railway tracks,
+40,none,default,*,*,No access from land,"Utility or school land, not open to the public","Utility or school land, not open to the public",
+50,open,override,*,*,Open to the public,{name},,"Overrides: the note from config/access_overrides.csv"
+51,none,override,*,*,No access from land,{name},,
+60,open,osm,park,*,Open to the public,Park: {name},Park,
+61,open,osm,nature_reserve,*,Open to the public,Nature area: {name},Nature area,
+62,open,osm,beach,*,Open to the public,Beach: {name},Beach,
+63,open,osm,swimming,*,Open to the public,Swimming area: {name},Swimming area,
+64,open,osm,slipway,*,Open to the public,Boat launch: {name},Boat launch,
+65,open,osm,pier,*,Open to the public,Public pier: {name},Public pier,
+66,open,osm,fishing,*,Open to the public,Fishing access: {name},Fishing access,
+69,none,osm,*,*,No access from land,Marked private in OpenStreetMap: {name},Marked private in OpenStreetMap,"OSM access=no/private/members/... on the feature"
+70,open,path,*,*,Open to the public,Trail: {name},Public path,"Unnamed footways, cycleways and paths all read Public path (and merge)"
+80,open,street_end,*,*,Open to the public,Street end: {name},Street end,
+998,open,*,*,*,Open to the public,,,Fallbacks
+999,none,*,*,*,No access from land,,,

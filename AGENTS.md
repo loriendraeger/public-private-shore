@@ -34,8 +34,8 @@ Two halves:
    map tiles plus stats come out.
 2. **Static site** (GitHub Pages, client-only): renders the committed outputs.
 
-**Status:** milestones 1–3 done; next up are 4 (categories + access quality), 5 (segment cleanup)
-and 6 (scorecard on the site). See [Milestones](#milestones). The full pipeline (load →
+**Status:** milestones 1–3 and 5 done; 4 (access quality: manual review of the unknowns)
+and 6 (scorecard on the site) in progress. See [Milestones](#milestones). The full pipeline (load →
 staging → analysis → export → tiles) and the map run locally. `site/public/data/` is
 temporarily gitignored until the owner approves the output, and the deploy workflow is
 manual-only.
@@ -307,7 +307,7 @@ applied by `20_analysis/70_category.sql`.)
 | `other_public` | other public bodies (sewerage, lake districts) and accessible | owner label | yes (toggle) |
 | `private_public_access` | privately owned with public access (e.g. Edgewood condos) | owner label | toggle |
 | `public_no_access` | publicly owned, no public access | owner label + reason (barrier, no land route, facility, institutional grounds) | no |
-| `private` | privately owned, no public access | `Private` only | no |
+| `private` | privately owned, no public access | `Private`, `Condo / HOA`, `Church` (no individual owners) | no |
 | `unknown` | owner or access not yet determined | what is known | reported separately |
 
 Which categories count as public access is a site setting (presets plus toggles).
@@ -339,6 +339,11 @@ Each segment also carries `access_source`, which records which layer set the sta
    access source included (it isn't a source of its own).
 7. **Manual overrides** (`config/access_overrides.csv`) always win. Each row has a note
    explaining the reason.
+
+Each layer records the kind of evidence and its name (park, trail, street).
+`config/access_display.csv` turns them into the text the map shows: an access label
+("Open to the public", "None" for private shore) and a reason ("Park: Olin Park",
+"Public path").
 
 **Public trust doctrine:** in Wisconsin, the beds of navigable waters are held in trust
 for the public. The site needs a short methodology note explaining that "no access from
@@ -446,9 +451,9 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
    - **Unknowns:** shrink the 83 km of `unknown` access, municipality by municipality,
      with `access_overrides.csv` for hand fixes.
    - Re-check the 15 m snap tolerance on dense shores (Mendota, Monona).
-5. **Segment cleanup.** Merge adjacent segments with the same category; all adjacent
-   private shore becomes one run, whatever the owner. Public categories also match on
-   owner label.
+5. ✅ **Segment cleanup.** Adjacent segments merge into runs (`90_merge.sql`) when
+   category, municipality, owner label, and access source and note match. Private
+   shore keeps its labels (Condo / HOA, Church) rather than becoming one run.
 6. **Scorecard on the site.** Interactive tables and charts computed in the browser from
    user-chosen numerators and denominators (e.g. "open shore ÷ all shore", "provided by the
    municipality ÷ all shore", lakes only), plus default reports with preset choices. The
@@ -466,6 +471,19 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-18: Access wording comes from data (`config/access_display.csv`), not the
+  site: e.g. private shore reads "None", OSM `nature_reserve` reads "Nature area: …",
+  unnamed footways/cycleways read "Public path". Runs split where the park (or trail,
+  street) changes. "Private (owner withheld)" is relabeled "Private" (merges with its
+  neighbors). Unknown-owner shore that OSM marks open, and all private-with-public-access
+  shore, go to the review list.
+- 2026-10-18: Segments merge into runs for the map and stats (milestone 5): adjacent
+  segments with the same category, municipality, narrow flag, owner class and label,
+  and access source and reason. Private keeps its labels, so Condo / HOA and Church
+  stay visible (supersedes "adjacent private segments merged regardless of
+  owner"). Centerline runs under 10 m take the run before them (499 pieces were under
+  5 m); the other bank is listed, not part of the key. Banks 3,489 -> 1,822 runs,
+  centerlines 2,198 -> 1,162. Segments stay as the audit layer.
 - 2026-10-18: Unknowns under 10 m between two segments with the same owner class,
   label and known access take theirs (access source and note too), if they're gaps or already share the class (12
   segments, 38 m; map tidying more than a dent in the unknowns). Public strips between
@@ -550,7 +568,8 @@ changes), newest first, with the date and a one-line rationale.
   numerators/denominators plus default reports. Libraries: Observable Plot (charts),
   TanStack Table (tables), plain TypeScript aggregation over a tidy `stats.json`.
 - 2026-10-17: Adjacent private segments will be merged regardless of owner; individual
-  private owners don't matter, only private vs. public and access.
+  private owners don't matter, only private vs. public and access. (Superseded
+  2026-10-18: private runs keep their labels.)
 
 - 2026-10-17: Project goal reframed: a municipal scorecard of public water access, not a
   guide to access spots. Two measures (any public access; municipality-provided), each as
@@ -559,7 +578,8 @@ changes), newest first, with the date and a one-line rationale.
   path crosses onto them (bridge or causeway). `analysis.islands` records each one.
 
 - 2026-10-17: Owner 'NOT AVAILABLE' (name withheld; 25,034 parcels, 11% of the county)
-  is `private`, label "Private (owner withheld)". Along the shore they're nearly all
+  is `private`, label "Private" (was "Private (owner withheld)"; relabeled 2026-10-18 so it
+  merges with neighboring private shore). Along the shore they're nearly all
   taxable residential, and none bill to an institutional address.
 - 2026-10-17: Conservation land trusts (Groundswell / Natural Heritage Land Trust, The
   Nature Conservancy, Driftless Area Land Conservancy) are `other_public`, label "Land

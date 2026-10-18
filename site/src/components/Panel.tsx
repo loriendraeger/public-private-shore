@@ -25,15 +25,6 @@ import {
 
 const mode: Mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 
-const ACCESS_SOURCE: Record<string, string> = {
-  default: 'default for this kind of owner',
-  osm: 'OpenStreetMap',
-  path: 'public path to public land',
-  street_end: 'public street end',
-  barrier: 'cut off by a railway',
-  override: 'manual review',
-}
-
 function Legend(): JSX.Element {
   return (
     <ul class="legend">
@@ -117,9 +108,6 @@ function SegmentDetails(): JSX.Element {
       fallback={<p class="hint">Click a stretch of shoreline for details.</p>}
     >
       {(s) => {
-        function access(): (typeof ACCESS)[keyof typeof ACCESS] {
-          return ACCESS[s().access]
-        }
         return (
           <dl class="details">
             <dt>Category</dt>
@@ -142,12 +130,12 @@ function SegmentDetails(): JSX.Element {
               </Show>
             </dd>
             <dt>Access</dt>
+            {/* Label and reason come from the data (config/access_display.csv). */}
             <dd>
-              <span aria-hidden="true">{access().icon}</span> {access().label}
-              <div class="muted">
-                via {ACCESS_SOURCE[s().access_source] ?? s().access_source}
-                <Show when={s().access_note}>{(note) => ` (${note()})`}</Show>
-              </div>
+              <span aria-hidden="true">{ACCESS[s().access].icon}</span> {s().access_label}
+              <Show when={s().access_reason}>
+                {(reason) => <div class="muted">{reason()}</div>}
+              </Show>
             </dd>
             <dt>Municipality</dt>
             <dd>{s().muni_name}</dd>

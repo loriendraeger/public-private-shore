@@ -28,17 +28,12 @@ JOIN staging.population p USING (muni_id);
 DROP VIEW IF EXISTS export.stats_shore;
 CREATE VIEW export.stats_shore AS
 WITH pieces AS (
-    SELECT s.muni_id, s.waterbody,
-           CASE WHEN sl.water_class = 'pond' THEN 'pond'
-                WHEN s.narrow THEN 'narrow' ELSE 'wide' END AS water_kind,
-           s.category, CASE WHEN s.narrow THEN 0.5 ELSE 1 END * s.length_m AS length_m
-    FROM analysis.shore_segments s
-    JOIN analysis.shoreline sl USING (shore_id)
-    WHERE NOT s.replaced
-    UNION ALL
-    SELECT muni_id, waterbody, CASE WHEN water_class = 'pond' THEN 'pond' ELSE 'narrow' END,
-           category, length_m
-    FROM analysis.stream_segments
+    SELECT muni_id, waterbody,
+           CASE WHEN water_class = 'pond' THEN 'pond'
+                WHEN narrow THEN 'narrow' ELSE 'wide' END AS water_kind,
+           category,
+           CASE WHEN kind = 'bank' AND narrow THEN 0.5 ELSE 1 END * length_m AS length_m
+    FROM analysis.shore_runs
 )
 SELECT muni_id, waterbody, water_kind, category,
        round(sum(length_m)::numeric, 1)::float AS length_m

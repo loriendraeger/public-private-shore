@@ -1,15 +1,21 @@
 -- Access status per segment, in layers; each later layer overrides the earlier ones.
--- access_source records which layer set the final value.
+-- access_source records which layer set the final value; access_kind (park,
+-- nature_reserve, path, street_end, railway, override, ...) and access_name (the park,
+-- trail or street, if named; the note, for overrides) record why. At the end,
+-- config/access_display.csv turns them into the text the map shows (access_label,
+-- access_reason).
 --   1. default    config/access_defaults.csv, by ownership class
 --   2. osm        config/access_osm.csv, by OSM feature category near the segment
 --   3. path       a public footpath or cycleway reaches public land that is still unknown
 --   4. street_end road right-of-way that meets the water
 --   5. barrier    a railway cuts open or unknown shore off from the land
 --   6. (fill)     a short unknown between two matching segments takes theirs,
---                 source and note included
+--                 source, kind and name included
 --   7. override   config/access_overrides.csv, hand-curated; always wins
+--   8. display    access_label + access_reason from config/access_display.csv
 
-DROP TABLE IF EXISTS analysis.access_defaults, analysis.access_osm, analysis.access_overrides;
+DROP TABLE IF EXISTS analysis.access_defaults, analysis.access_osm, analysis.access_overrides,
+    analysis.access_display;
 CREATE TABLE analysis.access_defaults (class text PRIMARY KEY, access text NOT NULL, note text);
 CREATE TABLE analysis.access_osm (category text PRIMARY KEY, access text NOT NULL,
                                   private_land text NOT NULL
@@ -19,15 +25,24 @@ CREATE TABLE analysis.access_overrides (lon float, lat float, access text NOT NU
 \copy analysis.access_defaults FROM 'config/access_defaults.csv' WITH (FORMAT csv, HEADER true)
 \copy analysis.access_osm FROM 'config/access_osm.csv' WITH (FORMAT csv, HEADER true)
 \copy analysis.access_overrides FROM 'config/access_overrides.csv' WITH (FORMAT csv, HEADER true)
+CREATE TABLE analysis.access_display (
+    priority int PRIMARY KEY, access text NOT NULL, access_source text NOT NULL,
+    access_kind text NOT NULL, owner_class text NOT NULL,
+    access_label text NOT NULL, reason text, reason_unnamed text, note text);
+\copy analysis.access_display FROM 'config/access_display.csv' WITH (FORMAT csv, HEADER true)
 
 ALTER TABLE analysis.shore_segments
     ADD COLUMN IF NOT EXISTS access text,
     ADD COLUMN IF NOT EXISTS access_source text,
-    ADD COLUMN IF NOT EXISTS access_note text;
+    ADD COLUMN IF NOT EXISTS access_kind text,
+    ADD COLUMN IF NOT EXISTS access_name text,
+    ADD COLUMN IF NOT EXISTS access_label text,
+    ADD COLUMN IF NOT EXISTS access_reason text;
 
 -- 1. Default from class.
 UPDATE analysis.shore_segments s
-SET access = coalesce(d.access, 'unknown'), access_source = 'default', access_note = NULL
+SET access = coalesce(d.access, 'unknown'), access_source = 'default',
+    access_kind = NULL, access_name = NULL
 FROM (SELECT DISTINCT owner_class FROM analysis.shore_segments) c
 LEFT JOIN analysis.access_defaults d ON d.class = c.owner_class
 WHERE s.owner_class = c.owner_class;
@@ -45,7 +60,7 @@ WITH evidence AS (
     SELECT s.segment_id,
            CASE WHEN f.access IN ('no', 'private', 'customers', 'members', 'permit') THEN 'none'
                 ELSE o.access END AS access,
-           f.category || coalesce(': ' || f.name, '') AS why
+           f.category AS kind, f.name
     FROM analysis.shore_segments s
     JOIN staging.osm_access_features f
       ON ST_DWithin(f.geom, s.geom, :access_evidence_distance_m)
@@ -58,12 +73,12 @@ WITH evidence AS (
           >= 0.5 * s.length_m)
 ),
 best AS (
-    SELECT DISTINCT ON (segment_id) segment_id, access, why
+    SELECT DISTINCT ON (segment_id) segment_id, access, kind, name
     FROM evidence
-    ORDER BY segment_id, array_position(ARRAY['open', 'none'], access), why
+    ORDER BY segment_id, array_position(ARRAY['open', 'none'], access), name IS NULL, kind, name
 )
 UPDATE analysis.shore_segments s
-SET access = b.access, access_source = 'osm', access_note = b.why
+SET access = b.access, access_source = 'osm', access_kind = b.kind, access_name = b.name
 FROM best b WHERE b.segment_id = s.segment_id;
 
 -- 3. Shore paths: public land whose access is still unknown is open when a public
@@ -71,10 +86,10 @@ FROM best b WHERE b.segment_id = s.segment_id;
 -- owned land you can walk onto from a public way is public access; facilities that
 -- aren't (utilities, schools) already default to none, so they never get here.
 UPDATE analysis.shore_segments s
-SET access = 'open', access_source = 'path', access_note = 'path: ' || p.why
+SET access = 'open', access_source = 'path', access_kind = 'path', access_name = p.name
 FROM analysis.shore_segments s0
 CROSS JOIN LATERAL (
-    SELECT coalesce(r.name, r.highway) AS why FROM staging.osm_roads r
+    SELECT r.name FROM staging.osm_roads r
     WHERE r.highway IN ('footway', 'path', 'cycleway', 'bridleway', 'pedestrian', 'steps')
       AND coalesce(r.access, '') NOT IN ('no', 'private', 'customers', 'members', 'permit')
       AND ST_DWithin(r.geom, s0.geom, :path_access_distance_m)
@@ -90,8 +105,8 @@ WHERE s.segment_id = s0.segment_id
 -- 4. Street ends: public road right-of-way that meets the water. Wisconsin generally
 -- treats these as public access (some are posted or vacated; use overrides for those).
 UPDATE analysis.shore_segments s
-SET access = 'open', access_source = 'street_end',
-    access_note = (SELECT 'street: ' || coalesce(r.name, r.highway) FROM staging.osm_roads r
+SET access = 'open', access_source = 'street_end', access_kind = 'street_end',
+    access_name = (SELECT r.name FROM staging.osm_roads r
                    WHERE r.is_street AND ST_DWithin(r.geom, s.geom, :row_road_distance_m)
                    ORDER BY r.geom <-> s.geom LIMIT 1)
 WHERE s.owner_class = 'row';
@@ -149,26 +164,27 @@ cut_off AS (
     HAVING avg(blocked::int) > 0.5
 )
 UPDATE analysis.shore_segments s
-SET access = 'none', access_source = 'barrier',
-    access_note = 'railway between the shore and the land'
+SET access = 'none', access_source = 'barrier', access_kind = 'railway', access_name = NULL
 FROM cut_off c
 WHERE s.segment_id = c.segment_id AND s.access_source <> 'override';
 
 -- 6. Short unknowns between matching neighbors (decision 2026-10-18): a segment shorter
 -- than :neighbor_fill_max_m that is still unknown (no owner, or access undecided) takes
 -- the owner class, label and access of the segments at both its ends, when those two
--- agree on all three and are fully known. It also takes their access source and note
+-- agree on all three and are fully known. It also takes their access source, kind and name
 -- (from the start-side neighbor if the two differ): it is part of that same stretch,
 -- not a decision of its own. The short segment must be a gap (no parcel)
 -- or already share their class: a city or town strip between two private lots is often
 -- a public lake-access lot, and must not become private (it goes to manual review).
 WITH ends AS (
-    SELECT s.segment_id, a.owner_class, a.owner_label, a.access, a.access_source, a.access_note,
+    SELECT s.segment_id, a.owner_class, a.owner_label, a.access, a.access_source,
+           a.access_kind, a.access_name,
            b.owner_label AS b_label, b.access AS b_access,
            b.owner_class AS b_owner_class
     FROM analysis.shore_segments s
     CROSS JOIN LATERAL (
-        SELECT n.owner_class, n.owner_label, n.access, n.access_source, n.access_note
+        SELECT n.owner_class, n.owner_label, n.access, n.access_source, n.access_kind,
+               n.access_name
         FROM analysis.shore_segments n
         WHERE n.shore_id = s.shore_id AND n.segment_id <> s.segment_id
           AND ST_DWithin(n.geom, ST_StartPoint(s.geom), 0.5)
@@ -184,7 +200,7 @@ WITH ends AS (
 )
 UPDATE analysis.shore_segments s
 SET owner_class = e.owner_class, owner_label = e.owner_label, access = e.access,
-    access_source = e.access_source, access_note = e.access_note
+    access_source = e.access_source, access_kind = e.access_kind, access_name = e.access_name
 FROM ends e
 WHERE s.segment_id = e.segment_id
   AND e.owner_class = e.b_owner_class AND e.owner_label = e.b_label AND e.access = e.b_access
@@ -192,7 +208,7 @@ WHERE s.segment_id = e.segment_id
 
 -- 7. Manual overrides: each applies to the segment nearest its point, within 20 m.
 UPDATE analysis.shore_segments s
-SET access = o.access, access_source = 'override', access_note = o.note
+SET access = o.access, access_source = 'override', access_kind = 'override', access_name = o.note
 FROM analysis.access_overrides o
 CROSS JOIN LATERAL (
     SELECT segment_id FROM analysis.shore_segments s2
@@ -201,3 +217,22 @@ CROSS JOIN LATERAL (
     LIMIT 1
 ) hit
 WHERE s.segment_id = hit.segment_id;
+
+-- 8. Display text (config/access_display.csv): the first rule, by priority, matching
+-- access, source, kind and owner class ('*' = any) gives the label and the reason line.
+-- {name} in the reason is the access_name; without one, reason_unnamed is used.
+UPDATE analysis.shore_segments s
+SET access_label = d.access_label,
+    access_reason = CASE WHEN s.access_name IS NOT NULL AND coalesce(d.reason, '') <> ''
+                         THEN replace(d.reason, '{name}', s.access_name)
+                         ELSE nullif(d.reason_unnamed, '') END
+FROM analysis.shore_segments s0
+CROSS JOIN LATERAL (
+    SELECT * FROM analysis.access_display r
+    WHERE r.access IN ('*', s0.access)
+      AND r.access_source IN ('*', s0.access_source)
+      AND r.access_kind IN ('*', coalesce(s0.access_kind, ''))
+      AND r.owner_class IN ('*', s0.owner_class)
+    ORDER BY r.priority LIMIT 1
+) d
+WHERE s.segment_id = s0.segment_id;

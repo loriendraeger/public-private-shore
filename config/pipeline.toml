@@ -127,6 +127,11 @@ narrow_min_run_m = 100
 # Half the narrow width plus slack for centerlines that aren't centered.
 stream_bank_distance_m = 25
 
+# Centerline runs shorter than this take the result of the run before them (80_streams.sql):
+# without it, 499 centerline pieces were under 5 m (the better bank flips whenever
+# either bank changes owner). 0 turns it off.
+stream_min_run_m = 10
+
 # When a stream's banks differ, the one earlier in this list wins (access first, then
 # unknown, since unknown may still be open).
 stream_category_priority = ["municipal", "county", "state_federal", "university", "land_trust", "other_public", "private_public_access", "unknown", "public_no_access", "private"]
