@@ -328,10 +328,14 @@ Each segment also carries `access_source`, which records which layer set the sta
    `unknown` and `private` → `none`.
 2. **OSM evidence** overrides the default: `leisure=park`, `leisure=slipway`,
    `leisure=beach_resort`, `natural=beach`, and `access=*` tags on adjacent features.
-3. **Street ends:** public road right-of-way that meets the water counts as `open`
+   On private land only named features (or `access=yes`) count.
+3. **Shore paths:** public land still `unknown` is `open` when a public footway or
+   cycleway reaches it without crossing railway tracks.
+4. **Street ends:** public road right-of-way that meets the water counts as `open`
    (Wisconsin generally treats these as public access; note that some are posted or
    vacated).
-4. **Manual overrides** (`config/access_overrides.csv`) always win. Each row has a note
+5. **Barriers:** open shore cut off from the land by a railway becomes `none`.
+6. **Manual overrides** (`config/access_overrides.csv`) always win. Each row has a note
    explaining the reason.
 
 **Public trust doctrine:** in Wisconsin, the beds of navigable waters are held in trust
@@ -456,6 +460,16 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
+
+- 2026-10-18: Access goal is **zero `unknown`**, by manual review where evidence runs out.
+  Three new evidence rules (milestone 4, first pass): (1) **shore paths**: public land
+  still unknown is open when a public footway/cycleway is within 30 m and not across
+  tracks (33 km; the distances break between 20 and 30 m); (2) **railway barriers**:
+  open shore is `none` where the tracks are within 10 m of it or every public way
+  within 50 m is across them, judged on points every 10 m (3 km, incl. the John
+  Nolen Drive causeway on Monona Bay); a local test, not land-side reachability;
+  (3) on **private land**, OSM parks, reserves, beaches and slipways count only when
+  named (unnamed parks there are mostly HOA greens; 15.2 -> 12.1 km).
 
 - 2026-10-17: Analysis uses scorecard categories (see [Scorecard categories](#scorecard-categories)),
   derived from ownership class + access; owner labels and access reasons are map-only.

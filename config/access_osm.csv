@@ -1,8 +1,8 @@
-category,access,public_only,note
-park,open,false,
-nature_reserve,open,false,"Often has hours (e.g. UW Arboretum); still counted as open"
-beach,open,false,
-swimming,open,false,
-slipway,open,false,Boat launch
-fishing,open,false,
-pier,open,true,"Evidence only on non-private land: private docks don't make private shore accessible"
+category,access,private_land,note
+park,open,named,"On private land only when named (or access=yes/permissive): unnamed parks there are mostly HOA greens"
+nature_reserve,open,named,"Often has hours (e.g. UW Arboretum); still counted as open"
+beach,open,named,
+swimming,open,named,
+slipway,open,named,"Boat launch. Unnamed slipways on private lots are private launches"
+fishing,open,named,
+pier,open,no,"Evidence only on non-private land: private docks don't make private shore accessible"

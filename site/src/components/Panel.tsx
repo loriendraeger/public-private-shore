@@ -27,7 +27,9 @@ const mode: Mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? '
 const ACCESS_SOURCE: Record<string, string> = {
   default: 'default for this kind of owner',
   osm: 'OpenStreetMap',
+  path: 'public path to public land',
   street_end: 'public street end',
+  barrier: 'cut off by a railway',
   override: 'manual review',
 }
 

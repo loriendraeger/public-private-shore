@@ -26,7 +26,7 @@ export type OwnerClass =
 
 export type Access = 'open' | 'none' | 'unknown'
 
-export type AccessSource = 'default' | 'osm' | 'street_end' | 'override'
+export type AccessSource = 'default' | 'osm' | 'path' | 'street_end' | 'barrier' | 'override'
 
 /** Scorecard category (config/categories.csv): the one attribute the analysis uses. */
 export type Category =

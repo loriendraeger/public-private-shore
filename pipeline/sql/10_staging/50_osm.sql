@@ -59,3 +59,13 @@ FROM raw.osm_lines
 WHERE highway IS NOT NULL;
 
 CREATE INDEX ON staging.osm_roads USING gist (geom);
+
+-- Railways: barriers between land and shore (60_access.sql). Active and disused track
+-- only: crossing it on foot is trespassing. Abandoned lines are often trails by now.
+DROP TABLE IF EXISTS staging.osm_railways CASCADE;
+CREATE TABLE staging.osm_railways AS
+SELECT osm_id, name, railway, ST_Transform(geom, :crs)::geometry(LineString, :crs) AS geom
+FROM raw.osm_lines
+WHERE railway IN ('rail', 'disused');
+
+CREATE INDEX ON staging.osm_railways USING gist (geom);
