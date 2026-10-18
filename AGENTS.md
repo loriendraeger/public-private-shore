@@ -471,6 +471,9 @@ changes), newest first, with the date and a one-line rationale.
   lakefront (college + schools), not a residential condo: label "Edgewood (campus common
   land)", private with public access (override). Edgewood College owns no shore itself.
   No other private college owns shore in the study area.
+- 2026-10-18: Short runs are absorbed before segments form: owner and narrow/wide runs
+  under 10 m (`segment_min_run_m`) take their neighbor's value; gaps (possible street
+  ends) are exempt. Segments under 10 m: 496 -> 132; category totals move < 0.5 km.
 - 2026-10-18: The shoreline is simplified and smoothed before anything is measured:
   Visvalingam-Whyatt (10 m²; 1 m² left visible wiggles), densify to 8 m edges,
   Chaikin x2 (`shore_*` in `pipeline.toml`). Removes digitizing jitter and needle spikes

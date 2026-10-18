@@ -64,6 +64,62 @@ SET narrow = coalesce(
     )
 );
 
+-- Absorb short runs (:segment_min_run_m), one pass each. Ring wrap-around is ignored.
+-- 1. Narrow/wide: a short run flips to its neighbors' value.
+WITH runs AS (
+    SELECT shore_id, i, narrow,
+           i - row_number() OVER (PARTITION BY shore_id, narrow ORDER BY i) AS grp
+    FROM analysis.shore_steps
+),
+spans AS (
+    SELECT shore_id, narrow, grp, min(i) AS i0, max(i) AS i1, count(*) AS n
+    FROM runs GROUP BY 1, 2, 3
+),
+o AS (
+    SELECT *, count(*) OVER (PARTITION BY shore_id) AS runs_on_line FROM spans
+)
+UPDATE analysis.shore_steps st
+SET narrow = NOT o.narrow
+FROM o
+WHERE o.shore_id = st.shore_id AND st.i BETWEEN o.i0 AND o.i1
+  AND o.n * :sample_step_m < :segment_min_run_m AND o.runs_on_line > 1;
+
+-- 2. Owners: a short owned run takes the parcel of the owned run before it (or after
+--    it, at the start of a line). Gaps are never absorbed and never absorb: they may
+--    be street ends, which can be narrower than the threshold.
+WITH keyed AS (
+    SELECT st.shore_id, st.i, st.parcel_id,
+           coalesce(p.owner1, '') || '|' || coalesce(p.muni_id::text, '') AS k
+    FROM analysis.shore_steps st
+    LEFT JOIN analysis.shore_parcels p USING (parcel_id)
+),
+runs AS (
+    SELECT *, i - row_number() OVER (PARTITION BY shore_id, k ORDER BY i) AS grp
+    FROM keyed
+),
+spans AS (
+    SELECT shore_id, k, grp, min(i) AS i0, max(i) AS i1, count(*) AS n,
+           bool_and(parcel_id IS NULL) AS is_gap, min(parcel_id) AS pid
+    FROM runs GROUP BY 1, 2, 3
+),
+o AS (
+    SELECT *, lag(pid) OVER w AS prev_pid, lag(is_gap) OVER w AS prev_gap,
+              lead(pid) OVER w AS next_pid, lead(is_gap) OVER w AS next_gap
+    FROM spans
+    WINDOW w AS (PARTITION BY shore_id ORDER BY i0)
+),
+fix AS (
+    SELECT shore_id, i0, i1,
+           CASE WHEN prev_gap IS FALSE THEN prev_pid
+                WHEN next_gap IS FALSE THEN next_pid END AS new_pid
+    FROM o
+    WHERE NOT is_gap AND n * :sample_step_m < :segment_min_run_m
+)
+UPDATE analysis.shore_steps st
+SET parcel_id = f.new_pid
+FROM fix f
+WHERE f.shore_id = st.shore_id AND st.i BETWEEN f.i0 AND f.i1 AND f.new_pid IS NOT NULL;
+
 -- Gaps-and-islands: consecutive steps with the same key form one run.
 DROP TABLE IF EXISTS analysis.shore_segments CASCADE;
 CREATE TABLE analysis.shore_segments AS

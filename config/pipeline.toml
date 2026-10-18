@@ -62,6 +62,12 @@ snap_tolerance_m = 15
 # nearest parcel within snap_tolerance_m. Segment ends are accurate to about this much.
 sample_step_m = 1
 
+# Absorb short runs (30_shore_segments.sql): an owner or narrow/wide run of 1 m steps
+# shorter than this takes its neighbor's value, so a parcel corner poking within the
+# snap tolerance for 3 m, or a 2 m narrow blip at a pond inlet, doesn't become its own
+# segment. Gaps (no parcel) are exempt: they may be street ends, which can be short.
+segment_min_run_m = 10
+
 # Unparceled shoreline (a gap) is road right-of-way when an OSM road is this close;
 # otherwise it's unknown. The Wingra NE-corner gap reaches 37 m from parcels, with
 # roads/paths within 25 m.
