@@ -36,6 +36,22 @@ crs = 3071
 #   the pipeline judging which ponds "matter". Smaller unnamed water is out.
 pond_min_area_m2 = 10000
 
+# Shoreline smoothing (20_analysis/20_shoreline.sql), before anything is measured:
+# 1. Visvalingam-Whyatt simplification drops vertices whose triangle with their
+#    neighbors is smaller than shore_simplify_area_m2: digitizing jitter (Tiedeman Pond
+#    has a vertex every 0.9 m) and thin needle spikes.
+# 2. ST_Segmentize to edges of at most shore_smooth_max_edge_m, so step 3 can't cut a
+#    long straight edge's corner by more than about a quarter of this.
+# 3. Chaikin corner cutting, shore_smooth_iterations passes (each replaces every corner
+#    with points 1/4 and 3/4 along its edges).
+# Tested 2026-10-18 (relative to the raw lines): 1 m2 left visible 3-5 m wiggles on
+# Tiedeman Pond's marsh edge. 10 m2: total shore 750 -> 735 km (-2%), half the lines
+# move < 2 m, 99% < 8 m, max 13 m (inside snap_tolerance_m). 20 m2 moved 1% of lines
+# 15 m+, erasing small coves.
+shore_simplify_area_m2 = 10
+shore_smooth_max_edge_m = 8
+shore_smooth_iterations = 2
+
 # Max distance (m) between a shoreline and a parcel for that parcel to "own" it.
 # Wingra (2026-10-17): 15 m is the smallest value that closes every small-inlet gap
 # (max 13 m), while the real ROW gap at the NE corner stays (117 m at 5, 81 at 15,

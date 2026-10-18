@@ -471,6 +471,12 @@ changes), newest first, with the date and a one-line rationale.
   lakefront (college + schools), not a residential condo: label "Edgewood (campus common
   land)", private with public access (override). Edgewood College owns no shore itself.
   No other private college owns shore in the study area.
+- 2026-10-18: The shoreline is simplified and smoothed before anything is measured:
+  Visvalingam-Whyatt (10 m²; 1 m² left visible wiggles), densify to 8 m edges,
+  Chaikin x2 (`shore_*` in `pipeline.toml`). Removes digitizing jitter and needle spikes
+  (Tiedeman Pond's marsh edge had a vertex every 0.9 m); total shore 750 -> 735 km (-2%),
+  99% of lines move < 8 m (inside the 15 m snap tolerance); unparceled gaps didn't grow. Done in the
+  analysis, not just the tiles, so the map and the numbers agree.
 - 2026-10-18: Water in scope = named water (county or DNR name, any size, plus unnamed
   pieces of it that OSM names) and **ponds**: standalone water of at least 1 ha
   (`pond_min_area_m2`) the county and DNR don't name, labeled with the OSM name or

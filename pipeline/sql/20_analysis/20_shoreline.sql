@@ -11,6 +11,9 @@
 --    it. A small buffer absorbs floating-point noise from the union; where two named
 --    waterbodies meet (a river entering a lake) up to ~1 m is counted for both.
 -- 3. Clip to the study area.
+-- 4. Simplify and smooth (pipeline.toml shore_*): Visvalingam-Whyatt, densify, Chaikin,
+--    then a tiny simplify to drop the collinear points the densifying left on straight
+--    runs. Everything downstream (segments, lengths, the map) uses the smoothed line.
 --
 -- Islands (holes in the unioned water) are excluded: you need a boat to reach them, and
 -- this is about access from land. Exception: islands an OSM road or path crosses onto
@@ -90,6 +93,17 @@ lines AS (
            )))).geom AS geom
     FROM waterbodies wb
     JOIN boundary b ON ST_Intersects(b.geom, wb.zone)
+),
+smoothed AS (
+    SELECT name, wbic, water_class,
+           ST_SimplifyVW(
+               ST_ChaikinSmoothing(
+                   ST_Segmentize(ST_SimplifyVW(geom, :shore_simplify_area_m2),
+                                 :shore_smooth_max_edge_m),
+                   :shore_smooth_iterations),
+               0.01) AS geom
+    FROM lines
+    WHERE ST_GeometryType(geom) = 'ST_LineString'
 )
 SELECT
     row_number() OVER () AS shore_id,
@@ -97,7 +111,7 @@ SELECT
     wbic,
     water_class,
     geom::geometry(LineString, :crs) AS geom
-FROM lines
+FROM smoothed
 WHERE ST_GeometryType(geom) = 'ST_LineString'
   AND ST_Length(geom) > :sample_step_m;   -- slivers from the buffer intersection
 
