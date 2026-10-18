@@ -13,8 +13,12 @@
 -- Centerlines (analysis.stream_segments, 80_streams.sql) are already runs of the same
 -- result; they're copied as they are, with ids offset by 10,000,000.
 --
+-- Exclusions (config/shore_exclusions.csv, decision 2026-10-18): runs on a listed
+-- waterbody with a listed owner class leave the analysis (map and stats) and move to
+-- analysis.excluded_runs. Hook Lake's unparceled bog edges are the case.
+--
 -- Invariant, checked at the end: length per municipality x category x water kind is the
--- same before and after.
+-- same before and after (runs + excluded runs).
 
 DROP TABLE IF EXISTS analysis.shore_runs CASCADE;
 CREATE TABLE analysis.shore_runs AS
@@ -89,6 +93,15 @@ SELECT
     bank_segment_ids, geom
 FROM analysis.stream_segments;
 
+DROP TABLE IF EXISTS analysis.shore_exclusions, analysis.excluded_runs;
+CREATE TABLE analysis.shore_exclusions (waterbody text NOT NULL, owner_class text NOT NULL, note text);
+\copy analysis.shore_exclusions FROM 'config/shore_exclusions.csv' WITH (FORMAT csv, HEADER true)
+CREATE TABLE analysis.excluded_runs AS
+SELECT r.*, e.note AS excluded_because FROM analysis.shore_runs r
+JOIN analysis.shore_exclusions e ON e.waterbody = r.waterbody AND e.owner_class = r.owner_class;
+DELETE FROM analysis.shore_runs r USING analysis.shore_exclusions e
+WHERE e.waterbody = r.waterbody AND e.owner_class = r.owner_class;
+
 ALTER TABLE analysis.shore_runs ADD PRIMARY KEY (run_id);
 ALTER TABLE analysis.shore_runs ADD COLUMN length_m double precision
     GENERATED ALWAYS AS (ST_Length(geom)) STORED;
@@ -106,8 +119,11 @@ BEGIN
         FROM analysis.stream_segments GROUP BY 2, 3
     ),
     after AS (
-        SELECT kind, muni_id, category, narrow, sum(length_m) AS m
-        FROM analysis.shore_runs GROUP BY 1, 2, 3, 4
+        SELECT kind, muni_id, category, narrow, sum(m) AS m FROM (
+            SELECT kind, muni_id, category, narrow, length_m AS m FROM analysis.shore_runs
+            UNION ALL
+            SELECT kind, muni_id, category, narrow, ST_Length(geom) FROM analysis.excluded_runs
+        ) x GROUP BY 1, 2, 3, 4
     )
     SELECT count(*) INTO bad
     FROM before b FULL JOIN after a USING (kind, muni_id, category, narrow)

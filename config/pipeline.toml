@@ -76,6 +76,10 @@ row_road_distance_m = 30
 # OSM access evidence (parks, beaches, slipways, ...) applies to segments this close.
 access_evidence_distance_m = 15
 
+# Public land (or a parcel gap) still unknown is open when an OSM park or nature reserve is
+# this close, even if it doesn't cover half the segment (60_access.sql, step 3c).
+nearby_evidence_m = 50
+
 # Public land with unknown access is open when a public footpath or cycleway is this
 # close. Unknown public shore (2026-10-18): 25.6 km has a path within 10 m, 7.2 km at
 # 10-20 m and only 1.6 km at 20-30 m, then 8 km at 30-50 m (paths behind houses or

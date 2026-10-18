@@ -1,0 +1,11 @@
+priority,pattern,access,reason,note
+10,CORRECTIONS,none,Correctional facility grounds,"WI Dept of Corrections (4.6 km undecided on 2026-10-18)"
+20,GOLF,none,Golf course,"Before PARKS: 'CITY OF MADISON PARKS ... GOLF COURSE'"
+30,WASTE,none,County landfill,Dane County Waste & Renewables
+40,HUMANE SOCIETY,none,Animal shelter grounds,
+50,\mDOT\M|WISDOT|WSOR,none,Highway or rail corridor,"WisDOT, Wisconsin & Southern Railroad"
+60,REDEVELOPMENT|\mREDA\M,none,"Redevelopment land, not open","Stoughton Redevelopment Authority, UW Real Estate (REDA)"
+70,STORMWATER,none,Stormwater facility,"City of Madison Engineering stormwater utility; consistent with the reviewed Town of Dunn ponds"
+80,\mWI DNR\M|NATURAL RESOURCES,open,State natural resources land (DNR),DNR land is open to the public unless posted
+90,FISH & WILDLIFE,open,US Fish & Wildlife land,Waterfowl production areas are open to the public
+100,PARKS|PARK COMM,open,Park land,"City or county parks the OSM park outline misses"

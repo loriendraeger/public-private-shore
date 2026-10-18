@@ -7,15 +7,19 @@
 --   1. default    config/access_defaults.csv, by ownership class
 --   2. osm        config/access_osm.csv, by OSM feature category near the segment
 --   3. path       a public footpath or cycleway reaches public land that is still unknown
+--   3b. owner     the parcel owner's name says it (config/access_owner_rules.csv): DNR land,
+--                 parks -> open; prisons, golf courses, stormwater, highways -> none
+--   3c. nearby    public land (or a parcel gap) next to an OSM park or nature area
 --   4. street_end road right-of-way that meets the water
 --   5. barrier    a railway cuts open or unknown shore off from the land
 --   6. (fill)     a short unknown between two matching segments takes theirs,
 --                 source, kind and name included
+--   6b. no_evidence  anything still unknown: nothing public reaches it -> none
 --   7. override   config/access_overrides.csv, hand-curated; always wins
 --   8. display    access_label + access_reason from config/access_display.csv
 
 DROP TABLE IF EXISTS analysis.access_defaults, analysis.access_osm, analysis.access_overrides,
-    analysis.access_display;
+    analysis.access_display, analysis.access_owner_rules;
 CREATE TABLE analysis.access_defaults (class text PRIMARY KEY, access text NOT NULL, note text);
 CREATE TABLE analysis.access_osm (category text PRIMARY KEY, access text NOT NULL,
                                   private_land text NOT NULL
@@ -30,6 +34,10 @@ CREATE TABLE analysis.access_display (
     access_kind text NOT NULL, owner_class text NOT NULL,
     access_label text NOT NULL, reason text, reason_unnamed text, note text);
 \copy analysis.access_display FROM 'config/access_display.csv' WITH (FORMAT csv, HEADER true)
+CREATE TABLE analysis.access_owner_rules (
+    priority int PRIMARY KEY, pattern text NOT NULL, access text NOT NULL,
+    reason text NOT NULL, note text);
+\copy analysis.access_owner_rules FROM 'config/access_owner_rules.csv' WITH (FORMAT csv, HEADER true)
 
 ALTER TABLE analysis.shore_segments
     ADD COLUMN IF NOT EXISTS access text,
@@ -101,6 +109,36 @@ CROSS JOIN LATERAL (
 ) p
 WHERE s.segment_id = s0.segment_id
   AND s0.access = 'unknown' AND s0.owner_class NOT IN ('private', 'unknown');
+
+-- 3b. Owner names (decision 2026-10-18): where access is still unknown, the first rule
+-- (by priority) whose regex matches the parcel owner's raw name decides. The reason is a
+-- curated label ("Golf course", "State natural resources land (DNR)"), never the raw
+-- name, which stays in the database.
+UPDATE analysis.shore_segments s
+SET access = r.access, access_source = 'owner', access_kind = 'owner', access_name = r.reason
+FROM analysis.shore_segments s0
+CROSS JOIN LATERAL (
+    SELECT * FROM analysis.access_owner_rules r
+    WHERE s0.owner1 ~* r.pattern ORDER BY r.priority LIMIT 1
+) r
+WHERE s.segment_id = s0.segment_id AND s0.access = 'unknown' AND s0.owner1 IS NOT NULL;
+
+-- 3c. Next to a park or nature area (decision 2026-10-18): public land, or shore with
+-- no parcel, still unknown, within :nearby_evidence_m of an OSM park or nature reserve
+-- is open: the step-2 rule wants the feature to cover half the segment, which misses
+-- park land the OSM outline stops just short of (Mandt Park, Cherokee Marsh units).
+UPDATE analysis.shore_segments s
+SET access = 'open', access_source = 'nearby', access_kind = 'nearby', access_name = f.name
+FROM analysis.shore_segments s0
+CROSS JOIN LATERAL (
+    SELECT f.name FROM staging.osm_access_features f
+    WHERE f.category IN ('park', 'nature_reserve')
+      AND coalesce(f.access, '') NOT IN ('no', 'private', 'customers', 'members', 'permit')
+      AND ST_DWithin(f.geom, s0.geom, :nearby_evidence_m)
+    ORDER BY f.name IS NULL, f.geom <-> s0.geom LIMIT 1
+) f
+WHERE s.segment_id = s0.segment_id
+  AND s0.access = 'unknown' AND s0.owner_class <> 'private';
 
 -- 4. Street ends: public road right-of-way that meets the water. Wisconsin generally
 -- treats these as public access (some are posted or vacated; use overrides for those).
@@ -205,6 +243,13 @@ FROM ends e
 WHERE s.segment_id = e.segment_id
   AND e.owner_class = e.b_owner_class AND e.owner_label = e.b_label AND e.access = e.b_access
   AND e.owner_class <> 'unknown' AND e.access <> 'unknown';
+
+-- 6b. No evidence (decision 2026-10-18: zero unknowns): whatever is still unknown has no
+-- park, path, street end, owner signal or neighbor that makes it public -> none. The
+-- long ones go to the review list.
+UPDATE analysis.shore_segments
+SET access = 'none', access_source = 'no_evidence', access_kind = NULL, access_name = NULL
+WHERE access = 'unknown';
 
 -- 7. Manual overrides: each applies to the segment nearest its point, within 20 m.
 UPDATE analysis.shore_segments s

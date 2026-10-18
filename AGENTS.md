@@ -335,8 +335,12 @@ Each segment also carries `access_source`, which records which layer set the sta
    (Wisconsin generally treats these as public access; note that some are posted or
    vacated).
 5. **Barriers:** open or unknown shore cut off from the land by a railway becomes `none`.
+3b. **Owner names:** `config/access_owner_rules.csv` (DNR, parks → open; prisons, golf,
+   stormwater, highways → none).
+3c. **Next to a park:** public land within 50 m of an OSM park or nature area → open.
 6. **Short gaps:** a short unknown between two matching, known segments takes theirs,
    access source included (it isn't a source of its own).
+6b. **No evidence:** anything still unknown → none (nothing public reaches it).
 7. **Manual overrides** (`config/access_overrides.csv`) always win. Each row has a note
    explaining the reason.
 
@@ -471,6 +475,19 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-18: **Zero unknowns.** Hook Lake's unparceled bog edges (12.4 km) are left out
+  of the analysis (`config/shore_exclusions.csv`). The rest is decided by rules, then
+  spot-checked: owner-name rules (`config/access_owner_rules.csv`: DNR, US Fish &
+  Wildlife, parks open; Corrections, golf, stormwater, landfill, Humane Society,
+  WisDOT/rail, redevelopment none), "next to a park" (public land within 50 m of an
+  OSM park or nature area is open), and "no evidence" (anything left is none).
+  Unknown-owner shore counts as other public when open, private when not. Private
+  land with public access was reviewed and confirmed. The review list now holds the
+  25 biggest or least certain automatic decisions.
+- 2026-10-18: Public strips between private lots reviewed: all private except Stoughton's
+  Yahara strip (overrides).
+- 2026-10-18: Railway barriers reviewed on the map: all correct (15 runs, 2.2 km).
+  They leave the review list.
 - 2026-10-18: Access wording comes from data (`config/access_display.csv`), not the
   site: e.g. private shore reads "None", OSM `nature_reserve` reads "Nature area: …",
   unnamed footways/cycleways read "Public path". Runs split where the park (or trail,

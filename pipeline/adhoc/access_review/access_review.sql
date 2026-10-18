@@ -1,38 +1,40 @@
 -- AD HOC (not part of the pipeline). Run with ./review.sh.
--- Access review list as Markdown: every segment the map shows that needs a human look
--- (railway barriers, to confirm; short public strips between private lots, which are
--- often public lake-access lots; private land with public access, to confirm; shore with
--- no known owner that OSM marks open; other unknown access or category, to decide),
--- each with a
--- link to the site framed on it (bbox + seg) and a Google Maps satellite link.
--- Reads export.shore, so segment ids are the ones the map draws. They change on every
--- pipeline run: regenerate the list after rerunning the pipeline.
+-- Access review list as Markdown: the automatic decisions most worth a human look, each
+-- with a link to the site framed on it (bbox + seg) and a Google Maps satellite link.
+-- Kept to ~25 rows (decision 2026-10-18); thresholds below.
+--   1. no_evidence runs >= 150 m: nothing public found, set to no access
+--   2. owner-name rules that said no access, runs >= 800 m
+--   3. shore with no parcel, opened because it's next to a park, runs >= 300 m
+--   0. anything still unknown (should be none)
+-- Earlier rounds (railway barriers; public strips between private lots; private land
+-- with public access) were reviewed 2026-10-18 and aren't listed.
+-- Reads export.shore, so ids are the ones the map draws. They change when segmentation
+-- changes: regenerate the list after rerunning the pipeline.
 WITH items AS (
     SELECT
         s.segment_id, s.kind, s.muni_name, s.waterbody, s.owner_label, s.owner_class,
         s.category, s.access, s.access_source, s.access_reason, s.length_m,
-        CASE WHEN s.access_source = 'barrier' THEN '1. Railway barriers (confirm)'
-             WHEN nb.between_private THEN '2. Public strips between private lots (lake access?)'
-             WHEN s.category = 'private_public_access' THEN '3. Private land with public access (confirm)'
-             WHEN s.owner_class = 'unknown' AND s.access = 'open' THEN '4. Unknown owner, open per OpenStreetMap (who owns it?)'
-             ELSE '5. Unknown (decide)' END AS section,
+        CASE WHEN s.access = 'unknown' OR s.category = 'unknown' THEN '0. Still unknown'
+             WHEN s.access_source = 'no_evidence' THEN '1. Nothing public found, set to no access (check)'
+             WHEN s.access_source = 'owner' AND s.access = 'none' THEN '2. Owner name says no access, large (check)'
+             ELSE '3. No parcel, open because it is next to a park (check)' END AS section,
         ST_Transform(ST_Expand(ST_Transform(s.geom, :crs), 100), 4326) AS box,
-        ST_ClosestPoint(s.geom, ST_Centroid(s.geom)) AS mid
+        ST_ClosestPoint(s.geom, ST_Centroid(s.geom)) AS mid,
+        concat_ws('; ',
+            (SELECT 'path ' || round(min(ST_Distance(x.geom, ST_Transform(s.geom, :crs)))) || ' m'
+             FROM staging.osm_roads x
+             WHERE x.highway IN ('footway', 'path', 'cycleway', 'bridleway', 'pedestrian', 'steps')
+               AND ST_DWithin(x.geom, ST_Transform(s.geom, :crs), 150)),
+            (SELECT coalesce(f.name, f.category) || ' ' || round(ST_Distance(f.geom, ST_Transform(s.geom, :crs))) || ' m'
+             FROM staging.osm_access_features f
+             WHERE f.category IN ('park', 'nature_reserve')
+               AND ST_DWithin(f.geom, ST_Transform(s.geom, :crs), 150)
+             ORDER BY f.geom <-> ST_Transform(s.geom, :crs) LIMIT 1)) AS hint
     FROM export.shore s
-    -- export.shore's segment_id is the run id. Public land under 50 m whose neighbors at
-    -- both ends are private.
-    LEFT JOIN LATERAL (
-        SELECT b.length_m < 50 AND b.owner_class NOT IN ('private', 'unknown', 'row')
-               AND (SELECT count(*) FROM analysis.shore_runs n
-                    WHERE n.shore_id = b.shore_id AND n.run_id <> b.run_id
-                      AND n.owner_class = 'private'
-                      AND (ST_DWithin(n.geom, ST_StartPoint(b.geom), 0.5)
-                           OR ST_DWithin(n.geom, ST_EndPoint(b.geom), 0.5))) >= 2 AS between_private
-        FROM analysis.shore_runs b
-        WHERE b.kind = 'bank' AND b.run_id = s.segment_id
-    ) nb ON true
-    WHERE s.access_source = 'barrier' OR s.access = 'unknown' OR s.category = 'unknown'
-       OR s.category = 'private_public_access'
+    WHERE s.access = 'unknown' OR s.category = 'unknown'
+       OR (s.access_source = 'no_evidence' AND s.length_m >= 150)
+       OR (s.access_source = 'owner' AND s.access = 'none' AND s.length_m >= 800)
+       OR (s.access_source = 'nearby' AND s.owner_class = 'unknown' AND s.length_m >= 300)
 ),
 lines AS (
     SELECT section, muni_name, length_m,
@@ -41,7 +43,8 @@ lines AS (
             coalesce(waterbody, ''),
             coalesce(owner_label, '') || ' (' || owner_class || ')',
             access || coalesce(' / ' || access_source, ''),
-            coalesce(replace(access_reason, '|', '/'), '') || CASE WHEN kind = 'stream' THEN ' [centerline]' ELSE '' END,
+            coalesce(replace(access_reason, '|', '/'), '') || CASE WHEN kind = 'stream' THEN ' [centerline]' ELSE '' END
+                || CASE WHEN hint <> '' THEN ' (nearest: ' || replace(hint, '|', '/') || ')' ELSE '' END,
             round(length_m),
             :'site',
             round(ST_XMin(box)::numeric, 4), round(ST_YMin(box)::numeric, 4),

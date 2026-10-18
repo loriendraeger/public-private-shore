@@ -21,3 +21,5 @@ land_trust,none,public_no_access,
 other_public,none,public_no_access,
 utility,none,public_no_access,
 school_district,none,public_no_access,
+unknown,open,other_public,"No parcel, but next to or inside a park or nature area (decision 2026-10-18)"
+unknown,none,private,"No parcel and nothing public reaches it: counted with private (decision 2026-10-18)"
