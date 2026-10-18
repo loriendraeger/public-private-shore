@@ -216,20 +216,24 @@ export default function MapView(): JSX.Element {
         m.on('mouseenter', `${id}-hit`, () => (m.getCanvas().style.cursor = 'pointer'))
         m.on('mouseleave', `${id}-hit`, () => (m.getCanvas().style.cursor = ''))
       }
-      m.addLayer({
-        id: 'selected',
-        type: 'line',
-        source: 'shore',
-        'source-layer': SHORE_LAYER,
-        filter: ['==', ['get', 'segment_id'], -1],
-        layout: { 'line-cap': 'round' },
-        paint: {
-          'line-color': mode === 'dark' ? '#f0efec' : '#0b0b0b',
-          'line-width': 2,
-          // Outline just outside the shore line, at every zoom.
-          'line-gap-width': ['interpolate', ['linear'], ['zoom'], 10, 4, 16, 12],
+      m.addLayer(
+        {
+          id: 'selected',
+          type: 'line',
+          source: 'shore',
+          'source-layer': SHORE_LAYER,
+          filter: ['==', ['get', 'segment_id'], -1],
+          layout: { 'line-cap': 'round', 'line-join': 'round' },
+          paint: {
+            'line-color': mode === 'dark' ? '#f0efec' : '#0b0b0b',
+            // A dark casing a little wider than the shore line (3 -> 10 px), drawn under
+            // it. Not an offset outline (line-gap-width): offsetting a wiggly line to
+            // both sides makes loops wherever it bends tighter than the offset.
+            'line-width': ['interpolate', ['linear'], ['zoom'], 10, 7, 16, 16],
+          },
         },
-      })
+        'shore',
+      )
 
       m.addLayer({
         id: 'muni-labels',
