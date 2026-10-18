@@ -5,6 +5,7 @@ CREATE TABLE staging.parcels AS
 SELECT
     fid AS parcel_id,
     parcelid AS source_parcel_id,
+    stateid,            -- statewide parcel id: stable across reruns and V-series releases
     upper(trim(ownernme1)) AS owner1,
     nullif(upper(trim(ownernme2)), '') AS owner2,
     placename,          -- municipality the parcel lies in, e.g. 'VILLAGE OF MAPLE BLUFF'
@@ -15,3 +16,4 @@ FROM raw.parcels;
 
 ALTER TABLE staging.parcels ADD PRIMARY KEY (parcel_id);
 CREATE INDEX ON staging.parcels USING gist (geom);
+CREATE INDEX ON staging.parcels (stateid);

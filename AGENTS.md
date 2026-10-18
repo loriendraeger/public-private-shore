@@ -342,7 +342,8 @@ Each segment also carries `access_source`, which records which layer set the sta
    access source included (it isn't a source of its own).
 6b. **No evidence:** anything still unknown → none (nothing public reaches it).
 7. **Manual overrides** (`config/access_overrides.csv`) always win. Each row has a note
-   explaining the reason.
+   explaining the reason. Rows are keyed by parcel (`stateid`), so they survive
+   resegmentation; they can also set the owner class and label.
 
 Each layer records the kind of evidence and its name (park, trail, street).
 `config/access_display.csv` turns them into the text the map shows: an access label
@@ -475,6 +476,11 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-18: Overrides are keyed by parcel (statewide `stateid`), not by a point on a
+  segment, so snap-tolerance or merge changes can't move them; a point is the fallback
+  for shore with no parcel. Optional owner columns. The 17 point overrides became 16
+  parcel rows; the Sun Prairie one now covers its parcel's whole shore (1.2 km, was
+  already no access).
 - 2026-10-18: **Zero unknowns.** Hook Lake's unparceled bog edges (12.4 km) are left out
   of the analysis (`config/shore_exclusions.csv`). The rest is decided by rules, then
   spot-checked: owner-name rules (`config/access_owner_rules.csv`: DNR, US Fish &

@@ -18,17 +18,15 @@
 --   7. override   config/access_overrides.csv, hand-curated; always wins
 --   8. display    access_label + access_reason from config/access_display.csv
 
-DROP TABLE IF EXISTS analysis.access_defaults, analysis.access_osm, analysis.access_overrides,
+DROP TABLE IF EXISTS analysis.access_defaults, analysis.access_osm,
     analysis.access_display, analysis.access_owner_rules;
 CREATE TABLE analysis.access_defaults (class text PRIMARY KEY, access text NOT NULL, note text);
 CREATE TABLE analysis.access_osm (category text PRIMARY KEY, access text NOT NULL,
                                   private_land text NOT NULL
                                       CHECK (private_land IN ('any', 'named', 'no')),
                                   note text);
-CREATE TABLE analysis.access_overrides (lon float, lat float, access text NOT NULL, note text NOT NULL);
 \copy analysis.access_defaults FROM 'config/access_defaults.csv' WITH (FORMAT csv, HEADER true)
 \copy analysis.access_osm FROM 'config/access_osm.csv' WITH (FORMAT csv, HEADER true)
-\copy analysis.access_overrides FROM 'config/access_overrides.csv' WITH (FORMAT csv, HEADER true)
 CREATE TABLE analysis.access_display (
     priority int PRIMARY KEY, access text NOT NULL, access_source text NOT NULL,
     access_kind text NOT NULL, owner_class text NOT NULL,
@@ -251,17 +249,12 @@ UPDATE analysis.shore_segments
 SET access = 'none', access_source = 'no_evidence', access_kind = NULL, access_name = NULL
 WHERE access = 'unknown';
 
--- 7. Manual overrides: each applies to the segment nearest its point, within 20 m.
+-- 7. Manual overrides (config/access_overrides.csv; loaded and matched to segments in
+-- 40_classify.sql, by parcel): rows that set an access always win.
 UPDATE analysis.shore_segments s
 SET access = o.access, access_source = 'override', access_kind = 'override', access_name = o.note
-FROM analysis.access_overrides o
-CROSS JOIN LATERAL (
-    SELECT segment_id FROM analysis.shore_segments s2
-    WHERE ST_DWithin(s2.geom, ST_Transform(ST_SetSRID(ST_MakePoint(o.lon, o.lat), 4326), :crs), 20)
-    ORDER BY s2.geom <-> ST_Transform(ST_SetSRID(ST_MakePoint(o.lon, o.lat), 4326), :crs)
-    LIMIT 1
-) hit
-WHERE s.segment_id = hit.segment_id;
+FROM analysis.override_targets t JOIN analysis.overrides o USING (override_id)
+WHERE s.segment_id = t.segment_id AND o.access IS NOT NULL;
 
 -- 8. Display text (config/access_display.csv): the first rule, by priority, matching
 -- access, source, kind and owner class ('*' = any) gives the label and the reason line.
