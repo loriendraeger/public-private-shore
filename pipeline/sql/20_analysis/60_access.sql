@@ -140,12 +140,21 @@ WHERE s.segment_id = s0.segment_id
 
 -- 4. Street ends: public road right-of-way that meets the water. Wisconsin generally
 -- treats these as public access (some are posted or vacated; use overrides for those).
+-- Highways are the exception (decision 2026-10-18): right-of-way of a numbered route
+-- (OSM ref: interstate, US, state or county trunk highway), mostly where it bridges a
+-- creek or the Yahara, is public land with no access from land.
 UPDATE analysis.shore_segments s
-SET access = 'open', access_source = 'street_end', access_kind = 'street_end',
-    access_name = (SELECT r.name FROM staging.osm_roads r
-                   WHERE r.is_street AND ST_DWithin(r.geom, s.geom, :row_road_distance_m)
-                   ORDER BY r.geom <-> s.geom LIMIT 1)
-WHERE s.owner_class = 'row';
+SET access = CASE WHEN r.ref IS NULL THEN 'open' ELSE 'none' END,
+    access_source = 'street_end',
+    access_kind = CASE WHEN r.ref IS NULL THEN 'street_end' ELSE 'highway' END,
+    access_name = CASE WHEN r.ref IS NULL THEN r.name ELSE coalesce(r.name || ' (' || r.ref || ')', r.ref) END
+FROM analysis.shore_segments s0
+LEFT JOIN LATERAL (
+    SELECT r.name, r.ref FROM staging.osm_roads r
+    WHERE r.is_street AND ST_DWithin(r.geom, s0.geom, :row_road_distance_m)
+    ORDER BY r.geom <-> s0.geom LIMIT 1
+) r ON true
+WHERE s.segment_id = s0.segment_id AND s0.owner_class = 'row';
 
 -- 5. Barriers: open or unknown shore cut off from the land by a railway (unknown too:
 -- however it was going to be decided, there's no land route). Segments shorter than

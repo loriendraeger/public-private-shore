@@ -2,9 +2,23 @@
 -- changes, or the water changes between narrow and wide (25_narrow_water.sql).
 --
 -- Method: sampling. Cut each shoreline into steps of about :sample_step_m, assign each
--- step's midpoint to the nearest parcel within :snap_tolerance_m (none = a gap), then
--- collapse consecutive steps with the same (owner, municipality) into one segment.
--- Segment geometry is the exact ST_LineSubstring between the change points.
+-- step to the parcel behind it (below; none = a gap), then collapse consecutive steps
+-- with the same (owner, municipality) into one segment. Segment geometry is the exact
+-- ST_LineSubstring between the change points.
+--
+-- "Behind it" (:snap_method = 'inland', decision 2026-10-18): each step casts a fan of
+-- three rays inland, perpendicular to the shore and :snap_fan_deg either side, as long
+-- as :snap_tolerance_m; the nearest parcel a ray hits wins. These are transects, as in
+-- the USGS Digital Shoreline Analysis System. The old way ('nearest': the nearest parcel
+-- in any direction) let a lot beside an unparceled street end reach sideways and claim
+-- it (none of Mendota's or Monona's street ends came out as right-of-way), and let a
+-- park parcel's corner claim its neighbor's shore. Inland = the side that isn't water,
+-- probed :snap_direction_m to each side; where that's unclear (the smoothed line can
+-- sit a few meters off the water's edge), the step falls back to 'nearest'.
+-- One exception comes first: a parcel that extends into the water owns its shore
+-- (rural ponds inside farm parcels, marsh parcels): if the point :snap_direction_m out
+-- from the step, on the water side, is water and inside a parcel, that parcel wins.
+-- Otherwise a county road along a private pond's bank looked like a street end.
 --
 -- Merging on the owner name rather than the parcel means large holdings split along
 -- PLSS lines (e.g. the UW Arboretum) become one segment. Merging also keys on the
@@ -36,16 +50,96 @@ WHERE EXISTS (
 );
 CREATE INDEX ON analysis.shore_parcels USING gist (geom);
 
-ALTER TABLE analysis.shore_steps ADD COLUMN parcel_id integer;
+ALTER TABLE analysis.shore_steps ADD COLUMN parcel_id integer,
+                                 ADD COLUMN land_dx double precision,
+                                 ADD COLUMN land_dy double precision;
+CREATE INDEX ON analysis.shore_steps (shore_id, i);
+
+-- Water, subdivided and indexed, for "which side is the water?" probes.
+DROP TABLE IF EXISTS analysis.water_probe CASCADE;
+CREATE TABLE analysis.water_probe AS
+SELECT ST_Subdivide(geom, 256) AS geom FROM analysis.water_parts;
+CREATE INDEX ON analysis.water_probe USING gist (geom);
+ANALYZE analysis.water_probe;
+
+-- Inland unit vector per step: the shore's direction over +-:snap_direction_m, turned
+-- 90 degrees toward whichever side isn't water.
+-- The direction comes from the steps :snap_direction_m before and after (steps are
+-- :sample_step_m apart; clamped at the line's ends). Interpolating along the whole
+-- line per step instead took 5 minutes: lake shorelines have thousands of vertices.
+WITH dir AS (
+    SELECT st.shore_id, st.i, st.pt, coalesce(sa.pt, st.pt) AS a, coalesce(sb.pt, st.pt) AS b
+    FROM analysis.shore_steps st
+    CROSS JOIN LATERAL (SELECT round(:snap_direction_m / :sample_step_m)::int AS k) k
+    LEFT JOIN analysis.shore_steps sa
+      ON sa.shore_id = st.shore_id AND sa.i = greatest(0, st.i - k.k)
+    LEFT JOIN analysis.shore_steps sb
+      ON sb.shore_id = st.shore_id AND sb.i = least(st.n - 1, st.i + k.k)
+    WHERE :'snap_method' = 'inland'
+),
+unit AS (
+    SELECT shore_id, i, pt, (ST_X(b) - ST_X(a)) / l AS ux, (ST_Y(b) - ST_Y(a)) / l AS uy
+    FROM dir CROSS JOIN LATERAL (SELECT ST_Distance(a, b) AS l) d
+    WHERE l > 0
+),
+side AS (
+    SELECT u.*,
+           EXISTS (SELECT 1 FROM analysis.water_probe w
+                   WHERE ST_Intersects(w.geom, ST_Translate(u.pt, -u.uy * :snap_direction_m, u.ux * :snap_direction_m))) AS left_wet,
+           EXISTS (SELECT 1 FROM analysis.water_probe w
+                   WHERE ST_Intersects(w.geom, ST_Translate(u.pt, u.uy * :snap_direction_m, -u.ux * :snap_direction_m))) AS right_wet
+    FROM unit u
+)
+UPDATE analysis.shore_steps st
+SET land_dx = CASE WHEN sd.left_wet THEN sd.uy ELSE -sd.uy END,
+    land_dy = CASE WHEN sd.left_wet THEN -sd.ux ELSE sd.ux END
+FROM side sd
+WHERE st.shore_id = sd.shore_id AND st.i = sd.i AND sd.left_wet <> sd.right_wet;
+
+-- A parcel holding the water at this step owns it (see the header). Lakes and rivers
+-- aren't parceled, so this only fires on parceled ponds and marsh; a probe across a
+-- creek narrower than the probe lands on the far bank, which isn't water.
 UPDATE analysis.shore_steps st
 SET parcel_id = (
-    -- Distance to the parcel polygon (0 when the shoreline runs inside the parcel,
-    -- as it does where parcels reach into marsh), not to the parcel's edge.
+    SELECT p.parcel_id FROM analysis.shore_parcels p
+    WHERE ST_Intersects(p.geom, o.pt)
+    ORDER BY p.parcel_id LIMIT 1
+)
+FROM analysis.shore_steps s0
+CROSS JOIN LATERAL (SELECT ST_Translate(s0.pt, -s0.land_dx * :snap_direction_m,
+                                        -s0.land_dy * :snap_direction_m) AS pt) o
+WHERE st.shore_id = s0.shore_id AND st.i = s0.i AND s0.land_dx IS NOT NULL
+  AND EXISTS (SELECT 1 FROM analysis.water_probe w WHERE ST_Intersects(w.geom, o.pt));
+
+-- Inland: the nearest parcel any of the three rays hits. Distance to the parcel polygon
+-- (0 when the step lies inside it, as where parcels reach into marsh).
+UPDATE analysis.shore_steps st
+SET parcel_id = (
+    SELECT p.parcel_id FROM analysis.shore_parcels p
+    WHERE ST_Intersects(p.geom, f.fan)
+    ORDER BY ST_Distance(p.geom, st.pt), p.parcel_id
+    LIMIT 1
+)
+FROM analysis.shore_steps s0
+CROSS JOIN LATERAL (
+    SELECT ST_Collect(ST_MakeLine(s0.pt, ST_Translate(s0.pt,
+               :snap_tolerance_m * (s0.land_dx * cos(radians(t)) - s0.land_dy * sin(radians(t))),
+               :snap_tolerance_m * (s0.land_dx * sin(radians(t)) + s0.land_dy * cos(radians(t)))))) AS fan
+    FROM unnest(ARRAY[-:snap_fan_deg, 0, :snap_fan_deg]::float[]) t
+) f
+WHERE st.shore_id = s0.shore_id AND st.i = s0.i AND s0.land_dx IS NOT NULL
+  AND s0.parcel_id IS NULL;
+
+-- Nearest in any direction: the 'nearest' method, and the fallback where the inland side
+-- is unclear.
+UPDATE analysis.shore_steps st
+SET parcel_id = (
     SELECT p.parcel_id FROM analysis.shore_parcels p
     WHERE ST_DWithin(p.geom, st.pt, :snap_tolerance_m)
     ORDER BY ST_Distance(p.geom, st.pt), p.parcel_id
     LIMIT 1
-);
+)
+WHERE st.land_dx IS NULL;
 
 -- Narrow (25_narrow_water.sql): the class of the nearest centerline step within
 -- :stream_bank_distance_m, so banks and centerline always agree. Shore with no

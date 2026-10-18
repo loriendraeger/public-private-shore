@@ -18,6 +18,7 @@ priority,access,access_source,access_kind,owner_class,access_label,reason,reason
 69,open,nearby,*,*,Open to the public,Next to {name},Next to a park or nature area,
 70,open,path,*,*,Open to the public,Trail: {name},Public path,"Unnamed footways, cycleways and paths all read Public path (and merge)"
 80,open,street_end,*,*,Open to the public,Street end: {name},Street end,
+81,none,street_end,highway,*,No access from land,Highway right-of-way: {name},Highway right-of-way,"Numbered routes (OSM ref), decision 2026-10-18"
 90,none,no_evidence,*,*,No access from land,"No park, trail or street end reaches it","No park, trail or street end reaches it",
 998,open,*,*,*,Open to the public,,,Fallbacks
 999,none,*,*,*,No access from land,,,

@@ -34,8 +34,7 @@ Two halves:
    map tiles plus stats come out.
 2. **Static site** (GitHub Pages, client-only): renders the committed outputs.
 
-**Status:** milestones 1–3 and 5 done; 4 (access quality: manual review of the unknowns)
-and 6 (scorecard on the site) in progress. See [Milestones](#milestones). The full pipeline (load →
+**Status:** milestones 1–5 done; 6 (scorecard on the site) in progress. See [Milestones](#milestones). The full pipeline (load →
 staging → analysis → export → tiles) and the map run locally. `site/public/data/` is
 temporarily gitignored until the owner approves the output, and the deploy workflow is
 manual-only.
@@ -237,8 +236,11 @@ Structural rules:
    `config/pipeline.toml`. Narrow streams that exist only as lines (Rivers and Streams
    layer) are **out of scope for now**; see the Decisions log.
 2. **Split by parcel:** parcel edges rarely coincide exactly with hydro shorelines.
-   Assign shoreline to the adjacent parcel(s) within a **snapping tolerance** (start
-   around 10–20 m and tune it). Split the shoreline wherever the adjacent parcel changes.
+   Assign shoreline to the parcel **behind** it within a **snapping tolerance** (15 m):
+   short inland rays (transects) from each shore step, not the nearest parcel in any
+   direction, so lots beside a street end can't claim it. A parcel that extends into
+   the water (a private pond) owns its shore. Split the shoreline wherever the
+   adjacent parcel changes.
 3. **Gaps:** shoreline with no adjacent parcel within tolerance is usually road
    right-of-way or unparceled land. Classify it as `row` when it touches a road (OSM or
    parcel ROW), otherwise `unknown`.
@@ -333,7 +335,7 @@ Each segment also carries `access_source`, which records which layer set the sta
    cycleway reaches it without crossing railway tracks.
 4. **Street ends:** public road right-of-way that meets the water counts as `open`
    (Wisconsin generally treats these as public access; note that some are posted or
-   vacated).
+   vacated). Highway right-of-way (numbered routes: OSM `ref`) is public, no access.
 5. **Barriers:** open or unknown shore cut off from the land by a railway becomes `none`.
 3b. **Owner names:** `config/access_owner_rules.csv` (DNR, parks → open; prisons, golf,
    stormwater, highways → none).
@@ -442,20 +444,21 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
    locally. (Deploying moved to milestone 7.)
 3. ✅ **Study-area analysis.** 30 municipalities, named water, islands excluded unless
    bridged, first pass of ownership rules on real owner names.
-4. **Categories + access quality.** Implement the
-   [scorecard categories](#scorecard-categories) and drop `restricted`, then make access
-   trustworthy enough to rank municipalities:
-   - **Barriers:** shore you can't reach from land even though the owner is public, e.g.
-     the rail corridor and the strip west of the John Nolen Drive causeway in Monona Bay
-     (state-owned, but you'd have to cross tracks). Use OSM railways (and other barriers)
-     as negative evidence, possibly a land-side reachability check from public ways.
-   - **Private land with public access:** e.g. the Edgewood condo shore on Lake Wingra.
-     Category `private_public_access`; it needs evidence sources (candidates:
-     public paths along the shore, DNR stewardship and Managed Forest Law "open" lands,
-     conservation easements, plat-required lake access).
-   - **Unknowns:** shrink the 83 km of `unknown` access, municipality by municipality,
-     with `access_overrides.csv` for hand fixes.
-   - Re-check the 15 m snap tolerance on dense shores (Mendota, Monona).
+4. ✅ **Categories + access quality.** Scorecard categories in place, `restricted`
+   dropped, and access trustworthy enough to rank municipalities (2026-10-18):
+   - **Barriers:** railways (local test: tracks within 10 m, or every public way across
+     them), rail causeways dropped like islands, highway right-of-way is no access.
+     Reviewed on the map.
+   - **Private land with public access:** named OSM parks/reserves on private land plus
+     overrides (Edgewood). Reviewed and confirmed.
+   - **Unknowns:** 83 km -> 0. Hook Lake's bog edges excluded; the rest decided by rules
+     (paths, owner names, next to a park, no evidence) and parcel-keyed overrides; the
+     25 least-certain decisions spot-checked.
+   - **Snap tolerance:** 15 m was fine; the nearest-parcel method wasn't. Shore now
+     takes the parcel behind it (inland rays), which recovered the street ends.
+   - Later (not blocking): land-side reachability (barriers beyond railways: fences,
+     motorways); more evidence for private land with public access (DNR stewardship,
+     Managed Forest Law "open" land, conservation easements, plat-required lake access).
 5. ✅ **Segment cleanup.** Adjacent segments merge into runs (`90_merge.sql`) when
    category, municipality, owner label, and access source and note match. Private
    shore keeps its labels (Condo / HOA, Church) rather than becoming one run.
@@ -476,6 +479,19 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-18: Highway right-of-way at the water (numbered routes, by OSM `ref`:
+  interstate, US, state, county trunk; mostly bridges over creeks and the Yahara) is
+  public land with no access, not a street end: 94 runs, 4.2 km. Roads running along
+  the shore (John Nolen Dr, Vilas Park Dr) stay open street ends.
+- 2026-10-18: Snap re-check on Mendota and Monona: 95% of shore is within 5 m of a
+  parcel, so the 15 m tolerance only matters at the edges, but there it let lots beside
+  unparceled street ends claim them: none of the lakes' 29 street ends came out as
+  right-of-way. Shore steps now take the parcel **behind** them (a fan of inland rays,
+  +-15 degrees, 15 m: transects, as in USGS DSAS), and a parcel that extends into the
+  water owns its shore (rural ponds inside farm parcels, which otherwise looked like
+  street ends along county roads). 14 of the 29 street ends are now public ROW (S.
+  Dickinson, Few, Ingersoll, Lake St, ...); ROW 5.6 -> 10.1 km, municipal +3.7 km. The
+  old method stays available as snap_method = "nearest" (make compare).
 - 2026-10-18: Overrides are keyed by parcel (statewide `stateid`), not by a point on a
   segment, so snap-tolerance or merge changes can't move them; a point is the fallback
   for shore with no parcel. Optional owner columns. The 17 point overrides became 16

@@ -54,6 +54,7 @@ SELECT
                 'residential', 'living_street', 'motorway_link', 'trunk_link',
                 'primary_link', 'secondary_link', 'tertiary_link') AS is_street,
     other_tags->'access' AS access,
+    other_tags->'ref' AS ref,    -- numbered route (US 51, WI 113, CTH M): a highway
     ST_Transform(geom, :crs)::geometry(LineString, :crs) AS geom
 FROM raw.osm_lines
 WHERE highway IS NOT NULL;

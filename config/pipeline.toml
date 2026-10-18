@@ -58,6 +58,16 @@ shore_smooth_iterations = 2
 # 51 and fragmenting at 25). Re-check on denser shores (Mendota, Monona).
 snap_tolerance_m = 15
 
+# How a shore step finds its parcel (30_shore_segments.sql, decision 2026-10-18):
+# "inland" = a fan of rays inland (perpendicular, +-snap_fan_deg), snap_tolerance_m long;
+# the nearest parcel hit wins. "nearest" = the nearest parcel in any direction (the old
+# way: lots beside a street end claimed it). The inland side is found by probing
+# snap_direction_m to each side for water; the shore direction is taken over the same
+# distance either way along the line.
+snap_method = "inland"
+snap_fan_deg = 15
+snap_direction_m = 5
+
 # Segmentation samples the shoreline every sample_step_m and assigns each step to the
 # nearest parcel within snap_tolerance_m. Segment ends are accurate to about this much.
 sample_step_m = 1
