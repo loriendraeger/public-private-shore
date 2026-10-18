@@ -464,6 +464,13 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-18: **Rail causeways aren't shore**, like unbridged islands: land under 30 m
+  wide with water on both sides and at least 50 m of railway on it (found by opening
+  the land near tracks). Removes ~1.2 km of track bed across Monona Bay (the Wisconsin
+  & Southern trestles); the John Nolen Drive causeway (road + trail) stays. Also: shore
+  next to a rail bridge isn't "within 10 m of tracks" (the tracks cross, not run
+  along), and centerline steps on county Lake-type water count as wide like the banks
+  (Starkweather Creek below the Capital City Trail had centerline + both banks).
 - 2026-10-18: Access goal is **zero `unknown`**, by manual review where evidence runs out.
   Three new evidence rules (milestone 4, first pass): (1) **shore paths**: public land
   still unknown is open when a public footway/cycleway is within 30 m and not across
@@ -471,6 +478,8 @@ changes), newest first, with the date and a one-line rationale.
   open shore is `none` where the tracks are within 10 m of it or every public way
   within 50 m is across them, judged on points every 10 m (3 km, incl. the John
   Nolen Drive causeway on Monona Bay); a local test, not land-side reachability;
+  it applies to unknown shore too (no land route either way) and skips segments
+  under 5 m (slivers where a segment ends at the tracks);
   (3) on **private land**, OSM parks, reserves, beaches and slipways count only when
   named (unnamed parks there are mostly HOA greens; 15.2 -> 12.1 km).
 

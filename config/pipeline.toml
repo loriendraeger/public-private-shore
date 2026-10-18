@@ -88,6 +88,16 @@ path_access_distance_m = 30
 # smoothing, which moves lines up to ~8 m).
 barrier_distance_m = 50
 rail_shore_m = 10
+# Barrier segments shorter than this are slivers where a segment ends at the tracks
+# (two 1 m pieces on Nine Springs Creek); they keep their access.
+barrier_min_length_m = 5
+
+# Rail causeways (20_shoreline.sql): land narrower than this with water on both sides
+# and at least causeway_min_length_m of railway on it isn't shore (like an unbridged
+# island). Monona Bay's rail crossing is ~20 m wide; the John Nolen Drive causeway, with
+# the road and the trail, is wider and stays.
+causeway_max_width_m = 30
+causeway_min_length_m = 50
 
 # Narrow water (decision 2026-10-17): where the water is narrower than this, the two
 # banks collapse onto the stream's centerline (Dane County Rivers and Streams lines) and

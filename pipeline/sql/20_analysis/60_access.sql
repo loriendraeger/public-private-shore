@@ -4,7 +4,7 @@
 --   2. osm        config/access_osm.csv, by OSM feature category near the segment
 --   3. path       a public footpath or cycleway reaches public land that is still unknown
 --   4. street_end road right-of-way that meets the water
---   5. barrier    a railway cuts open shore off from the land
+--   5. barrier    a railway cuts open or unknown shore off from the land
 --   6. override   config/access_overrides.csv, hand-curated; always wins
 
 DROP TABLE IF EXISTS analysis.access_defaults, analysis.access_osm, analysis.access_overrides;
@@ -94,10 +94,15 @@ SET access = 'open', access_source = 'street_end',
                    ORDER BY r.geom <-> s.geom LIMIT 1)
 WHERE s.owner_class = 'row';
 
--- 5. Barriers: open shore cut off from the land by a railway. Sample the segment every
+-- 5. Barriers: open or unknown shore cut off from the land by a railway (unknown too:
+-- however it was going to be decided, there's no land route). Segments shorter than
+-- :barrier_min_length_m are left alone (slivers where a segment ends at the tracks).
+-- Sample the segment every
 -- 10 m. A point is blocked when it's within :rail_shore_m of the tracks (the land
 -- between them and the water is railroad corridor; this also covers smoothing moving
--- the line a few meters either side of tracks laid on the shore), or when a railway is
+-- the line a few meters either side of tracks laid on the shore; not near a rail
+-- bridge, where the tracks cross the water rather than run along it and the shore at
+-- the bridge end is reached from the side), or when a railway is
 -- within :barrier_distance_m and every public way that close would have to cross it to
 -- get there (the shortest line from the way to the point crosses the tracks). Points
 -- with no way nearby at all don't count either way. Most points blocked -> none. The
@@ -106,7 +111,7 @@ WHERE s.owner_class = 'row';
 -- Overrides (below) still win, for crossings OSM doesn't show.
 WITH cand AS (
     SELECT s.segment_id, s.geom FROM analysis.shore_segments s
-    WHERE s.access = 'open'
+    WHERE s.access IN ('open', 'unknown') AND s.length_m >= :barrier_min_length_m
       AND EXISTS (SELECT 1 FROM staging.osm_railways r
                   WHERE ST_DWithin(r.geom, s.geom, :barrier_distance_m))
 ),
@@ -118,8 +123,10 @@ pts AS (
 ),
 judged AS (
     SELECT p.segment_id,
-           EXISTS (SELECT 1 FROM staging.osm_railways r
-                   WHERE ST_DWithin(r.geom, p.geom, :rail_shore_m))
+           (EXISTS (SELECT 1 FROM staging.osm_railways r
+                    WHERE ST_DWithin(r.geom, p.geom, :rail_shore_m))
+            AND NOT EXISTS (SELECT 1 FROM staging.osm_railways r
+                            WHERE r.bridge AND ST_DWithin(r.geom, p.geom, 2 * :rail_shore_m)))
            OR (EXISTS (SELECT 1 FROM staging.osm_railways r
                        WHERE ST_DWithin(r.geom, p.geom, :barrier_distance_m))
                AND w.n_ways > 0 AND w.n_clear = 0) AS blocked

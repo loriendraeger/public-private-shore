@@ -18,6 +18,16 @@
 -- Islands (holes in the unioned water) are excluded: you need a boat to reach them, and
 -- this is about access from land. Exception: islands an OSM road or path crosses onto
 -- from outside (a bridge or causeway). analysis.islands records every island.
+--
+-- Rail causeways are excluded the same way (decision 2026-10-18): a strip of land
+-- narrower than :causeway_max_width_m with water on both sides and a railway on it
+-- (the Wisconsin & Southern across Monona Bay: 20 m wide, 600 m long) can only be
+-- reached along the tracks, and its two "shores" are track bed. Found with the same
+-- morphological opening as narrow water (25_narrow_water.sql), applied to land:
+-- take the land within 1.5 x the width of the tracks, shrink it by half the width and
+-- grow it back. Strips narrower than the width vanish; the vanished pieces carrying at
+-- least :causeway_min_length_m of track are causeways. A wide causeway with a road and a
+-- trail on it (John Nolen Drive) stays shore. analysis.rail_causeways records them.
 
 -- In-scope water, and all water touching it (named or not), unioned once.
 -- In-scope polygons are ST_Subdivide'd (pieces of <= 256 vertices) for the "touching"
@@ -62,6 +72,35 @@ SELECT
 FROM holes h;
 CREATE INDEX ON analysis.islands USING gist (geom);
 
+DROP TABLE IF EXISTS analysis.rail_causeways CASCADE;
+CREATE TABLE analysis.rail_causeways AS
+WITH rails AS MATERIALIZED (
+    SELECT ST_Union(r.geom) AS geom FROM staging.osm_railways r
+    WHERE EXISTS (SELECT 1 FROM analysis.in_scope_pieces p
+                  WHERE ST_DWithin(r.geom, p.geom, :causeway_max_width_m))
+),
+zone AS MATERIALIZED (
+    SELECT (ST_Dump(ST_Buffer(geom, 1.5 * :causeway_max_width_m))).geom AS geom FROM rails
+),
+land AS MATERIALIZED (
+    SELECT coalesce(ST_Difference(z.geom, (SELECT ST_Union(w.geom) FROM staging.water w
+                                           WHERE ST_Intersects(w.geom, z.geom))),
+                    z.geom) AS geom
+    FROM zone z
+),
+narrow AS (
+    SELECT (ST_Dump(ST_Difference(l.geom,
+               ST_Buffer(ST_Buffer(l.geom, -:causeway_max_width_m / 2.0, 'quad_segs=4'),
+                         :causeway_max_width_m / 2.0, 'quad_segs=4')))).geom AS geom
+    FROM land l
+)
+SELECT row_number() OVER () AS causeway_id, n.geom::geometry(Polygon, :crs) AS geom,
+       ST_Length(ST_Intersection(n.geom, r.geom)) AS track_m
+FROM narrow n, rails r
+WHERE ST_GeometryType(n.geom) = 'ST_Polygon'
+  AND ST_Length(ST_Intersection(n.geom, r.geom)) >= :causeway_min_length_m;
+CREATE INDEX ON analysis.rail_causeways USING gist (geom);
+
 DROP TABLE IF EXISTS analysis.shoreline CASCADE;
 CREATE TABLE analysis.shoreline AS
 -- MATERIALIZED: compute each step once.
@@ -87,9 +126,14 @@ waterbodies AS MATERIALIZED (
 ),
 lines AS (
     SELECT wb.name, wb.wbic, wb.water_class,
-           (ST_Dump(ST_LineMerge(ST_Intersection(
-               ST_Intersection(b.geom, wb.zone),
-               (SELECT geom FROM analysis.study_area)
+           (ST_Dump(ST_LineMerge(ST_Difference(
+               ST_Intersection(ST_Intersection(b.geom, wb.zone),
+                               (SELECT geom FROM analysis.study_area)),
+               -- Shore along rail causeways; :rail_shore_m covers the boundary sitting
+               -- a few meters off the causeway polygon's edge.
+               (SELECT coalesce(ST_Union(ST_Buffer(c.geom, :rail_shore_m)),
+                                ST_SetSRID('POLYGON EMPTY'::geometry, :crs))
+                FROM analysis.rail_causeways c)
            )))).geom AS geom
     FROM waterbodies wb
     JOIN boundary b ON ST_Intersects(b.geom, wb.zone)
@@ -113,7 +157,11 @@ SELECT
     geom::geometry(LineString, :crs) AS geom
 FROM smoothed
 WHERE ST_GeometryType(geom) = 'ST_LineString'
-  AND ST_Length(geom) > :sample_step_m;   -- slivers from the buffer intersection
+  AND ST_Length(geom) > :sample_step_m    -- slivers from the buffer intersection
+  -- stubs the causeway cut leaves where a causeway meets the mainland
+  AND NOT (ST_Length(geom) < 2 * :rail_shore_m
+           AND EXISTS (SELECT 1 FROM analysis.rail_causeways c
+                       WHERE ST_DWithin(c.geom, smoothed.geom, :rail_shore_m + 1)));
 
 ALTER TABLE analysis.shoreline ADD PRIMARY KEY (shore_id);
 CREATE INDEX ON analysis.shoreline USING gist (geom);

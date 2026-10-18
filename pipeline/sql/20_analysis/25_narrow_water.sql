@@ -180,3 +180,15 @@ SELECT w.water_id, w.hydtype, ST_Subdivide(w.geom, 256) AS geom
 FROM analysis.in_scope_water w;
 CREATE INDEX ON analysis.water_type_pieces USING gist (geom);
 ANALYZE analysis.water_type_pieces;
+
+-- Centerline steps on Lake-type water are wide too, the same rule the banks get
+-- (30_shore_segments.sql). Otherwise a centerline running on into a Lake-typed channel
+-- (Starkweather Creek below the Capital City Trail) stayed narrow while that channel's
+-- banks were forced wide: centerline and both banks were all counted, and the
+-- centerline took its category from a bank around the corner.
+UPDATE analysis.stream_steps st
+SET narrow = false
+WHERE st.narrow
+  AND (SELECT p.hydtype FROM analysis.water_type_pieces p
+       WHERE ST_DWithin(p.geom, st.pt, 2)
+       ORDER BY p.geom <-> st.pt LIMIT 1) = 'Lake';
