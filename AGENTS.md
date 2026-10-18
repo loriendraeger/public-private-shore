@@ -471,6 +471,15 @@ changes), newest first, with the date and a one-line rationale.
   lakefront (college + schools), not a residential condo: label "Edgewood (campus common
   land)", private with public access (override). Edgewood College owns no shore itself.
   No other private college owns shore in the study area.
+- 2026-10-18: Water in scope = named water (county or DNR name, any size, plus unnamed
+  pieces of it that OSM names) and **ponds**: standalone water of at least 1 ha
+  (`pond_min_area_m2`) the county and DNR don't name, labeled with the OSM name or
+  "Unnamed pond" (207 ponds, ~185 km of shore). Ponds are their own water type, opt-in
+  on the scorecard (off in the default reports). Rejected: "in a park + 1 ha" as an
+  inclusion rule, because it admits only ponds that score as public access, so a
+  municipality that backs its ponds with private lots would pay no price; counting all
+  ponds credits the park choice and penalizes the private one. Names (OSM or pattern-
+  matched "retention") are not used to judge which ponds matter.
 - 2026-10-17: Narrow water (under 30 m) counts ONCE: the two banks collapse onto the
   Dane County stream centerline, which takes the better bank (public access if EITHER
   bank has it; priority in `pipeline.toml`) and its municipality. Width is measured
@@ -514,7 +523,7 @@ changes), newest first, with the date and a one-line rationale.
   Pleasant Springs, Cottage Grove, Bristol and Sun Prairie in). Replaces "all of Dane
   County". Judged from the land side; segments whose adjacent land is outside are dropped.
 - 2026-10-17: Water scope = every named water polygon (lake, pond, polygon river;
-  county or DNR name) in the study area, any size. Unnamed water (mostly stormwater) out.
+  county or DNR name; ponds added 2026-10-18) in the study area, any size. Unnamed water (mostly stormwater) out.
   DNR's literal 'Unnamed' is treated as no name.
 
 - 2026-10-17: Snap tolerance 5 m → 15 m, chosen on the map. At Wingra, 15 m is the

@@ -152,7 +152,7 @@ then `CREATE`), so rerunning is always safe.
 |---|---|---|
 | `10_municipalities.sql` | `staging.municipalities` (muni_id, name, muni_type, fipscode, geom) | `C/V/T` → `city/village/town`; MakeValid |
 | `20_county_boundary.sql` | `staging.county_boundary` | union of municipalities (they tile the county); the clip mask |
-| `30_hydro.sql` | `staging.dnr_waterbody`, `staging.water` (water_id, name, wbic, hydtype, area_m2, geom) | county geometry + DNR WBIC by largest overlap; drops `Island` but keeps NULL hydtype (the Yahara) |
+| `30_hydro.sql` | `staging.dnr_waterbody`, `staging.osm_water_names`, `staging.water` (water_id, county_name, dnr_name, osm_name, water_class, name, wbic, hydtype, area_m2, geom) | county geometry + DNR WBIC by largest overlap. `water_class`: `named` (county/DNR name, or an OSM-named unnamed piece ≥ `:pond_min_area_m2` touching named water), `pond` (other standalone water ≥ `:pond_min_area_m2`; name = OSM name or 'Unnamed pond'), NULL = out of scope. Drops `Island` but keeps NULL hydtype (the Yahara) |
 | `40_parcels.sql` | `staging.parcels` (parcel_id, owner1/2, placename, auxclass, propclass, geom) | owner names uppercased and trimmed; **stay in DB, never exported** |
 | `60_population.sql` | `staging.population` (muni_id, name, pop_estimate, pop_census_2020) | Dane County rows; `C Madison3` → `City of Madison` (trailing digits are footnotes); fails if any municipality has no population |
 | `50_osm.sql` | `staging.osm_access_features` (category, access, operator), `staging.osm_roads` (highway, is_street) | categories: park, nature_reserve, beach, swimming, slipway, marina, boat_rental, pier, fishing |
@@ -188,11 +188,11 @@ Views, so they're always current with `analysis`. Each view = one tile layer.
 
 | File | View / tile layer | Attributes |
 |---|---|---|
-| `10_shore.sql` | `shore` (lines) | `kind` = bank (not-replaced bank segments) or stream (centerlines; segment_id + 10,000,000), narrow, other_bank_label (stream), segment_id, waterbody, category, owner_class, owner_label, access, access_source, access_note, muni_name, muni_type, length_m |
+| `10_shore.sql` | `shore` (lines) | `water_class` (named / pond), `kind` = bank (not-replaced bank segments) or stream (centerlines; segment_id + 10,000,000), narrow, other_bank_label (stream), segment_id, waterbody, category, owner_class, owner_label, access, access_source, access_note, muni_name, muni_type, length_m |
 | `20_parks.sql` | `parks` (polygons) | feature_id, name, category (park / nature_reserve), within 100 m of in-scope shore |
 | `30_municipalities.sql` | `municipalities` (polygons), `municipality_labels` (points) | muni_id, name, muni_type. Separate label points so each name is placed once. In `context.pmtiles`. |
 | (via `make compare`) | `shore_alt` | same as `shore`, under alternative settings |
-| `40_stats.sql` | `stats_municipalities`, `stats_shore` (no geometry → not tiles) | study-area municipalities with population and `shore_bbox` (extent of their shore, 4326); shore length per municipality × waterbody × water_kind (`wide` / `narrow`) × category. Narrow water counts once: stream centerlines, plus unmatched narrow banks at half weight. Read by `shore stats`. |
+| `40_stats.sql` | `stats_municipalities`, `stats_shore` (no geometry → not tiles) | study-area municipalities with population and `shore_bbox` (extent of their shore, 4326); shore length per municipality × waterbody × water_kind (`wide` / `narrow` / `pond`) × category. Narrow water counts once: stream centerlines, plus unmatched narrow banks at half weight. Read by `shore stats`. |
 
 ### `site/`: the map and the scorecard (built)
 
@@ -244,7 +244,7 @@ House rules on top:
 | `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); sources: basemap, `shore`, `context`; layers: municipality shading (fill by the current measure, hidden by default), parks (dashed outline), municipal boundaries (dashed, hidden by default), focused-municipality outline, shore casing + line + invisible wide hit line, selection outline, municipal labels. Signals update paint/visibility/filter in place. Focusing a municipality fades other shore (`line-opacity`), limits clicks to its shore, and fits the map to its `shore_bbox`. |
 | `src/map/colors.ts` | Colors and MapLibre `match` expressions. Categories fold into 4 groups (municipal access, other-provider access, no access, unknown; a map is an all-pairs view, where only 3 hues stay CVD-safe). Access uses the status palette with icons. Shading uses the sequential blue ramp in 5 classes. Validated with the dataviz validator. |
 | `src/components/Panel.tsx` | Map side panel: title, color-by toggle, legend, municipality picker (with its score for the current measure), boundary and shading toggles, tolerance toggle (only if `shore_alt` exists), selected-segment details, disclaimer |
-| `src/scorecard/measures.ts` | `Measure` (numerator categories ⊆ denominator categories, water filter), preset `REPORTS`, `computeScores` / `totalScore` over stats.json rows. `unknown` is never counted (excluded until cleaned up) but reported per municipality |
+| `src/scorecard/measures.ts` | `Measure` (numerator categories ⊆ denominator categories, water types: default wide + narrow, ponds opt-in), preset `REPORTS`, `computeScores` / `totalScore` over stats.json rows. `unknown` is never counted (excluded until cleaned up) but reported per municipality |
 | `src/scorecard/Scorecard.tsx` | Report picker (a measure matching no preset shows as Custom), water filter, shore-floor slider (`minShoreM`, default 1 km; also filters the map shading), category builder (Counts / Out of checkboxes), study-area summary, rank-by switch, chart, table |
 | `src/scorecard/Chart.tsx` | Observable Plot ranked bars for the current metric (share, distance, per 1,000 residents); hover tip; redraws on resize |
 | `src/scorecard/ScoreTable.tsx` | TanStack Table: municipality names jump to the map focused on them; sortable columns (share, counted, out of, per 1,000 residents, population, unknown excluded) |

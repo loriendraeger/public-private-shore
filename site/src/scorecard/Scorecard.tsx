@@ -1,7 +1,7 @@
 import { For, type JSX, Show } from 'solid-js'
 
 import { CATEGORIES, KNOWN_CATEGORIES } from '../lib/categories'
-import type { Category } from '../lib/contract'
+import type { Category, WaterKind } from '../lib/contract'
 import { formatLong, formatPct, formatShort, fromLong, longUnit, toLong } from '../lib/units'
 import {
   measure,
@@ -16,13 +16,51 @@ import {
   units,
 } from '../state/store'
 import Chart from './Chart'
-import { matchingReport, REPORTS, totalScore, type WaterFilter } from './measures'
+import { matchingReport, REPORTS, totalScore } from './measures'
 import ScoreTable from './ScoreTable'
 
-const WATER: Record<WaterFilter, string> = {
-  all: 'All water',
-  wide: 'Lakes & wide rivers',
-  narrow: 'Narrow streams',
+const WATER: Record<WaterKind, { label: string; title: string }> = {
+  wide: { label: 'Lakes & wide rivers', title: 'Named lakes, ponds and rivers at least 30 m wide' },
+  narrow: {
+    label: 'Narrow streams',
+    title: 'Water under 30 m wide, counted once along its centerline',
+  },
+  pond: {
+    label: 'Ponds',
+    title: "Standalone water of 1 ha or more that the county and DNR don't name (often stormwater)",
+  },
+}
+
+/** Which water types count. At least one stays checked. */
+function WaterPicker(): JSX.Element {
+  return (
+    <fieldset class="water">
+      <legend class="label">Water</legend>
+      <For each={Object.keys(WATER) as WaterKind[]}>
+        {(k) => (
+          <label title={WATER[k].title}>
+            <input
+              type="checkbox"
+              checked={measure().water.includes(k)}
+              disabled={measure().water.length === 1 && measure().water.includes(k)}
+              onChange={(e) => {
+                const m = measure()
+                const on = e.currentTarget.checked
+                setMeasure({
+                  ...m,
+                  // keep the canonical order so presets still match
+                  water: (Object.keys(WATER) as WaterKind[]).filter((x) =>
+                    x === k ? on : m.water.includes(x),
+                  ),
+                })
+              }}
+            />
+            {WATER[k].label}
+          </label>
+        )}
+      </For>
+    </fieldset>
+  )
 }
 const METRICS: Record<Metric, string> = {
   pct: 'Share of shore',
@@ -210,12 +248,7 @@ export default function Scorecard(): JSX.Element {
 
         <ReportPicker />
         <div class="controls">
-          <Segmented
-            label="Water"
-            options={WATER}
-            value={measure().water}
-            onChange={(w) => setMeasure({ ...measure(), water: w })}
-          />
+          <WaterPicker />
           <ShoreFloor />
         </div>
         <Builder />

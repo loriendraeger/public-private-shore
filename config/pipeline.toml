@@ -26,9 +26,15 @@ bbox_4326 = [-89.85, 42.83, -88.99, 43.30]      # padded Dane County, for osmium
 # NAD83(HARN) / Wisconsin Transverse Mercator, meters. Matches the SCO V12 parcels.
 crs = 3071
 
-# Which water becomes shoreline: every NAMED lake, pond and polygon river (county or
-# DNR name) inside the study area, any size. Unnamed water (mostly stormwater ponds)
-# is excluded. The rule lives in 20_analysis/20_shoreline.sql.
+# Which water becomes shoreline (decision 2026-10-18), set in 10_staging/30_hydro.sql:
+# - named water: every lake, pond and polygon river the county or the DNR names, any
+#   size, plus unnamed pieces of it (>= pond_min_area_m2) that OpenStreetMap names.
+# - ponds: other standalone water of at least pond_min_area_m2, named or not (OSM name
+#   as a label, else "Unnamed pond"). Ponds are their own water type: the scorecard
+#   chooses whether to count them, so a municipality that rings its stormwater ponds
+#   with parks gets credit and one that backs them with private lots doesn't, without
+#   the pipeline judging which ponds "matter". Smaller unnamed water is out.
+pond_min_area_m2 = 10000
 
 # Max distance (m) between a shoreline and a parcel for that parcel to "own" it.
 # Wingra (2026-10-17): 15 m is the smallest value that closes every small-inlet gap

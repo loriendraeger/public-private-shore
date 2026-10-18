@@ -403,3 +403,26 @@ button.link {
 button.link:hover {
   text-decoration: underline;
 }
+.water {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.water legend {
+  float: left;
+  padding: 0;
+}
+.water label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+.water input {
+  accent-color: var(--accent);
+  margin: 0;
+}

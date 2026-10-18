@@ -147,7 +147,15 @@ function SegmentDetails(): JSX.Element {
             <dt>Municipality</dt>
             <dd>{s().muni_name}</dd>
             <dt>Waterbody</dt>
-            <dd>{s().waterbody}</dd>
+            <dd>
+              {s().waterbody}
+              <Show when={s().water_class === 'pond'}>
+                <div class="muted">
+                  Pond: not named by the county or DNR. Counted only when the scorecard includes
+                  ponds.
+                </div>
+              </Show>
+            </dd>
             <dt>Length</dt>
             <dd>{formatShort(s().length_m, units())}</dd>
           </dl>

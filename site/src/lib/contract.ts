@@ -51,6 +51,8 @@ export interface ShoreProps {
   kind: 'bank' | 'stream'
   /** Narrower than the pipeline's narrow_width_m. A narrow `bank` had no centerline. */
   narrow: boolean
+  /** named: lakes, rivers, named ponds. pond: water the county and DNR don't name. */
+  water_class: 'named' | 'pond'
   waterbody: string
   category: Category
   owner_class: OwnerClass
@@ -84,8 +86,9 @@ export interface StatsMuni {
   shore_bbox: [number, number, number, number] | null
 }
 
-/** wide: lakes and wide rivers. narrow: narrower than 30 m, counted once (centerline). */
-export type WaterKind = 'wide' | 'narrow'
+/** wide: lakes and wide rivers. narrow: narrower than 30 m, counted once (centerline).
+ * pond: standalone water the county and DNR don't name (at least 1 ha). */
+export type WaterKind = 'wide' | 'narrow' | 'pond'
 
 export interface StatsShoreRow {
   muni_id: number

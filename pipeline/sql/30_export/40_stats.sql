@@ -20,18 +20,24 @@ FROM analysis.study_area_munis sa
 JOIN staging.municipalities m USING (muni_id)
 JOIN staging.population p USING (muni_id);
 
--- water_kind: 'wide' (lakes, wide rivers) or 'narrow' (narrower than :narrow_width_m).
+-- water_kind: 'wide' (lakes, wide rivers), 'narrow' (narrower than :narrow_width_m), or
+-- 'pond' (standalone water the county and DNR don't name; the scorecard decides
+-- whether ponds count).
 -- Narrow water counts once: stream centerlines stand in for both banks; narrow banks
 -- with no centerline (rare) count at half weight so the two banks add up to one.
 DROP VIEW IF EXISTS export.stats_shore;
 CREATE VIEW export.stats_shore AS
 WITH pieces AS (
-    SELECT muni_id, waterbody, CASE WHEN narrow THEN 'narrow' ELSE 'wide' END AS water_kind,
-           category, CASE WHEN narrow THEN 0.5 ELSE 1 END * length_m AS length_m
-    FROM analysis.shore_segments
-    WHERE NOT replaced
+    SELECT s.muni_id, s.waterbody,
+           CASE WHEN sl.water_class = 'pond' THEN 'pond'
+                WHEN s.narrow THEN 'narrow' ELSE 'wide' END AS water_kind,
+           s.category, CASE WHEN s.narrow THEN 0.5 ELSE 1 END * s.length_m AS length_m
+    FROM analysis.shore_segments s
+    JOIN analysis.shoreline sl USING (shore_id)
+    WHERE NOT s.replaced
     UNION ALL
-    SELECT muni_id, waterbody, 'narrow', category, length_m
+    SELECT muni_id, waterbody, CASE WHEN water_class = 'pond' THEN 'pond' ELSE 'narrow' END,
+           category, length_m
     FROM analysis.stream_segments
 )
 SELECT muni_id, waterbody, water_kind, category,

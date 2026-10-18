@@ -43,7 +43,56 @@ FROM (
 ) m
 WHERE w.water_id = m.water_id;
 
+-- Water class (decision 2026-10-18):
+--   named  the county or DNR names it (any size), or it's an unnamed piece of at least
+--          :pond_min_area_m2 touching named water that OpenStreetMap names (e.g. a
+--          Yahara reach). Unnamed pieces OSM doesn't name stay out, as before.
+--   pond   other standalone water of at least :pond_min_area_m2, named by OSM or not.
+--   NULL   everything else: out of scope.
+-- OSM names: the named OSM water polygon covering more than half of the county polygon.
+DROP TABLE IF EXISTS staging.osm_water_names CASCADE;
+CREATE TABLE staging.osm_water_names AS
+SELECT name,
+       ST_Multi(ST_CollectionExtract(ST_MakeValid(ST_Transform(geom, :crs)), 3))::geometry(MultiPolygon, :crs) AS geom
+FROM raw.osm_multipolygons
+WHERE nullif(trim(name), '') IS NOT NULL
+  AND ("natural" = 'water' OR other_tags ? 'water');
+CREATE INDEX ON staging.osm_water_names USING gist (geom);
+
+ALTER TABLE staging.water ADD COLUMN osm_name text, ADD COLUMN water_class text;
+UPDATE staging.water SET water_class = 'named'
+WHERE county_name IS NOT NULL OR dnr_name IS NOT NULL;
+
+UPDATE staging.water w
+SET osm_name = (
+    SELECT trim(o.name) FROM staging.osm_water_names o
+    WHERE ST_Intersects(o.geom, w.geom)
+      AND ST_Area(ST_Intersection(o.geom, w.geom)) > 0.5 * ST_Area(w.geom)
+    ORDER BY ST_Area(ST_Intersection(o.geom, w.geom)) DESC
+    LIMIT 1
+)
+WHERE w.water_class IS NULL AND ST_Area(w.geom) >= :pond_min_area_m2;
+
+WITH touching AS (
+    SELECT w.water_id,
+           EXISTS (SELECT 1 FROM staging.water n
+                   WHERE n.water_class = 'named' AND n.water_id <> w.water_id
+                     AND ST_DWithin(n.geom, w.geom, 0.5)) AS touches_named
+    FROM staging.water w
+    WHERE w.water_class IS NULL AND ST_Area(w.geom) >= :pond_min_area_m2
+)
+UPDATE staging.water w
+SET water_class = CASE WHEN NOT t.touches_named THEN 'pond'
+                       WHEN w.osm_name IS NOT NULL THEN 'named' END
+FROM touching t WHERE t.water_id = w.water_id;
+
+-- In scope = has a name; ponds without one are labeled "Unnamed pond".
 ALTER TABLE staging.water ADD COLUMN name text
-    GENERATED ALWAYS AS (coalesce(county_name, dnr_name)) STORED;
+    GENERATED ALWAYS AS (
+        CASE water_class
+            WHEN 'named' THEN coalesce(county_name, dnr_name, osm_name)
+            WHEN 'pond' THEN coalesce(osm_name, 'Unnamed pond')
+        END
+    ) STORED;
 ALTER TABLE staging.water ADD COLUMN area_m2 double precision
     GENERATED ALWAYS AS (ST_Area(geom)) STORED;

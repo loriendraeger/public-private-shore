@@ -39,7 +39,7 @@ ORDER BY line_id, i, side, dist;
 DROP TABLE IF EXISTS analysis.stream_segments CASCADE;
 CREATE TABLE analysis.stream_segments AS
 WITH ranked AS (
-    SELECT m.line_id, m.i, s.*,
+    SELECT m.line_id, m.i, s.*, sl.water_class,
            row_number() OVER (
                PARTITION BY m.line_id, m.i
                ORDER BY array_position(string_to_array(:'stream_category_priority', ','), s.category),
@@ -47,11 +47,12 @@ WITH ranked AS (
            ) AS rk
     FROM analysis.stream_bank_matches m
     JOIN analysis.shore_segments s USING (segment_id)
+    JOIN analysis.shoreline sl ON sl.shore_id = s.shore_id
 ),
 per_step AS (
     SELECT w.line_id, w.i, st.n, w.segment_id, w.waterbody, w.wbic, w.muni_id, w.muni_name,
            w.muni_type, w.category, w.owner_class, w.owner_label, w.access, w.access_source,
-           w.access_note, o.owner_label AS other_bank_label, o.category AS other_bank_category
+           w.access_note, w.water_class, o.owner_label AS other_bank_label, o.category AS other_bank_category
     FROM ranked w
     JOIN analysis.stream_steps st USING (line_id, i)
     LEFT JOIN ranked o ON o.line_id = w.line_id AND o.i = w.i AND o.rk = 2
@@ -59,7 +60,7 @@ per_step AS (
 ),
 keyed AS (
     SELECT *,
-           concat_ws('|', category, owner_label, muni_id, access_source, access_note,
+           concat_ws('|', category, owner_label, muni_id, access_source, access_note, water_class,
                      other_bank_label, other_bank_category) AS run_key
     FROM per_step
 ),
@@ -75,6 +76,7 @@ segs AS (
            min(category) AS category, min(owner_class) AS owner_class,
            min(owner_label) AS owner_label, min(access) AS access,
            min(access_source) AS access_source, min(access_note) AS access_note,
+           min(water_class) AS water_class,
            min(other_bank_label) AS other_bank_label,
            min(other_bank_category) AS other_bank_category,
            array_agg(DISTINCT segment_id) AS bank_segment_ids
@@ -84,7 +86,7 @@ SELECT
     row_number() OVER (ORDER BY s.line_id, s.i0) AS stream_segment_id,
     s.line_id, s.waterbody, s.wbic, s.muni_id, s.muni_name, s.muni_type,
     s.category, s.owner_class, s.owner_label, s.access, s.access_source, s.access_note,
-    s.other_bank_label, s.other_bank_category, s.bank_segment_ids,
+    s.water_class, s.other_bank_label, s.other_bank_category, s.bank_segment_ids,
     ST_LineSubstring(l.geom, s.i0::float / s.n, (s.i1 + 1)::float / s.n)::geometry(LineString, :crs) AS geom
 FROM segs s JOIN analysis.stream_lines l USING (line_id);
 

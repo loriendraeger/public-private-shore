@@ -3,14 +3,17 @@
 import { KNOWN_CATEGORIES, PUBLIC_ACCESS_CATEGORIES } from '../lib/categories'
 import type { Category, Stats, StatsMuni, WaterKind } from '../lib/contract'
 
-export type WaterFilter = 'all' | WaterKind
+/** Default water: lakes, rivers and narrow streams; ponds are opt-in. */
+export const DEFAULT_WATER: WaterKind[] = ['wide', 'narrow']
+export const ALL_WATER: WaterKind[] = ['wide', 'narrow', 'pond']
 
 export interface Measure {
   /** Shore that counts (the "good" part). Always a subset of `denominator`. */
   numerator: Category[]
   /** Shore it's measured against. */
   denominator: Category[]
-  water: WaterFilter
+  /** Water types counted (numerator and denominator alike). */
+  water: WaterKind[]
 }
 
 export interface Report {
@@ -26,13 +29,17 @@ export const REPORTS: Report[] = [
     label: 'Public access, any provider',
     description:
       'Shore the public can reach from land, whoever provides it: the municipality, county, state, UW, land trusts and other public bodies.',
-    measure: { numerator: PUBLIC_ACCESS_CATEGORIES, denominator: KNOWN_CATEGORIES, water: 'all' },
+    measure: {
+      numerator: PUBLIC_ACCESS_CATEGORIES,
+      denominator: KNOWN_CATEGORIES,
+      water: DEFAULT_WATER,
+    },
   },
   {
     id: 'municipal',
     label: 'Provided by the municipality',
     description: 'Shore the municipality itself opens to the public: its own land and street ends.',
-    measure: { numerator: ['municipal'], denominator: KNOWN_CATEGORIES, water: 'all' },
+    measure: { numerator: ['municipal'], denominator: KNOWN_CATEGORIES, water: DEFAULT_WATER },
   },
   {
     id: 'public_plus_private',
@@ -42,15 +49,30 @@ export const REPORTS: Report[] = [
     measure: {
       numerator: [...PUBLIC_ACCESS_CATEGORIES, 'private_public_access'],
       denominator: KNOWN_CATEGORIES,
-      water: 'all',
+      water: DEFAULT_WATER,
     },
   },
   {
     id: 'public_wide',
     label: 'Public access on lakes & wide rivers',
     description:
-      'Public access from any provider, counting only lakes, ponds and rivers at least 30 m wide.',
-    measure: { numerator: PUBLIC_ACCESS_CATEGORIES, denominator: KNOWN_CATEGORIES, water: 'wide' },
+      'Public access from any provider, counting only lakes, named ponds and rivers at least 30 m wide.',
+    measure: {
+      numerator: PUBLIC_ACCESS_CATEGORIES,
+      denominator: KNOWN_CATEGORIES,
+      water: ['wide'],
+    },
+  },
+  {
+    id: 'public_with_ponds',
+    label: 'Public access, including ponds',
+    description:
+      'Like "any provider", plus ponds the county and DNR don\'t name (often stormwater ponds): credit for ponds ringed by parks, a penalty for ponds behind private lots.',
+    measure: {
+      numerator: PUBLIC_ACCESS_CATEGORIES,
+      denominator: KNOWN_CATEGORIES,
+      water: ALL_WATER,
+    },
   },
   {
     id: 'no_access',
@@ -59,12 +81,12 @@ export const REPORTS: Report[] = [
     measure: {
       numerator: ['private', 'public_no_access'],
       denominator: KNOWN_CATEGORIES,
-      water: 'all',
+      water: DEFAULT_WATER,
     },
   },
 ]
 
-function sameSet(a: Category[], b: Category[]): boolean {
+function sameSet<T>(a: T[], b: T[]): boolean {
   return a.length === b.length && a.every((c) => b.includes(c))
 }
 
@@ -72,7 +94,7 @@ function sameSet(a: Category[], b: Category[]): boolean {
 export function matchingReport(m: Measure): Report | undefined {
   return REPORTS.find(
     (r) =>
-      r.measure.water === m.water &&
+      sameSet(r.measure.water, m.water) &&
       sameSet(r.measure.numerator, m.numerator) &&
       sameSet(r.measure.denominator, m.denominator),
   )
@@ -101,7 +123,7 @@ export function computeScores(stats: Stats, m: Measure): Score[] {
   }
   for (const row of stats.shore) {
     const acc = byMuni.get(row.muni_id)
-    if (!acc || (m.water !== 'all' && row.water_kind !== m.water)) {
+    if (!acc || !m.water.includes(row.water_kind)) {
       continue
     }
     if (row.category === 'unknown') {

@@ -1,7 +1,7 @@
 -- Shoreline = the boundary of the in-scope water, as lines, labeled by waterbody.
 --
--- In scope: every NAMED water polygon (lake, pond, polygon river; county or DNR name)
--- touching the study area. Unnamed water (mostly stormwater ponds) is out of scope.
+-- In scope: every water polygon with a water_class (10_staging/30_hydro.sql: named
+-- water, and standalone ponds of at least :pond_min_area_m2) touching the study area.
 --
 -- 1. ST_Union ALL water near the in-scope polygons, named or not. Edges two water
 --    polygons share (seams, e.g. Lake Wingra / Murphy Creek, or between the Yahara's
@@ -76,12 +76,14 @@ boundary AS MATERIALIZED (
                   WHERE i.bridged AND ST_Equals(i.geom, rings.ring))
 ),
 waterbodies AS MATERIALIZED (
-    -- One row per named waterbody; e.g. the Yahara is 16 polygons but one WBIC.
-    SELECT name, wbic, ST_Buffer(ST_Union(geom), 0.5) AS zone
-    FROM analysis.in_scope_water GROUP BY name, wbic
+    -- One row per waterbody; e.g. the Yahara is 16 polygons but one WBIC. Unnamed
+    -- ponds share a name, so they group by WBIC (or all together without one); the
+    -- zone still traces each pond's own boundary.
+    SELECT name, wbic, water_class, ST_Buffer(ST_Union(geom), 0.5) AS zone
+    FROM analysis.in_scope_water GROUP BY name, wbic, water_class
 ),
 lines AS (
-    SELECT wb.name, wb.wbic,
+    SELECT wb.name, wb.wbic, wb.water_class,
            (ST_Dump(ST_LineMerge(ST_Intersection(
                ST_Intersection(b.geom, wb.zone),
                (SELECT geom FROM analysis.study_area)
@@ -93,6 +95,7 @@ SELECT
     row_number() OVER () AS shore_id,
     name AS waterbody,
     wbic,
+    water_class,
     geom::geometry(LineString, :crs) AS geom
 FROM lines
 WHERE ST_GeometryType(geom) = 'ST_LineString'
