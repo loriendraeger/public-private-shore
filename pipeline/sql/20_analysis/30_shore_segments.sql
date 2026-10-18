@@ -64,6 +64,16 @@ SET narrow = coalesce(
     )
 );
 
+-- Only flowing water is "narrow" (decision 2026-10-18): shore of Lake-type polygons
+-- (lakes and ponds, including their narrow arms and inlets) keeps both banks. County
+-- hydtype River, or none (the main Yahara polygon), counts as flowing.
+UPDATE analysis.shore_steps st
+SET narrow = false
+WHERE st.narrow
+  AND (SELECT p.hydtype FROM analysis.water_type_pieces p
+       WHERE ST_DWithin(p.geom, st.pt, 2)
+       ORDER BY p.geom <-> st.pt LIMIT 1) = 'Lake';
+
 -- Absorb short runs (:segment_min_run_m), one pass each. Ring wrap-around is ignored.
 -- 1. Narrow/wide: a short run flips to its neighbors' value.
 WITH runs AS (

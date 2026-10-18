@@ -471,6 +471,11 @@ changes), newest first, with the date and a one-line rationale.
   lakefront (college + schools), not a residential condo: label "Edgewood (campus common
   land)", private with public access (override). Edgewood College owns no shore itself.
   No other private college owns shore in the study area.
+- 2026-10-18: Only flowing water collapses onto a centerline: shore of county
+  hydtype Lake polygons (lakes, ponds, their narrow arms and inlets) always keeps both
+  banks at full weight; River (or no hydtype, the main Yahara) can be narrow. Fixes
+  centerlines through pond lobes hiding pond shore. Narrow banks counted at half weight:
+  ~49 -> 12 km.
 - 2026-10-18: Short runs are absorbed before segments form: owner and narrow/wide runs
   under 10 m (`segment_min_run_m`) take their neighbor's value; gaps (possible street
   ends) are exempt. Segments under 10 m: 496 -> 132; category totals move < 0.5 km.

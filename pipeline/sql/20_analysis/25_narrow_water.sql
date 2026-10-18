@@ -170,3 +170,13 @@ CROSS JOIN LATERAL generate_series(0, k.n - 1) i
 JOIN analysis.stream_width w
   ON w.line_id = l.line_id AND w.j = least(k.nw - 1, floor((i + 0.5) / k.n * k.nw)::int);
 CREATE INDEX ON analysis.stream_steps USING gist (pt);
+
+-- Water type per location, for "is this flowing water?" (30_shore_segments.sql). Only
+-- rivers collapse onto a centerline; a narrow arm of a lake or pond keeps both shores.
+-- Subdivided so nearest-piece lookups stay fast next to big lakes.
+DROP TABLE IF EXISTS analysis.water_type_pieces CASCADE;
+CREATE TABLE analysis.water_type_pieces AS
+SELECT w.water_id, w.hydtype, ST_Subdivide(w.geom, 256) AS geom
+FROM analysis.in_scope_water w;
+CREATE INDEX ON analysis.water_type_pieces USING gist (geom);
+ANALYZE analysis.water_type_pieces;
