@@ -371,6 +371,9 @@ GitHub Release asset.
     segment access.
   - Click a segment to see owner label, class, access (and why), municipality, and
     length.
+  - Routing with `@solidjs/router`, **hash URLs** (`#/map`, `#/scorecard`; GitHub Pages
+    has no SPA fallback). Map params: `bbox=w,s,e,n`, `municipality=<slug>`, `seg=<id>`
+    (temporary, for review lists), `color=access`. Scorecard params come later.
   - A methodology/about view: data sources and vintages, the coastline-paradox caveat,
     the public trust note, and the disclaimer.
   - A stats panel driven by `stats.json` that recomputes public/private totals when the

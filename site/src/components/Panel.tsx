@@ -20,6 +20,7 @@ import {
   showMunis,
   stats,
   units,
+  zoomToMuni,
 } from '../state/store'
 
 const mode: Mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
@@ -87,7 +88,9 @@ function MuniFocus(): JSX.Element {
           value={focusMuni() ?? ''}
           onChange={(e) => {
             const v = e.currentTarget.value
-            setFocusMuni(v === '' ? null : Number(v))
+            const id = v === '' ? null : Number(v)
+            setFocusMuni(id)
+            zoomToMuni(id)
           }}
         >
           <option value="">All</option>

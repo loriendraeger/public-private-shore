@@ -14,6 +14,7 @@ import {
 // in place; it is never re-created on a state change.
 
 export type View = 'map' | 'scorecard'
+/** Set from the route by UrlSync (state/url.ts); navigate to change it. */
 export const [view, setView] = createSignal<View>('map')
 
 export const [units, setUnits] = createSignal<Units>('metric')
@@ -34,6 +35,24 @@ export const [selected, setSelected] = createSignal<ShoreProps | null>(null)
 
 /** Municipality the map is focused on (muni_id): its shore stands out, the rest fades. */
 export const [focusMuni, setFocusMuni] = createSignal<number | null>(null)
+
+/** West, south, east, north (WGS84). */
+export type Bbox = [number, number, number, number]
+
+/** What the map currently shows; written by the map on every move. */
+export const [mapBbox, setMapBbox] = createSignal<Bbox | null>(null)
+
+/** Move the map here (from the URL or the municipality picker); the map applies it. */
+export interface CameraRequest {
+  bbox: Bbox
+  padding: number
+  maxZoom?: number
+  animate: boolean
+}
+export const [cameraRequest, setCameraRequest] = createSignal<CameraRequest | null>(null)
+
+/** A segment to select once its tiles are loaded (from the URL's `seg`). */
+export const [segRequest, setSegRequest] = createSignal<number | null>(null)
 
 // Scorecard
 
@@ -57,6 +76,14 @@ export const scores = createRoot(() =>
     return s ? computeScores(s, measure()).filter((x) => x.denominatorM >= floor) : []
   }),
 )
+
+/** Zoom the map to a municipality's shore. */
+export function zoomToMuni(id: number | null): void {
+  const bbox = stats()?.municipalities.find((m) => m.muni_id === id)?.shore_bbox
+  if (bbox) {
+    setCameraRequest({ bbox, padding: 60, maxZoom: 15, animate: true })
+  }
+}
 
 export async function loadStats(url: string): Promise<void> {
   const res = await fetch(url)

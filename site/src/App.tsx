@@ -1,22 +1,37 @@
+import { type RouteSectionProps, useNavigate } from '@solidjs/router'
 import { type JSX, Show } from 'solid-js'
 
 import Panel from './components/Panel'
 import MapView from './map/MapView'
 import Scorecard from './scorecard/Scorecard'
-import { setUnits, setView, units, view } from './state/store'
+import { setUnits, units, view } from './state/store'
+import { mapPath, UrlSync } from './state/url'
 
-export default function App(): JSX.Element {
+/** The router's root: every route renders this shell; the route picks the view. */
+export default function App(props: RouteSectionProps): JSX.Element {
+  const navigate = useNavigate()
   return (
     <div class="app">
+      <UrlSync />
+      {/* Routes render nothing, except the redirect to #/map. */}
+      {props.children}
       <header class="topbar">
         <nav class="tabs" role="tablist" aria-label="View">
-          <button role="tab" aria-selected={view() === 'map'} onClick={() => setView('map')}>
+          <button
+            role="tab"
+            aria-selected={view() === 'map'}
+            onClick={() => {
+              navigate(mapPath())
+            }}
+          >
             Map
           </button>
           <button
             role="tab"
             aria-selected={view() === 'scorecard'}
-            onClick={() => setView('scorecard')}
+            onClick={() => {
+              navigate('/scorecard')
+            }}
           >
             Scorecard
           </button>

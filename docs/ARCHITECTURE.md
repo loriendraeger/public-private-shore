@@ -197,7 +197,8 @@ Views, so they're always current with `analysis`. Each view = one tile layer.
 ### `site/`: the map and the scorecard (built)
 
 Vite 8 + Solid + TypeScript 6, MapLibre GL 6, `pmtiles`, `@protomaps/basemaps`,
-Observable Plot (scorecard chart), TanStack Table v9 (`@tanstack/solid-table`, headless).
+Observable Plot (scorecard chart), TanStack Table v9 (`@tanstack/solid-table`, headless),
+`@solidjs/router` (hash URLs: `#/map`, `#/scorecard`).
 Node 24 (`site/.nvmrc`). It reads only `site/public/data/`.
 
 TypeScript is pinned to 6.0.x, the last JavaScript-based release: typescript-eslint
@@ -236,18 +237,20 @@ House rules on top:
 
 | File | Role |
 |---|---|
-| `src/App.tsx` | Top bar (Map / Scorecard tabs, km / mi switch) and the active view. The map stays mounted while hidden, so it's never rebuilt |
+| `src/index.tsx` | Loads stats.json; `HashRouter` with `App` as the root for every route (`/map`, `/scorecard`; anything else redirects to `/map`). Hash URLs because GitHub Pages has no SPA fallback |
+| `src/App.tsx` | Router root: top bar (Map / Scorecard tabs navigate, km / mi switch), `UrlSync`, and the active view. The map stays mounted while hidden, so it's never rebuilt |
+| `src/state/url.ts` | URL ↔ store, both ways. Map params: `bbox` (w,s,e,n, 4 decimals; fitted on load, rewritten in place on every move), `municipality` (slug of the name), `seg` (select a segment; TODO remove after the access review, ids change per run), `color=access`. Defaults are left out. `mapPath()` builds a `#/map` link from the current state; the store writes back only after the URL has been applied with stats loaded |
 | `src/lib/contract.ts` | Frontend half of the data contract: tile layer names, `ShoreProps`, `Stats` (stats.json), class/access/category unions |
 | `src/lib/categories.ts` | Category labels, descriptions, which count as public access by default |
 | `src/lib/units.ts` | Display units: data is meters; format as km/mi (long) or m/ft (short) |
-| `src/state/store.ts` | Solid signals: `view`, `units`, `colorBy` (category/access), `showAlt`, `hasAlt`, `showMunis`, `shadeMunis`, `selected`, `focusMuni`, `stats`, `measure`, `metric`; `scores` (memo shared by the scorecard and the map shading); `loadStats` |
-| `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); sources: basemap, `shore`, `context`; layers: municipality shading (fill by the current measure, hidden by default), parks (dashed outline), municipal boundaries (dashed, hidden by default), focused-municipality outline, shore casing + line + invisible wide hit line, selection outline, municipal labels. Signals update paint/visibility/filter in place. Focusing a municipality fades other shore (`line-opacity`), limits clicks to its shore, and fits the map to its `shore_bbox`. |
+| `src/state/store.ts` | Solid signals: `view` (set from the route), `units`, `colorBy` (category/access), `showAlt`, `hasAlt`, `showMunis`, `shadeMunis`, `selected`, `focusMuni`, `mapBbox` (what the map shows), `cameraRequest` (where to move it: URL bbox or a municipality), `segRequest` (segment to select once loaded), `stats`, `measure`, `metric`; `scores` (memo shared by the scorecard and the map shading); `zoomToMuni`; `loadStats` |
+| `src/map/MapView.tsx` | Creates the map **once**. Registers the `pmtiles://` protocol; basemap from `@protomaps/basemaps` (light/dark picked at load from the OS setting); sources: basemap, `shore`, `context`; layers: municipality shading (fill by the current measure, hidden by default), parks (dashed outline), municipal boundaries (dashed, hidden by default), focused-municipality outline, shore casing + line + invisible wide hit line, selection outline, municipal labels. Signals update paint/visibility/filter in place. Focusing a municipality fades other shore (`line-opacity`) and limits clicks to its shore; zooming is a separate `cameraRequest` (applied only while the map is visible, then cleared). Reports its bounds to `mapBbox` on `moveend`; resolves `segRequest` with `querySourceFeatures` on each `idle` until the segment's tile is loaded. |
 | `src/map/colors.ts` | Colors and MapLibre `match` expressions. Categories fold into 4 groups (municipal access, other-provider access, no access, unknown; a map is an all-pairs view, where only 3 hues stay CVD-safe). Access uses the status palette with icons. Shading uses the sequential blue ramp in 5 classes. Validated with the dataviz validator. |
 | `src/components/Panel.tsx` | Map side panel: title, color-by toggle, legend, municipality picker (with its score for the current measure), boundary and shading toggles, tolerance toggle (only if `shore_alt` exists), selected-segment details, disclaimer |
 | `src/scorecard/measures.ts` | `Measure` (numerator categories ⊆ denominator categories, water types: default wide + narrow, ponds opt-in), preset `REPORTS`, `computeScores` / `totalScore` over stats.json rows. `unknown` is never counted (excluded until cleaned up) but reported per municipality |
 | `src/scorecard/Scorecard.tsx` | Report picker (a measure matching no preset shows as Custom), water filter, shore-floor slider (`minShoreM`, default 1 km; also filters the map shading), category builder (Counts / Out of checkboxes), study-area summary, rank-by switch, chart, table |
 | `src/scorecard/Chart.tsx` | Observable Plot ranked bars for the current metric (share, distance, per 1,000 residents); hover tip; redraws on resize |
-| `src/scorecard/ScoreTable.tsx` | TanStack Table: municipality names jump to the map focused on them; sortable columns (share, counted, out of, per 1,000 residents, population, unknown excluded) |
+| `src/scorecard/ScoreTable.tsx` | TanStack Table: municipality names link to `#/map?municipality=…`; sortable columns (share, counted, out of, per 1,000 residents, population, unknown excluded) |
 | `vite.config.ts` | `base: '/public-private-land/'`; `worker.format: 'es'` |
 
 **MapLibre worker gotcha:** MapLibre 6 loads its Web Worker from a file next to its own

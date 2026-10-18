@@ -391,8 +391,10 @@ h2 {
 .focus p {
   margin: 6px 0 0;
 }
-button.link {
+button.link,
+a.link {
   font: inherit;
+  text-decoration: none;
   color: var(--accent);
   background: none;
   border: 0;
@@ -400,7 +402,8 @@ button.link {
   cursor: pointer;
   text-align: left;
 }
-button.link:hover {
+button.link:hover,
+a.link:hover {
   text-decoration: underline;
 }
 .water {

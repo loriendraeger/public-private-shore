@@ -33,11 +33,17 @@ import {
   type ShoreProps,
 } from '../lib/contract'
 import {
+  type Bbox,
+  cameraRequest,
   colorBy,
   focusMuni,
   scores,
+  segRequest,
   selected,
+  setCameraRequest,
   setHasAlt,
+  setMapBbox,
+  setSegRequest,
   setSelected,
   shadeMunis,
   showAlt,
@@ -211,6 +217,7 @@ export default function MapView(): JSX.Element {
         })
         m.on('click', `${id}-hit`, (e) => {
           const props = e.features?.[0]?.properties
+          setSegRequest(null)
           setSelected(props ? (props as ShoreProps) : null)
         })
         m.on('mouseenter', `${id}-hit`, () => (m.getCanvas().style.cursor = 'pointer'))
@@ -262,14 +269,17 @@ export default function MapView(): JSX.Element {
         [b.maxLon, b.maxLat],
       ])
 
-      const h = await shore.getHeader()
-      m.fitBounds(
-        [
-          [h.minLon, h.minLat],
-          [h.maxLon, h.maxLat],
-        ],
-        { padding: 40, duration: 0 },
-      )
+      // Start on the whole study area, unless the URL asked for a place (bindSignals).
+      if (!untrack(cameraRequest)) {
+        const h = await shore.getHeader()
+        m.fitBounds(
+          [
+            [h.minLon, h.minLat],
+            [h.maxLon, h.maxLat],
+          ],
+          { padding: 40, duration: 0 },
+        )
+      }
 
       // Signals -> map, in place.
       runWithOwner(owner, () => {
@@ -279,6 +289,59 @@ export default function MapView(): JSX.Element {
   })
 
   function bindSignals(m: MlMap, alt: boolean): void {
+    function reportBbox(): void {
+      const b = m.getBounds()
+      setMapBbox([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()] satisfies Bbox)
+    }
+    m.on('moveend', reportBbox)
+    reportBbox()
+    createEffect(() => {
+      // Only while the map is visible: hidden (display: none) it has no size, so
+      // fitBounds would frame the box wrong. Cleared once applied, so coming back from
+      // the scorecard doesn't move the map again.
+      const r = cameraRequest()
+      if (r && view() === 'map') {
+        m.resize()
+        const [w, s, e, n] = r.bbox
+        m.fitBounds(
+          [
+            [w, s],
+            [e, n],
+          ],
+          // maxZoom only when set: an explicit undefined overrides MapLibre's default
+          // and the camera math comes out NaN.
+          {
+            padding: r.padding,
+            animate: r.animate,
+            ...(r.maxZoom === undefined ? {} : { maxZoom: r.maxZoom }),
+          },
+        )
+        setCameraRequest(null)
+      }
+    })
+    createEffect(() => {
+      // Select a segment by id (the URL's `seg`) once a tile holding it is loaded: try
+      // now and after every load until it turns up.
+      const id = segRequest()
+      if (id === null) {
+        return
+      }
+      function find(): void {
+        const f = m
+          .querySourceFeatures('shore', {
+            sourceLayer: SHORE_LAYER,
+            filter: ['==', ['get', 'segment_id'], id],
+          })
+          .at(0)
+        if (f) {
+          setSelected(f.properties as ShoreProps)
+          setSegRequest(null)
+        }
+      }
+      m.on('idle', find)
+      onCleanup(() => m.off('idle', find))
+      find()
+    })
     createEffect(() => {
       const expr = colorBy() === 'category' ? categoryColorExpr(mode) : accessColorExpr()
       for (const id of SHORE_IDS) {
@@ -308,7 +371,8 @@ export default function MapView(): JSX.Element {
       m.setLayoutProperty('muni-labels', 'visibility', visibility)
     })
     createEffect(() => {
-      // Focus on one municipality: fade the other shore, click only its own, zoom to it.
+      // Focus on one municipality: fade the other shore, click only its own. Zooming to
+      // it is up to whoever set the focus (zoomToMuni), so a URL bbox can win.
       const id = focusMuni()
       const muni = stats()?.municipalities.find((x) => x.muni_id === id) ?? null
       const name = muni?.name ?? null
@@ -328,16 +392,6 @@ export default function MapView(): JSX.Element {
       const sel = untrack(selected)
       if (name !== null && sel && sel.muni_name !== name) {
         setSelected(null)
-      }
-      if (muni?.shore_bbox) {
-        const [w, s, e, n] = muni.shore_bbox
-        m.fitBounds(
-          [
-            [w, s],
-            [e, n],
-          ],
-          { padding: 60, maxZoom: 15 },
-        )
       }
     })
     createEffect(() => {

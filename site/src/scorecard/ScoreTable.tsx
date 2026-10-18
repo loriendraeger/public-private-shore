@@ -1,3 +1,4 @@
+import { A } from '@solidjs/router'
 import {
   type CellContext,
   createColumnHelper,
@@ -11,7 +12,8 @@ import {
 import { For, type JSX } from 'solid-js'
 
 import { formatLong, formatPct, formatShort } from '../lib/units'
-import { setFocusMuni, setView, units } from '../state/store'
+import { units } from '../state/store'
+import { mapPath, municipalitySlug } from '../state/url'
 import type { Score } from './measures'
 
 const features = tableFeatures({
@@ -35,15 +37,16 @@ const columns = helper.columns([
     // Jump to the map, focused on this municipality.
     cell: (c) =>
       c.row.original.muni.shore_bbox ? (
-        <button
+        <A
           class="link"
-          onClick={() => {
-            setFocusMuni(c.row.original.muni.muni_id)
-            setView('map')
-          }}
+          href={mapPath({
+            municipality: municipalitySlug(c.getValue()),
+            bbox: undefined,
+            seg: undefined,
+          })}
         >
           {c.getValue()}
-        </button>
+        </A>
       ) : (
         c.getValue()
       ),
