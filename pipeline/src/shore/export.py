@@ -18,19 +18,36 @@ def export_view(view: str, out_name: str | None = None) -> Path:
     EXPORT_DIR.mkdir(parents=True, exist_ok=True)
     out = EXPORT_DIR / f"{out_name or view}.geojsonl"
     out.unlink(missing_ok=True)
-    run(["ogr2ogr", "-f", "GeoJSONSeq", str(out), "PG:", f"export.{view}",
-         "-lco", "COORDINATE_PRECISION=7"])   # ~1 cm at this latitude
+    run(
+        [
+            "ogr2ogr",
+            "-f",
+            "GeoJSONSeq",
+            str(out),
+            "PG:",
+            f"export.{view}",
+            "-lco",
+            "COORDINATE_PRECISION=7",
+        ]
+    )  # ~1 cm at this latitude
     return out
 
 
 def export_views() -> list[Path]:
     """Export every export view that has geometry (the tile layers)."""
     views = subprocess.run(
-        ["psql", "-X", "-At", "-c",
-         # Views with a geometry column are tile layers; the rest (stats_*) feed stats.json.
-         "SELECT f_table_name FROM geometry_columns WHERE f_table_schema = 'export' "
-         "ORDER BY f_table_name"],
-        check=True, capture_output=True, text=True,
+        [
+            "psql",
+            "-X",
+            "-At",
+            "-c",
+            # Views with a geometry column are tile layers; the rest (stats_*) feed stats.json.
+            "SELECT f_table_name FROM geometry_columns WHERE f_table_schema = 'export' "
+            "ORDER BY f_table_name",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
     ).stdout.split()
     return [export_view(v) for v in views]
 
@@ -49,11 +66,21 @@ def tiles(compare: bool = False) -> None:
         raise SystemExit(f"exported layers not assigned to a file in [tiles.files]: {unassigned}")
     SITE_DATA.mkdir(parents=True, exist_ok=True)
     for name, layers in t["files"].items():
-        cmd = ["tippecanoe", "-o", str(SITE_DATA / f"{name}.pmtiles"), "--force",
-               "-Z", str(t["minzoom"]), "-z", str(t["maxzoom"]),
-               # Shore lines are the point of the map; never drop them to fit a tile budget.
-               "--no-feature-limit", "--no-tile-size-limit",
-               "--attribution", t["attribution"]]
+        cmd = [
+            "tippecanoe",
+            "-o",
+            str(SITE_DATA / f"{name}.pmtiles"),
+            "--force",
+            "-Z",
+            str(t["minzoom"]),
+            "-z",
+            str(t["maxzoom"]),
+            # Shore lines are the point of the map; never drop them to fit a tile budget.
+            "--no-feature-limit",
+            "--no-tile-size-limit",
+            "--attribution",
+            t["attribution"],
+        ]
         for layer in layers:
             f = EXPORT_DIR / f"{layer}.geojsonl"
             if layer in skip:
@@ -76,9 +103,19 @@ def basemap() -> None:
     # The study area plus a margin, as its bounding rectangle: the site limits the camera
     # to the extract's (rectangular) bounds, so the extract must fill that whole rectangle.
     # An irregular region would leave blank corners.
-    sql = (f"SELECT ST_Envelope(ST_Buffer(geom, {t['basemap_buffer_m']})) AS geom "
-           f"FROM analysis.study_area")
+    sql = (
+        f"SELECT ST_Envelope(ST_Buffer(geom, {t['basemap_buffer_m']})) AS geom "
+        f"FROM analysis.study_area"
+    )
     run(["ogr2ogr", "-f", "GeoJSON", str(region), "PG:", "-sql", sql, "-t_srs", "EPSG:4326"])
     SITE_DATA.mkdir(parents=True, exist_ok=True)
-    run(["pmtiles", "extract", b["url"], str(SITE_DATA / "basemap.pmtiles"),
-         f"--region={region}", f"--maxzoom={t['basemap_maxzoom']}"])
+    run(
+        [
+            "pmtiles",
+            "extract",
+            b["url"],
+            str(SITE_DATA / "basemap.pmtiles"),
+            f"--region={region}",
+            f"--maxzoom={t['basemap_maxzoom']}",
+        ]
+    )

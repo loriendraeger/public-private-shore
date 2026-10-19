@@ -60,12 +60,24 @@ def run_stage(stage: str, overrides: dict[str, str] | None = None) -> None:
         # -e echoes each statement and \timing prints its duration; both go to stdout,
         # which we capture. Errors still go to stderr (the terminal).
         result = subprocess.run(
-            ["psql", "-X", "-q", "-e", "-v", "ON_ERROR_STOP=1", *variables,
-             "-c", "\\timing on", "-f", str(f)],
+            [
+                "psql",
+                "-X",
+                "-q",
+                "-e",
+                "-v",
+                "ON_ERROR_STOP=1",
+                *variables,
+                "-c",
+                "\\timing on",
+                "-f",
+                str(f),
+            ],
             cwd=config.REPO,
             # Hide the NOTICEs that every idempotent DROP ... IF EXISTS prints.
             env={**os.environ, "PGOPTIONS": "-c client_min_messages=warning"},
-            stdout=subprocess.PIPE, text=True,
+            stdout=subprocess.PIPE,
+            text=True,
         )
         print(f"  {time.monotonic() - start:6.1f} s", flush=True)
         for label, secs in _statement_times(result.stdout):
@@ -76,6 +88,8 @@ def run_stage(stage: str, overrides: dict[str, str] | None = None) -> None:
             # psql already printed the error with file and line; no traceback needed.
             raise SystemExit(f"stage {stage} failed in {f.name}")
     (TIMINGS / f"{stage}.tsv").write_text("\n".join(log) + "\n")
-    print(f"== {stage}: {time.monotonic() - stage_start:.1f} s "
-          f"(per-statement log: {(TIMINGS / f'{stage}.tsv').relative_to(config.REPO)})",
-          flush=True)
+    print(
+        f"== {stage}: {time.monotonic() - stage_start:.1f} s "
+        f"(per-statement log: {(TIMINGS / f'{stage}.tsv').relative_to(config.REPO)})",
+        flush=True,
+    )

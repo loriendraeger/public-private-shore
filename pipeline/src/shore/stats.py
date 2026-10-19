@@ -51,8 +51,7 @@ def stats() -> None:
     SITE_DATA.mkdir(parents=True, exist_ok=True)
     path = SITE_DATA / "stats.json"
     path.write_text(prettier_json(out))
-    print(f"wrote {path.relative_to(config.REPO)}: {len(munis)} municipalities, "
-          f"{len(shore)} rows")
+    print(f"wrote {path.relative_to(config.REPO)}: {len(munis)} municipalities, {len(shore)} rows")
 
 
 def setting(key: str):

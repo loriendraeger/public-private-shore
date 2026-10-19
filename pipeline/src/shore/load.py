@@ -13,12 +13,18 @@ from . import config
 PG = "PG:"
 COMMON = [
     "-overwrite",
-    "-lco", "GEOMETRY_NAME=geom",
-    "-lco", "FID=fid",
-    "-lco", "SPATIAL_INDEX=GIST",
+    "-lco",
+    "GEOMETRY_NAME=geom",
+    "-lco",
+    "FID=fid",
+    "-lco",
+    "SPATIAL_INDEX=GIST",
     # Shapefile numeric widths are often too small for their own values; load as float.
-    "-lco", "PRECISION=NO",
-    "--config", "PG_USE_COPY", "YES",
+    "-lco",
+    "PRECISION=NO",
+    "--config",
+    "PG_USE_COPY",
+    "YES",
 ]
 OSM_LAYERS = ["points", "lines", "multipolygons"]
 
@@ -55,9 +61,22 @@ def load_osm(pbf: Path) -> None:
     bbox = ",".join(map(str, config.pipeline()["study_area"]["bbox_4326"]))
     run(["osmium", "extract", "--bbox", bbox, "--overwrite", "-o", str(out), str(pbf)])
     for layer in OSM_LAYERS:
-        run(["ogr2ogr", "-f", "PostgreSQL", PG, str(out), layer, "-nln", f"raw.osm_{layer}",
-             # Tags without their own column land in other_tags; store it as real hstore.
-             "-lco", "COLUMN_TYPES=other_tags=hstore", *COMMON])
+        run(
+            [
+                "ogr2ogr",
+                "-f",
+                "PostgreSQL",
+                PG,
+                str(out),
+                layer,
+                "-nln",
+                f"raw.osm_{layer}",
+                # Tags without their own column land in other_tags; store it as real hstore.
+                "-lco",
+                "COLUMN_TYPES=other_tags=hstore",
+                *COMMON,
+            ]
+        )
 
 
 def load(names: list[str] | None = None) -> None:
