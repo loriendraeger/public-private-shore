@@ -311,7 +311,7 @@ applied by `20_analysis/70_category.sql`.)
 | `university` | UW–Madison and accessible | `UW–Madison` | yes (toggle) |
 | `land_trust` | conservation land trust preserve, accessible | `Land trust` | yes (toggle) |
 | `other_public` | other public bodies (sewerage, lake districts) and accessible | owner label | yes (toggle) |
-| `private_public_access` | privately owned with public access (e.g. Edgewood condos) | owner label | toggle |
+| `private_public_access` | privately owned with public access (e.g. Edgewood condos) | owner label | yes (toggle) |
 | `public_no_access` | publicly owned, no public access | owner label + reason (barrier, no land route, facility, institutional grounds) | no |
 | `private` | privately owned, no public access | `Private`, `Condo / HOA`, `Church` (no individual owners) | no |
 | `unknown` | owner or access not yet determined | what is known | reported separately |
@@ -486,6 +486,10 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
+
+- 2026-10-18: Private land open to the public (`private_public_access`) counts as public
+  access in the default reports, like land trusts: the public can reach the water there.
+  A "public land only" report leaves out both.
 
 - 2026-10-18: The scorecard's default report is "Public access, including ponds"
   (supersedes ponds being off in the default reports); the other presets still leave

@@ -16,6 +16,7 @@ import {
   units,
 } from '../state/store'
 import Chart from './Chart'
+import Composition from './Composition'
 import { matchingReport, MAX_MIN_SHORE_M, REPORTS, totalScore } from './measures'
 import ScoreTable from './ScoreTable'
 
@@ -258,6 +259,9 @@ export default function Scorecard(): JSX.Element {
 
         <h2>All municipalities</h2>
         <ScoreTable scores={scores()} />
+
+        <h2>What the shore is made of</h2>
+        <Composition scores={scores()} />
       </Show>
     </div>
   )

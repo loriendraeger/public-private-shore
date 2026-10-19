@@ -1,6 +1,10 @@
 // Scorecard measures: plain aggregation over the tidy stats.json rows.
 
-import { ALL_CATEGORIES, PUBLIC_ACCESS_CATEGORIES } from '../lib/categories'
+import {
+  ALL_CATEGORIES,
+  PUBLIC_ACCESS_CATEGORIES,
+  PUBLIC_LAND_ACCESS_CATEGORIES,
+} from '../lib/categories'
 import type { Category, Stats, StatsMuni, WaterKind } from '../lib/contract'
 
 /** Default water: lakes, rivers and narrow streams; ponds are opt-in. */
@@ -40,9 +44,20 @@ export const REPORTS: Report[] = [
     id: 'public',
     label: 'Public access, any provider',
     description:
-      'Shore the public can reach from land, whoever provides it: the municipality, county, state, UW, land trusts and other public bodies.',
+      'Shore the public can reach from land, whoever provides it: the municipality, county, state, UW, land trusts, other public bodies, and private land open to the public.',
     measure: {
       numerator: PUBLIC_ACCESS_CATEGORIES,
+      denominator: ALL_CATEGORIES,
+      water: DEFAULT_WATER,
+    },
+  },
+  {
+    id: 'public_land',
+    label: 'Public access, public land only',
+    description:
+      'Shore the public can reach from publicly owned land: leaves out private land open to the public, including land-trust preserves.',
+    measure: {
+      numerator: PUBLIC_LAND_ACCESS_CATEGORIES,
       denominator: ALL_CATEGORIES,
       water: DEFAULT_WATER,
     },
@@ -52,17 +67,6 @@ export const REPORTS: Report[] = [
     label: 'Provided by the municipality',
     description: 'Shore the municipality itself opens to the public: its own land and street ends.',
     measure: { numerator: ['municipal'], denominator: ALL_CATEGORIES, water: DEFAULT_WATER },
-  },
-  {
-    id: 'public_plus_private',
-    label: 'Public access, including private land',
-    description:
-      'Like "any provider", plus privately owned shore that is open to the public (e.g. the Edgewood campus).',
-    measure: {
-      numerator: [...PUBLIC_ACCESS_CATEGORIES, 'private_public_access'],
-      denominator: ALL_CATEGORIES,
-      water: DEFAULT_WATER,
-    },
   },
   {
     id: 'public_wide',

@@ -429,3 +429,42 @@ a.link:hover {
   accent-color: var(--accent);
   margin: 0;
 }
+
+.composition .legend.inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0;
+}
+.composition .muted {
+  margin: 4px 0 8px;
+}
+.tick-swatch {
+  display: inline-block;
+  width: 2px;
+  height: 12px;
+  background: var(--ink);
+}
+.bar-wrap {
+  position: relative;
+}
+.bar-tip {
+  position: absolute;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 6px 8px;
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 15%);
+  pointer-events: none;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  z-index: 1;
+}
+.bar-tip dt {
+  font-weight: 600;
+}
+.bar-tip dd {
+  margin: 0;
+}

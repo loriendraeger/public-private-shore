@@ -33,7 +33,7 @@ export const CATEGORIES: Record<Category, CategoryInfo> = {
   },
   private_public_access: {
     label: 'Private, public access',
-    publicAccess: false,
+    publicAccess: true,
     description: 'Privately owned, but the public can reach the water (e.g. Edgewood campus)',
   },
   public_no_access: {
@@ -47,3 +47,9 @@ export const CATEGORIES: Record<Category, CategoryInfo> = {
 export const ALL_CATEGORIES = Object.keys(CATEGORIES) as Category[]
 
 export const PUBLIC_ACCESS_CATEGORIES = ALL_CATEGORIES.filter((c) => CATEGORIES[c].publicAccess)
+
+/** Public access on publicly owned land only: leaves out private land open to the
+ * public, land-trust preserves included. */
+export const PUBLIC_LAND_ACCESS_CATEGORIES = PUBLIC_ACCESS_CATEGORIES.filter(
+  (c) => c !== 'private_public_access' && c !== 'land_trust',
+)

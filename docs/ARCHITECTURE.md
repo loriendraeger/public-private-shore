@@ -257,6 +257,7 @@ House rules on top:
 | `src/scorecard/Scorecard.tsx` | Report picker (a measure matching no preset shows as Custom), water filter, shore-floor slider (`minShoreM`, default 1 km; also filters the map shading), category builder (Counts / Out of checkboxes), study-area summary, rank-by switch, chart, table |
 | `src/scorecard/Chart.tsx` | Observable Plot ranked bars for the current metric (share, distance, per 1,000 residents); hover tip; redraws on resize |
 | `src/scorecard/ScoreTable.tsx` | TanStack Table: municipality names link to `#/map?municipality=…`; sortable columns (share, counted, out of, per 1,000 residents, population); the sort is controlled from the store, so it lands in the URL |
+| `src/scorecard/Composition.tsx` | Below the table: one 100% stacked bar per municipality over the report's denominator categories, counted ones first (a tick marks where the counted shore ends, i.e. the share). Segments take the map's three group colors with 2px gaps; a hover tooltip finds the segment under the pointer by inverting the x scale and matching the y band (Plot's pointer picks the nearest midpoint, which can be the wrong segment) |
 | `vite.config.ts` | `base: '/public-private-land/'`; `worker.format: 'es'` |
 
 **MapLibre worker gotcha:** MapLibre 6 loads its Web Worker from a file next to its own
