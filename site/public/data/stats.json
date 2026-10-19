@@ -1,0 +1,3493 @@
+{
+  "generated": "2026-10-19",
+  "sources": {
+    "parcels": {
+      "name": "Wisconsin Statewide Parcel Map V12 (Dane County extract)",
+      "retrieved": "2026-10-16"
+    },
+    "hydro_county": {
+      "name": "Dane County Lakes and Ponds (polygons)",
+      "retrieved": "2026-10-16"
+    },
+    "hydro": {
+      "name": "WI DNR 24K Hydro (full file geodatabase)",
+      "retrieved": "2026-10-16"
+    },
+    "municipalities": {
+      "name": "Dane County Municipal Boundaries",
+      "retrieved": "2026-10-17"
+    },
+    "osm": {
+      "name": "OpenStreetMap Wisconsin extract",
+      "retrieved": "2026-10-17"
+    },
+    "population": {
+      "name": "Official Final Population Estimates, 1/1/2026, Wisconsin Minor Civil Divisions",
+      "retrieved": "2026-10-17"
+    }
+  },
+  "municipalities": [
+    {
+      "muni_id": 2,
+      "name": "City of Fitchburg",
+      "muni_type": "city",
+      "population": 37220,
+      "pop_census_2020": 30999,
+      "shore_bbox": [-89.48329976832326, 42.9430368649828, -89.3657686325019, 43.02792469200301]
+    },
+    {
+      "muni_id": 3,
+      "name": "City of Madison",
+      "muni_type": "city",
+      "population": 300153,
+      "pop_census_2020": 274686,
+      "shore_bbox": [-89.5647695782472, 42.99870085669332, -89.23200209338937, 43.17010603300799]
+    },
+    {
+      "muni_id": 4,
+      "name": "City of Middleton",
+      "muni_type": "city",
+      "population": 25215,
+      "pop_census_2020": 21827,
+      "shore_bbox": [-89.56117266916112, 43.08315026411865, -89.47167090764026, 43.12088302196402]
+    },
+    {
+      "muni_id": 5,
+      "name": "City of Monona",
+      "muni_type": "city",
+      "population": 9361,
+      "pop_census_2020": 8624,
+      "shore_bbox": [-89.35162373971032, 43.04117774198895, -89.30901075578196, 43.0861871533044]
+    },
+    {
+      "muni_id": 6,
+      "name": "City of Stoughton",
+      "muni_type": "city",
+      "population": 13581,
+      "pop_census_2020": 13173,
+      "shore_bbox": [-89.25816429742855, 42.90766470418992, -89.20134132743487, 42.94805517241258]
+    },
+    {
+      "muni_id": 7,
+      "name": "City of Sun Prairie",
+      "muni_type": "city",
+      "population": 40238,
+      "pop_census_2020": 35967,
+      "shore_bbox": [-89.27283045982918, 43.157845146193324, -89.17698749321494, 43.20808969890139]
+    },
+    {
+      "muni_id": 8,
+      "name": "City of Verona",
+      "muni_type": "city",
+      "population": 17173,
+      "pop_census_2020": 13926,
+      "shore_bbox": [-89.58795416386054, 42.96710914509904, -89.50790803963588, 43.00897286063568]
+    },
+    {
+      "muni_id": 12,
+      "name": "Town of Blooming Grove",
+      "muni_type": "town",
+      "population": 1538,
+      "pop_census_2020": 1622,
+      "shore_bbox": [-89.36425206115612, 43.01820620036998, -89.31145788529112, 43.10430890786639]
+    },
+    {
+      "muni_id": 14,
+      "name": "Town of Bristol",
+      "muni_type": "town",
+      "population": 4551,
+      "pop_census_2020": 4447,
+      "shore_bbox": [-89.18703569572939, 43.19537480641262, -89.12677581139839, 43.23511540523461]
+    },
+    {
+      "muni_id": 15,
+      "name": "Town of Burke",
+      "muni_type": "town",
+      "population": 3227,
+      "pop_census_2020": 3265,
+      "shore_bbox": [-89.36195613235309, 43.14862622363009, -89.2525427953017, 43.194659886170456]
+    },
+    {
+      "muni_id": 17,
+      "name": "Town of Cottage Grove",
+      "muni_type": "town",
+      "population": 3845,
+      "pop_census_2020": 3791,
+      "shore_bbox": [-89.23942596662651, 43.02030266862287, -89.12987187556894, 43.10853404872677]
+    },
+    {
+      "muni_id": 19,
+      "name": "Town of Dane",
+      "muni_type": "town",
+      "population": 959,
+      "pop_census_2020": 934,
+      "shore_bbox": [-89.60062745989904, 43.208579079013724, -89.48560339516828, 43.293435542090585]
+    },
+    {
+      "muni_id": 22,
+      "name": "Town of Dunn",
+      "muni_type": "town",
+      "population": 4812,
+      "pop_census_2020": 4880,
+      "shore_bbox": [-89.36665334048725, 42.931518145405754, -89.24741454012161, 43.01820620036998]
+    },
+    {
+      "muni_id": 25,
+      "name": "Town of Middleton",
+      "muni_type": "town",
+      "population": 7222,
+      "pop_census_2020": 6792,
+      "shore_bbox": [-89.60093023510082, 43.06391812430859, -89.54537680267927, 43.100281806898444]
+    },
+    {
+      "muni_id": 29,
+      "name": "Town of Pleasant Springs",
+      "muni_type": "town",
+      "population": 3080,
+      "pop_census_2020": 3078,
+      "shore_bbox": [-89.24985327864111, 42.93598869226371, -89.13669535480439, 43.02040012133592]
+    },
+    {
+      "muni_id": 34,
+      "name": "Town of Springfield",
+      "muni_type": "town",
+      "population": 2918,
+      "pop_census_2020": 2929,
+      "shore_bbox": [-89.59535714735645, 43.13040525196257, -89.48151187141681, 43.20234940139506]
+    },
+    {
+      "muni_id": 35,
+      "name": "Town of Sun Prairie",
+      "muni_type": "town",
+      "population": 2383,
+      "pop_census_2020": 2391,
+      "shore_bbox": [-89.23072714390446, 43.10852912860023, -89.14448297461121, 43.168752486907664]
+    },
+    {
+      "muni_id": 37,
+      "name": "Town of Verona",
+      "muni_type": "town",
+      "population": 2204,
+      "pop_census_2020": 2051,
+      "shore_bbox": [-89.59639255426357, 42.94378902237074, -89.48485890351479, 43.00509417405516]
+    },
+    {
+      "muni_id": 38,
+      "name": "Town of Vienna",
+      "muni_type": "town",
+      "population": 1660,
+      "pop_census_2020": 1666,
+      "shore_bbox": [-89.47141761841402, 43.22356190316651, -89.36267422571765, 43.29416734372305]
+    },
+    {
+      "muni_id": 39,
+      "name": "Town of Westport",
+      "muni_type": "town",
+      "population": 4469,
+      "pop_census_2020": 4191,
+      "shore_bbox": [-89.48156898042994, 43.107306870225884, -89.36165572397294, 43.20656959950125]
+    },
+    {
+      "muni_id": 46,
+      "name": "Village of Cottage Grove",
+      "muni_type": "village",
+      "population": 9763,
+      "pop_census_2020": 7303,
+      "shore_bbox": [-89.21341973210866, 43.06660838291081, -89.19240223597316, 43.107653073103975]
+    },
+    {
+      "muni_id": 47,
+      "name": "Village of Cross Plains",
+      "muni_type": "village",
+      "population": 4321,
+      "pop_census_2020": 4104,
+      "shore_bbox": [-89.6642703862362, 43.10956385566819, -89.64050510365527, 43.11530793788573]
+    },
+    {
+      "muni_id": 48,
+      "name": "Village of Dane",
+      "muni_type": "village",
+      "population": 1162,
+      "pop_census_2020": 1117,
+      "shore_bbox": [-89.49849425139234, 43.25105612529903, -89.49601749020943, 43.2517400227666]
+    },
+    {
+      "muni_id": 50,
+      "name": "Village of DeForest",
+      "muni_type": "village",
+      "population": 15040,
+      "pop_census_2020": 10811,
+      "shore_bbox": [-89.37235128174362, 43.18584354040038, -89.30879589638802, 43.26370773077273]
+    },
+    {
+      "muni_id": 51,
+      "name": "Village of Maple Bluff",
+      "muni_type": "village",
+      "population": 1408,
+      "pop_census_2020": 1368,
+      "shore_bbox": [-89.38324903563769, 43.09705314662771, -89.36715268019634, 43.12432093960049]
+    },
+    {
+      "muni_id": 54,
+      "name": "Village of McFarland",
+      "muni_type": "village",
+      "population": 9776,
+      "pop_census_2020": 8991,
+      "shore_bbox": [-89.31632836149694, 43.00152681825391, -89.23187083263002, 43.040395972018196]
+    },
+    {
+      "muni_id": 56,
+      "name": "Village of Oregon",
+      "muni_type": "village",
+      "population": 12718,
+      "pop_census_2020": 11179,
+      "shore_bbox": [-89.41668096032527, 42.91470357135686, -89.39579483500681, 42.92873935130158]
+    },
+    {
+      "muni_id": 58,
+      "name": "Village of Shorewood Hills",
+      "muni_type": "village",
+      "population": 2129,
+      "pop_census_2020": 2169,
+      "shore_bbox": [-89.46069210127652, 43.08112534907404, -89.44608032112389, 43.0871114694397]
+    },
+    {
+      "muni_id": 59,
+      "name": "Village of Waunakee",
+      "muni_type": "village",
+      "population": 17248,
+      "pop_census_2020": 14879,
+      "shore_bbox": [-89.47676113054415, 43.17553279825339, -89.42780095800187, 43.19581235000164]
+    },
+    {
+      "muni_id": 60,
+      "name": "Village of Windsor",
+      "muni_type": "village",
+      "population": 10727,
+      "pop_census_2020": 8754,
+      "shore_bbox": [-89.35561483661084, 43.194641787776554, -89.24528086624976, 43.28136043488779]
+    }
+  ],
+  "shore": [
+    {
+      "muni_id": 2,
+      "waterbody": "Commerce Park Pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 380.0
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Dunn's Marsh",
+      "water_kind": "pond",
+      "category": "county",
+      "length_m": 181.1
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Dunn's Marsh",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 1310.4
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Lake Barney",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 1828.1
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Lake Barney",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 1826.1
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Lake Barney",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 2284.1
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Lake Barney",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 1.0
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 2984.0
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 202.9
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 22.0
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 42.0
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 77.8
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "South Pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 765.7
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Swan Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 88.2
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Swan Pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 873.2
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 1754.8
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 2399.4
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 4122.4
+    },
+    {
+      "muni_id": 2,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "state_federal",
+      "length_m": 581.6
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "American Family Pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 555.6
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Autumn Lake",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 1641.4
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 267.6
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Cherokee Lake",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 1743.8
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Cherokee Lake",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 54.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 1.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 184.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "East Pond",
+      "water_kind": "pond",
+      "category": "private_public_access",
+      "length_m": 709.7
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Farwest Retention Basin",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 708.5
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 521.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 3550.2
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 57.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 6176.2
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 288.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 43.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 3616.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "university",
+      "length_m": 7206.3
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 10379.2
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 131.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 4358.2
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 185.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 1269.1
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 36.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 1245.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 547.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Wingra",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 2856.4
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Wingra",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 2.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Wingra",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 138.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Wingra",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 750.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Lake Wingra",
+      "water_kind": "wide",
+      "category": "university",
+      "length_m": 4601.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Morse Pond",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 1212.9
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Murphy Creek",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 226.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Murphy Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 2222.5
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Murphy Creek",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 9.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Murphy Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 101.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Murphy Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 152.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Murphy Creek",
+      "water_kind": "wide",
+      "category": "university",
+      "length_m": 685.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Murphy Creek",
+      "water_kind": "narrow",
+      "category": "university",
+      "length_m": 270.9
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 1318.7
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 364.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 883.6
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 105.9
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 16.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 209.1
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Odana Pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 21.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Odana Pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 1529.9
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Penitto Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 40.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Penitto Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 96.1
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Starkweather Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 1449.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Starkweather Creek",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 674.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Starkweather Creek",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 378.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Starkweather Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 864.4
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Starkweather Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 30.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Starkweather Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 391.3
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Starkweather Creek",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 2.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Starkweather Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 78.7
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Stricker's Pond",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 455.9
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Tenney Park Lagoon",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 2353.7
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "county",
+      "length_m": 493.5
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 11370.7
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "other_public",
+      "length_m": 588.3
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 3957.7
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 3421.1
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "university",
+      "length_m": 1313.5
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Upper Mud Lake",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 27.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Upper Mud Lake",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 396.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Upper Mud Lake",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 1584.3
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Warner Park Lagoon",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 3252.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Warner Park Lagoon",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 96.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Warner Park Lagoon",
+      "water_kind": "pond",
+      "category": "state_federal",
+      "length_m": 643.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Willow Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 18.5
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Willow Creek",
+      "water_kind": "narrow",
+      "category": "university",
+      "length_m": 474.3
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 9.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 2343.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 3659.6
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 2536.1
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 843.1
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 7.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 112.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 136.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 15.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 15.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 248.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 32.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 30.0
+    },
+    {
+      "muni_id": 3,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 97.0
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 522.8
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Esser Pond",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 956.9
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Graber Pond",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 1012.9
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Graber Pond",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 399.0
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 8.0
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 2182.0
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 14.0
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 41.0
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Pheasant Branch",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 863.1
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Pheasant Branch",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 6185.9
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Pheasant Branch",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 638.7
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Pheasant Branch",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 960.7
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Pheasant Branch",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 670.0
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "South Pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 927.4
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Stricker's Pond",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 957.8
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Tiedeman Pond",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 1679.3
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Tiedeman Pond",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 185.0
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 1694.0
+    },
+    {
+      "muni_id": 4,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 523.3
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 811.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Lake Monona",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 73.1
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Lake Monona",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 289.3
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 6975.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 352.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Lake Monona",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 12.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Penitto Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 117.6
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Penitto Creek",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 51.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Penitto Creek",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 281.4
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Penitto Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 417.4
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Penitto Creek",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 23.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 812.3
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Upper Mud Lake",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 135.4
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Upper Mud Lake",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 1334.7
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 327.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 1269.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 95.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 1198.9
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 525.6
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 67.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 43.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 116.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 263.0
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 625.9
+    },
+    {
+      "muni_id": 5,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 210.0
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Paradise Pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 938.7
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "county",
+      "length_m": 152.0
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 1406.2
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private_public_access",
+      "length_m": 409.7
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Virgin Lake",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 202.6
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 3968.6
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 555.4
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 4952.9
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 445.7
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 4306.3
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 106.5
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 101.3
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 1392.0
+    },
+    {
+      "muni_id": 6,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 107.5
+    },
+    {
+      "muni_id": 7,
+      "waterbody": "Brazee Lake",
+      "water_kind": "wide",
+      "category": "land_trust",
+      "length_m": 2854.2
+    },
+    {
+      "muni_id": 7,
+      "waterbody": "Brazee Lake",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 219.0
+    },
+    {
+      "muni_id": 7,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 118.3
+    },
+    {
+      "muni_id": 7,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 120.1
+    },
+    {
+      "muni_id": 7,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 431.0
+    },
+    {
+      "muni_id": 7,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 5730.1
+    },
+    {
+      "muni_id": 7,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 191.0
+    },
+    {
+      "muni_id": 7,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 1157.2
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 1086.9
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 2109.7
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 77.0
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 67.0
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Goose Lake",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 706.7
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Goose Lake",
+      "water_kind": "pond",
+      "category": "private_public_access",
+      "length_m": 234.9
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Lake Gandalf",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 746.0
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Sugar River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 1265.2
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 1977.8
+    },
+    {
+      "muni_id": 8,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 3968.3
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 70.0
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 318.0
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 1146.0
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 428.9
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 735.0
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 3109.5
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 8.5
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Nine Springs Creek",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 105.0
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "other_public",
+      "length_m": 4336.2
+    },
+    {
+      "muni_id": 12,
+      "waterbody": "Upper Mud Lake",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 399.9
+    },
+    {
+      "muni_id": 14,
+      "waterbody": "Brazee Lake",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 104.0
+    },
+    {
+      "muni_id": 14,
+      "waterbody": "Maunesha River",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 21.0
+    },
+    {
+      "muni_id": 14,
+      "waterbody": "Maunesha River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 5519.4
+    },
+    {
+      "muni_id": 14,
+      "waterbody": "Maunesha River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 1302.0
+    },
+    {
+      "muni_id": 14,
+      "waterbody": "Maunesha River",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 482.5
+    },
+    {
+      "muni_id": 14,
+      "waterbody": "Maunesha River",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 14.0
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 2904.0
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Token Creek",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 314.0
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 254.9
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 2105.5
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 96.9
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 4523.1
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 1829.6
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 3632.3
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private_public_access",
+      "length_m": 163.9
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 505.0
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 1027.1
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 13.0
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 123.1
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 2816.1
+    },
+    {
+      "muni_id": 15,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 795.0
+    },
+    {
+      "muni_id": 17,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 23.1
+    },
+    {
+      "muni_id": 17,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 6014.4
+    },
+    {
+      "muni_id": 17,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 217.0
+    },
+    {
+      "muni_id": 17,
+      "waterbody": "Koshkonong Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 90.5
+    },
+    {
+      "muni_id": 17,
+      "waterbody": "Koshkonong Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 11396.5
+    },
+    {
+      "muni_id": 17,
+      "waterbody": "Koshkonong Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 42.0
+    },
+    {
+      "muni_id": 17,
+      "waterbody": "Koshkonong Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 133.9
+    },
+    {
+      "muni_id": 17,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 10240.5
+    },
+    {
+      "muni_id": 17,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 582.4
+    },
+    {
+      "muni_id": 19,
+      "waterbody": "Spring Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 38.0
+    },
+    {
+      "muni_id": 19,
+      "waterbody": "Spring Creek",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 1040.9
+    },
+    {
+      "muni_id": 19,
+      "waterbody": "Spring Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 4911.8
+    },
+    {
+      "muni_id": 19,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 4.0
+    },
+    {
+      "muni_id": 19,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 9109.9
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Door Creek",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 577.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 2655.4
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 20.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Door Creek",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 5.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 643.6
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Door Creek",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 238.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 229.9
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Grass Lake",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 220.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Grass Lake",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 2204.4
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Hook Lake",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 1.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Hook Lake",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 5086.7
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Hook Lake",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 1567.9
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 772.1
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 30.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 105.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 7.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 7448.1
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 1320.9
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 37.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 50.9
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 55.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 463.1
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 1223.1
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "land_trust",
+      "length_m": 667.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 530.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 9.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 5.6
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 7345.3
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 165.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 37.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 717.1
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Mud Lake",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 2508.7
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Mud Lake",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 1423.1
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Murphys Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 1144.9
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Swan Creek",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 5.1
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Swan Creek",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 3.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Swan Creek",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 12.2
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Swan Creek",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 31.2
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Swan Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 192.3
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "county",
+      "length_m": 613.4
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 36.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "other_public",
+      "length_m": 60.3
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 6263.5
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private_public_access",
+      "length_m": 21.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 492.8
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "state_federal",
+      "length_m": 4007.1
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 3010.1
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 116.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 109.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 507.5
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 4480.4
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 184.5
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 211.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 81.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 317.0
+    },
+    {
+      "muni_id": 22,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 733.1
+    },
+    {
+      "muni_id": 25,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 752.2
+    },
+    {
+      "muni_id": 25,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 3469.6
+    },
+    {
+      "muni_id": 25,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 1.0
+    },
+    {
+      "muni_id": 25,
+      "waterbody": "Middleton Lake",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 2092.2
+    },
+    {
+      "muni_id": 25,
+      "waterbody": "Middleton Lake",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 420.0
+    },
+    {
+      "muni_id": 25,
+      "waterbody": "Middleton Lake",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 3.0
+    },
+    {
+      "muni_id": 25,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 543.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 2087.9
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 131.8
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 704.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 44.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 9.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 5107.9
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 65.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 77.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 943.9
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Lake Kegonsa",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 677.2
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "other_public",
+      "length_m": 24.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 6024.4
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "state_federal",
+      "length_m": 692.6
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 95.3
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 683.3
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 79.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 8831.1
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 1515.9
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 30.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 38.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 109.0
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 140.1
+    },
+    {
+      "muni_id": 29,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 1177.9
+    },
+    {
+      "muni_id": 34,
+      "waterbody": "Autumn Pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 580.6
+    },
+    {
+      "muni_id": 34,
+      "waterbody": "Barbian Pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 791.1
+    },
+    {
+      "muni_id": 34,
+      "waterbody": "Brandenburg Lake",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 1687.5
+    },
+    {
+      "muni_id": 34,
+      "waterbody": "Diedrich Pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 1436.8
+    },
+    {
+      "muni_id": 34,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 30.5
+    },
+    {
+      "muni_id": 34,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 1203.9
+    },
+    {
+      "muni_id": 34,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 366.5
+    },
+    {
+      "muni_id": 34,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 10697.6
+    },
+    {
+      "muni_id": 35,
+      "waterbody": "Koshkonong Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 2242.0
+    },
+    {
+      "muni_id": 35,
+      "waterbody": "Koshkonong Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 83.1
+    },
+    {
+      "muni_id": 35,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 1123.2
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 735.3
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 17.0
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 2466.6
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 3.0
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 55.0
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Badger Mill Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 58.0
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Goose Lake",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 1228.9
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Goose Lake",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 313.0
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Goose Lake",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 76.0
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Sugar River",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 4513.9
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Sugar River",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 34.0
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Sugar River",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 74.0
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Sugar River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 7470.6
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Sugar River",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 192.9
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Sugar River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 109.8
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Sugar River",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 1015.1
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "county",
+      "length_m": 1217.7
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 1486.8
+    },
+    {
+      "muni_id": 37,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "state_federal",
+      "length_m": 34.0
+    },
+    {
+      "muni_id": 38,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "county",
+      "length_m": 2148.8
+    },
+    {
+      "muni_id": 38,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 38.0
+    },
+    {
+      "muni_id": 38,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 32919.3
+    },
+    {
+      "muni_id": 38,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 578.1
+    },
+    {
+      "muni_id": 38,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "state_federal",
+      "length_m": 3144.2
+    },
+    {
+      "muni_id": 38,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 999.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Dorn Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 47.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Dorn Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 27.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Dorn Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 419.4
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Dorn Creek",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 227.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 89.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Lake Mendota",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 193.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 905.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 2.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 5667.7
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 90.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 969.9
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Lost Lake",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 650.6
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 85.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 520.1
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 505.1
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 15.1
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 64.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 3052.8
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 754.9
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 287.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 59.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 148.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 141.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 1909.2
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 1678.1
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Six Mile Creek Rearing Pond",
+      "water_kind": "pond",
+      "category": "state_federal",
+      "length_m": 555.4
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "county",
+      "length_m": 1314.3
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 757.9
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "state_federal",
+      "length_m": 1194.9
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 118.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 185.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 2011.1
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 34.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "other_public",
+      "length_m": 148.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 241.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 3097.1
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 123.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 249.0
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 63.4
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 3659.1
+    },
+    {
+      "muni_id": 39,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 525.1
+    },
+    {
+      "muni_id": 46,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 1335.9
+    },
+    {
+      "muni_id": 46,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 864.6
+    },
+    {
+      "muni_id": 47,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 1203.8
+    },
+    {
+      "muni_id": 47,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 1.0
+    },
+    {
+      "muni_id": 47,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 73.7
+    },
+    {
+      "muni_id": 47,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 95.9
+    },
+    {
+      "muni_id": 47,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 23.6
+    },
+    {
+      "muni_id": 47,
+      "waterbody": "Black Earth Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 141.1
+    },
+    {
+      "muni_id": 48,
+      "waterbody": "Lake Melvin",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 530.2
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 27.0
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 353.7
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 28.0
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 73.1
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 1592.8
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 7923.2
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "public_no_access",
+      "length_m": 35.0
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 683.9
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 8305.5
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 12.0
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 1851.1
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 204.0
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 285.1
+    },
+    {
+      "muni_id": 50,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 377.3
+    },
+    {
+      "muni_id": 51,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 174.0
+    },
+    {
+      "muni_id": 51,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 4057.0
+    },
+    {
+      "muni_id": 51,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 63.0
+    },
+    {
+      "muni_id": 51,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 97.0
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Door Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 195.9
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 23.6
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "narrow",
+      "category": "county",
+      "length_m": 97.1
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 305.7
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 762.0
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 2232.0
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 243.1
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 19.0
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Lake Waubesa",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 449.0
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Mud Lake",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 503.7
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 505.5
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 695.3
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Upper Mud Lake",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 682.9
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "county",
+      "length_m": 10.0
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 489.9
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 1155.8
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 18.0
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 30.0
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "public_no_access",
+      "length_m": 35.0
+    },
+    {
+      "muni_id": 54,
+      "waterbody": "Yahara River",
+      "water_kind": "wide",
+      "category": "state_federal",
+      "length_m": 270.0
+    },
+    {
+      "muni_id": 56,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 573.6
+    },
+    {
+      "muni_id": 56,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 1327.2
+    },
+    {
+      "muni_id": 58,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "municipal",
+      "length_m": 300.0
+    },
+    {
+      "muni_id": 58,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 1082.0
+    },
+    {
+      "muni_id": 58,
+      "waterbody": "Lake Mendota",
+      "water_kind": "wide",
+      "category": "private_public_access",
+      "length_m": 24.0
+    },
+    {
+      "muni_id": 59,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 4671.6
+    },
+    {
+      "muni_id": 59,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "other_public",
+      "length_m": 29.0
+    },
+    {
+      "muni_id": 59,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 171.0
+    },
+    {
+      "muni_id": 59,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "private_public_access",
+      "length_m": 115.0
+    },
+    {
+      "muni_id": 59,
+      "waterbody": "Sixmile Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 13.0
+    },
+    {
+      "muni_id": 59,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 700.9
+    },
+    {
+      "muni_id": 59,
+      "waterbody": "Village Center Pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 436.4
+    },
+    {
+      "muni_id": 59,
+      "waterbody": "Village Center Pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 110.1
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Lake Windsor",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 1128.5
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Oak Springs",
+      "water_kind": "wide",
+      "category": "private",
+      "length_m": 724.8
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 1681.1
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 117.9
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 25.6
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Token Creek",
+      "water_kind": "narrow",
+      "category": "state_federal",
+      "length_m": 52.8
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "municipal",
+      "length_m": 1098.7
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Unnamed pond",
+      "water_kind": "pond",
+      "category": "private",
+      "length_m": 3788.8
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "municipal",
+      "length_m": 341.9
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "private",
+      "length_m": 2412.5
+    },
+    {
+      "muni_id": 60,
+      "waterbody": "Yahara River",
+      "water_kind": "narrow",
+      "category": "public_no_access",
+      "length_m": 89.0
+    }
+  ]
+}

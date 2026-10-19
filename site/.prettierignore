@@ -1,3 +1,5 @@
 dist/
-public/data/
+# Pipeline outputs, except stats.json (the pipeline writes it Prettier-formatted).
+public/data/*
+!public/data/stats.json
 package-lock.json

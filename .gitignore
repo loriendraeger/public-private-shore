@@ -1,10 +1,6 @@
 # Pipeline data (regenerable). Committed outputs live in site/public/data/.
 /data/
 
-# TEMPORARY: don't commit pipeline outputs until the owner is happy with them.
-# Remove this line to start committing site/public/data/ as planned in AGENTS.md.
-/site/public/data/
-
 # Secrets / local env
 .env
 
