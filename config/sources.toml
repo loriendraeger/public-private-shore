@@ -211,6 +211,8 @@ rest_endpoint = "https://dcimapapps.danecounty.gov/arcgissrv/rest/services/DaneC
 local_path = "data/raw/hydro_county/RiversStreams/RiversStreams.shp"
 format = "shp"
 layer = "RiversStreams"
+table = "county_streams"
+load_srs = "EPSG:7599"       # ESRI .prj; tag the EPSG code explicitly
 geometry = "LineString"
 crs = "EPSG:7599"   # NAD83(2011) / WISCRS Dane (ftUS). Feet; reproject to 3071.
 license = "Same as [hydro_county] (disclaimer only; county license agreement unconfirmed). Attribution: Dane County Land Information Office"
@@ -231,8 +233,9 @@ Named lines: 71 distinct names, 933 km total.
   Biggest line-only: Sugar River 21 km (the rest is polygon), Mud Creek 20,
   Kittleson Valley Creek 20, Elvers Creek 19, Koshkonong Creek 18, Vermont Creek 18.
 Unnamed lines (~25,000, mostly drainage/intermittent) are out of scope.
-NOT USED for now (2026-10-17): line-only streams are excluded from the analysis.
-Kept here for the revisit.
+Line-only streams are excluded from the analysis (2026-10-17). The centerlines ARE
+used for narrow water (25_narrow_water.sql, 2026-10-17): the two banks collapse onto
+the county stream centerline.
 """
 
 [municipalities]
