@@ -180,6 +180,7 @@ analysis happens in **PostGIS SQL**, and products are exported back out to **fil
 │   │   └── lib/                  # shared types (ownership classes, stats.json schema)
 │   └── public/data/              # COMMITTED pipeline outputs
 │       ├── shore.pmtiles
+│       ├── context.pmtiles
 │       ├── basemap.pmtiles
 │       └── stats.json
 │
@@ -366,6 +367,9 @@ Written to `site/public/data/` and committed to git:
 - `shore.pmtiles`: shore segments (class, owner label, access, access source,
   municipality, length) and parks. **No raw owner names.** Access evidence (boat
   launches, beaches, etc.) feeds the access attribute but is not exported as map features.
+- `context.pmtiles`: county-wide reference layers: municipal boundary polygons
+  (muni name and type, used for shading by the selected measure) and one label point
+  per municipality. Layer-to-file assignment is `[tiles.files]` in `pipeline.toml`.
 - `basemap.pmtiles`: Protomaps extract for Dane County
 - `stats.json`: per-municipality × class and × access lengths, plus totals and dataset metadata
   (source dates)
