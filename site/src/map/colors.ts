@@ -4,11 +4,11 @@ import type { Access, Category } from '../lib/contract'
 
 export type Mode = 'light' | 'dark'
 
-// Categories fold into 4 groups on the map. A map is an "all pairs" view (any color can
+// Categories fold into 3 groups on the map. A map is an "all pairs" view (any color can
 // sit next to any other), where only three categorical hues stay distinguishable for
-// color-blind readers, plus gray. The exact category and owner show in the segment panel.
+// color-blind readers. The exact category and owner show in the segment panel.
 // Palette validated with the dataviz validator (--pairs all), light and dark.
-export type CategoryGroup = 'municipal' | 'other_access' | 'no_access' | 'unknown'
+export type CategoryGroup = 'municipal' | 'other_access' | 'no_access'
 
 export const CATEGORY_GROUP: Record<Category, CategoryGroup> = {
   municipal: 'municipal',
@@ -20,7 +20,6 @@ export const CATEGORY_GROUP: Record<Category, CategoryGroup> = {
   private_public_access: 'other_access',
   public_no_access: 'no_access',
   private: 'no_access',
-  unknown: 'unknown',
 }
 
 // Records keyed by the union types, so every lookup is total (no `undefined` to handle).
@@ -38,14 +37,12 @@ export const CATEGORY_GROUPS: Record<
     color: { light: '#1baf7a', dark: '#199e70' },
   },
   no_access: { label: 'No public access', color: { light: '#eb6834', dark: '#d95926' } },
-  unknown: { label: 'Unknown', color: { light: '#898781', dark: '#898781' } },
 }
 
 // Access is a state, so it uses the status palette, always with an icon + label.
 export const ACCESS: Record<Access, { label: string; icon: string; color: string }> = {
   open: { label: 'Open to the public', icon: '✓', color: '#0ca30c' },
   none: { label: 'No access from land', icon: '✕', color: '#d03b3b' },
-  unknown: { label: 'Unknown', icon: '?', color: '#898781' },
 }
 
 // Municipality shading: sequential blue ramp (dataviz reference palette, 100 -> 700),

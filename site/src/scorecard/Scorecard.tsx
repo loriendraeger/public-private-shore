@@ -1,6 +1,6 @@
 import { For, type JSX, Show } from 'solid-js'
 
-import { CATEGORIES, KNOWN_CATEGORIES } from '../lib/categories'
+import { ALL_CATEGORIES,CATEGORIES } from '../lib/categories'
 import type { Category, WaterKind } from '../lib/contract'
 import { formatLong, formatPct, formatShort, fromLong, longUnit, toLong } from '../lib/units'
 import {
@@ -118,7 +118,7 @@ function Builder(): JSX.Element {
           </tr>
         </thead>
         <tbody>
-          <For each={KNOWN_CATEGORIES}>
+          <For each={ALL_CATEGORIES}>
             {(c) => (
               <tr>
                 <td title={CATEGORIES[c].description}>{CATEGORIES[c].label}</td>
@@ -157,10 +157,6 @@ function Builder(): JSX.Element {
               </tr>
             )}
           </For>
-          <tr class="muted">
-            <td title={CATEGORIES.unknown.description}>Unknown</td>
-            <td colspan="2">excluded for now</td>
-          </tr>
         </tbody>
       </table>
     </details>
@@ -230,8 +226,7 @@ function Summary(): JSX.Element {
         : `${String(scores().length)} of ${String(stats()?.municipalities.length ?? 0)} municipalities`}
       : <strong>{t().pct === null ? '—' : formatPct(t().pct ?? 0)}</strong> (
       {formatLong(t().numeratorM, units())} of {formatLong(t().denominatorM, units())}),{' '}
-      {formatShort(t().perThousandM, units())} per 1,000 residents.{' '}
-      <span class="muted">{formatLong(t().unknownM, units())} of unknown shore left out.</span>
+      {formatShort(t().perThousandM, units())} per 1,000 residents.
     </p>
   )
 }

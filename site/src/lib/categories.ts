@@ -7,8 +7,7 @@ export interface CategoryInfo {
   description: string
 }
 
-// Key order is display order. `unknown` is listed but excluded from the scorecard
-// until the unknowns are cleaned up.
+// Key order is display order.
 export const CATEGORIES: Record<Category, CategoryInfo> = {
   municipal: {
     label: 'Municipal',
@@ -43,16 +42,8 @@ export const CATEGORIES: Record<Category, CategoryInfo> = {
     description: 'Publicly owned but not open: schools, facilities, barriers',
   },
   private: { label: 'Private', publicAccess: false, description: 'Privately owned, no access' },
-  unknown: {
-    label: 'Unknown',
-    publicAccess: false,
-    description: 'Owner or access not yet determined (excluded for now)',
-  },
 }
 
-/** Categories the scorecard uses: everything but `unknown`. */
-export const KNOWN_CATEGORIES = (Object.keys(CATEGORIES) as Category[]).filter(
-  (c) => c !== 'unknown',
-)
+export const ALL_CATEGORIES = Object.keys(CATEGORIES) as Category[]
 
-export const PUBLIC_ACCESS_CATEGORIES = KNOWN_CATEGORIES.filter((c) => CATEGORIES[c].publicAccess)
+export const PUBLIC_ACCESS_CATEGORIES = ALL_CATEGORIES.filter((c) => CATEGORIES[c].publicAccess)

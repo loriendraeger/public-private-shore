@@ -1,6 +1,6 @@
 // Scorecard measures: plain aggregation over the tidy stats.json rows.
 
-import { KNOWN_CATEGORIES, PUBLIC_ACCESS_CATEGORIES } from '../lib/categories'
+import { ALL_CATEGORIES, PUBLIC_ACCESS_CATEGORIES } from '../lib/categories'
 import type { Category, Stats, StatsMuni, WaterKind } from '../lib/contract'
 
 /** Default water: lakes, rivers and narrow streams; ponds are opt-in. */
@@ -31,7 +31,7 @@ export const REPORTS: Report[] = [
       'Shore the public can reach from land, whoever provides it: the municipality, county, state, UW, land trusts and other public bodies.',
     measure: {
       numerator: PUBLIC_ACCESS_CATEGORIES,
-      denominator: KNOWN_CATEGORIES,
+      denominator: ALL_CATEGORIES,
       water: DEFAULT_WATER,
     },
   },
@@ -39,7 +39,7 @@ export const REPORTS: Report[] = [
     id: 'municipal',
     label: 'Provided by the municipality',
     description: 'Shore the municipality itself opens to the public: its own land and street ends.',
-    measure: { numerator: ['municipal'], denominator: KNOWN_CATEGORIES, water: DEFAULT_WATER },
+    measure: { numerator: ['municipal'], denominator: ALL_CATEGORIES, water: DEFAULT_WATER },
   },
   {
     id: 'public_plus_private',
@@ -48,7 +48,7 @@ export const REPORTS: Report[] = [
       'Like "any provider", plus privately owned shore that is open to the public (e.g. the Edgewood campus).',
     measure: {
       numerator: [...PUBLIC_ACCESS_CATEGORIES, 'private_public_access'],
-      denominator: KNOWN_CATEGORIES,
+      denominator: ALL_CATEGORIES,
       water: DEFAULT_WATER,
     },
   },
@@ -59,7 +59,7 @@ export const REPORTS: Report[] = [
       'Public access from any provider, counting only lakes, named ponds and rivers at least 30 m wide.',
     measure: {
       numerator: PUBLIC_ACCESS_CATEGORIES,
-      denominator: KNOWN_CATEGORIES,
+      denominator: ALL_CATEGORIES,
       water: ['wide'],
     },
   },
@@ -70,7 +70,7 @@ export const REPORTS: Report[] = [
       'Like "any provider", plus ponds the county and DNR don\'t name (often stormwater ponds): credit for ponds ringed by parks, a penalty for ponds behind private lots.',
     measure: {
       numerator: PUBLIC_ACCESS_CATEGORIES,
-      denominator: KNOWN_CATEGORIES,
+      denominator: ALL_CATEGORIES,
       water: ALL_WATER,
     },
   },
@@ -80,7 +80,7 @@ export const REPORTS: Report[] = [
     description: 'Shore with no public access from land: private, plus public land that is closed.',
     measure: {
       numerator: ['private', 'public_no_access'],
-      denominator: KNOWN_CATEGORIES,
+      denominator: ALL_CATEGORIES,
       water: DEFAULT_WATER,
     },
   },
@@ -112,22 +112,17 @@ export interface Score {
   pct: number | null
   /** Numerator meters per 1,000 residents. */
   perThousandM: number
-  /** Unknown shore left out of the measure (same water filter). */
-  unknownM: number
 }
 
 export function computeScores(stats: Stats, m: Measure): Score[] {
-  const byMuni = new Map<number, { num: number; den: number; unk: number }>()
+  const byMuni = new Map<number, { num: number; den: number }>()
   for (const muni of stats.municipalities) {
-    byMuni.set(muni.muni_id, { num: 0, den: 0, unk: 0 })
+    byMuni.set(muni.muni_id, { num: 0, den: 0 })
   }
   for (const row of stats.shore) {
     const acc = byMuni.get(row.muni_id)
     if (!acc || !m.water.includes(row.water_kind)) {
       continue
-    }
-    if (row.category === 'unknown') {
-      acc.unk += row.length_m
     }
     if (m.denominator.includes(row.category)) {
       acc.den += row.length_m
@@ -137,14 +132,13 @@ export function computeScores(stats: Stats, m: Measure): Score[] {
     }
   }
   return stats.municipalities.map((muni) => {
-    const acc = byMuni.get(muni.muni_id) ?? { num: 0, den: 0, unk: 0 }
+    const acc = byMuni.get(muni.muni_id) ?? { num: 0, den: 0 }
     return {
       muni,
       numeratorM: acc.num,
       denominatorM: acc.den,
       pct: acc.den > 0 ? acc.num / acc.den : null,
       perThousandM: muni.population > 0 ? (acc.num / muni.population) * 1000 : 0,
-      unknownM: acc.unk,
     }
   })
 }
@@ -157,17 +151,15 @@ export function totalScore(scores: Score[]): Omit<Score, 'muni'> & {
     (a, s) => ({
       num: a.num + s.numeratorM,
       den: a.den + s.denominatorM,
-      unk: a.unk + s.unknownM,
       pop: a.pop + s.muni.population,
     }),
-    { num: 0, den: 0, unk: 0, pop: 0 },
+    { num: 0, den: 0, pop: 0 },
   )
   return {
     numeratorM: t.num,
     denominatorM: t.den,
     pct: t.den > 0 ? t.num / t.den : null,
     perThousandM: t.pop > 0 ? (t.num / t.pop) * 1000 : 0,
-    unknownM: t.unk,
     population: t.pop,
   }
 }

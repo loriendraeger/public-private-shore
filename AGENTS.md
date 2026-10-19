@@ -486,6 +486,10 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
 
+- 2026-10-18: The site no longer mentions `unknown` (legends, scorecard column and
+  summary, category list): the pipeline leaves none. `unknown` stays a pipeline
+  fallback (`70_category.sql`) and an owner class.
+
 - 2026-10-18: Licensing is share-alike throughout: code GPL-3.0-or-later (`LICENSE`),
   docs and methodology CC BY-SA 4.0 (`LICENSE-DOCS`), data ODbL 1.0 (`LICENSE-DATA`:
   `site/public/data/` and the curated `config/*.csv`). The outputs derive from OSM, so

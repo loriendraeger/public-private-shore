@@ -24,7 +24,7 @@ export type OwnerClass =
   | 'row'
   | 'unknown'
 
-export type Access = 'open' | 'none' | 'unknown'
+export type Access = 'open' | 'none'
 
 export type AccessSource =
   | 'default'
@@ -48,7 +48,6 @@ export type Category =
   | 'private_public_access'
   | 'public_no_access'
   | 'private'
-  | 'unknown'
 
 export type MuniType = 'city' | 'village' | 'town'
 

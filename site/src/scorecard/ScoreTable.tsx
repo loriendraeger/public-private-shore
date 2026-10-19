@@ -79,11 +79,6 @@ const columns = helper.columns([
     sortFn: 'basic',
     cell: (c) => c.getValue().toLocaleString(),
   }),
-  helper.accessor('unknownM', {
-    header: 'Unknown (excluded)',
-    sortFn: 'basic',
-    cell: long,
-  }),
 ])
 
 export default function ScoreTable(props: { scores: Score[] }): JSX.Element {
