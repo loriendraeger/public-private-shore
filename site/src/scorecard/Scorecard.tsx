@@ -17,7 +17,13 @@ import {
 } from '../state/store'
 import Chart from './Chart'
 import Composition from './Composition'
-import { matchingReport, MAX_MIN_SHORE_M, REPORTS, totalScore } from './measures'
+import {
+  DEFAULT_MIN_SHORE_M,
+  matchingReport,
+  MAX_MIN_SHORE_M,
+  REPORTS,
+  totalScore,
+} from './measures'
 import ScoreTable from './ScoreTable'
 
 const WATER: Record<WaterKind, { label: string; title: string }> = {
@@ -211,7 +217,10 @@ function ShoreFloor(): JSX.Element {
         {value().toLocaleString(undefined, { maximumFractionDigits: 2 })} {longUnit(units())}
       </output>
       <span>of measured shore</span>
-      <span class="muted">(below that, one park or street end swings the share a lot)</span>
+      <span class="muted">
+        (below {formatLong(DEFAULT_MIN_SHORE_M, units())}, one park or street end swings the share a
+        lot)
+      </span>
     </label>
   )
 }

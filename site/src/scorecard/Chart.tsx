@@ -1,10 +1,11 @@
 import * as Plot from '@observablehq/plot'
-import { createEffect, createSignal, type JSX, onCleanup, Show } from 'solid-js'
+import { createEffect, type JSX, onCleanup, Show } from 'solid-js'
 
 import { formatLong, formatPct, formatShort, toLong, toShort } from '../lib/units'
 import { type Metric, metric, units } from '../state/store'
-import HoverTip, { onScrollHide, rowAt, type TipAt } from './HoverTip'
+import HoverTip, { createChartTip, rowAt } from './HoverTip'
 import type { Score } from './measures'
+import { rowLayout } from './rows'
 import { TYPE_LABEL } from './ScoreTable'
 
 interface Datum {
@@ -55,8 +56,7 @@ function axisLabel(m: Metric, isMetric: boolean): string {
 
 /** Ranked horizontal bars, one per municipality, for the current metric. */
 export default function Chart(props: { scores: Score[] }): JSX.Element {
-  const [hover, setHover] = createSignal<{ score: Score; at: TipAt } | null>(null)
-  onScrollHide(() => setHover(null))
+  const { tip, attach } = createChartTip<Score>()
   let el: HTMLDivElement | undefined
   let width = 640
   const ro = new ResizeObserver(([entry]) => {
@@ -81,11 +81,12 @@ export default function Chart(props: { scores: Score[] }): JSX.Element {
       .sort((a, b) => b.value - a.value)
     const ink = cssVar('--ink-2')
     const accent = cssVar('--accent')
+    const names = data.map((d) => d.name)
+    const rows = rowLayout(width, names, ink)
     const plot = Plot.plot({
       width,
-      // 22 px per row, plus 20 px top and 44 px bottom margins
-      height: Math.max(120, data.length * 22 + 64),
-      marginLeft: 200,
+      height: rows.height,
+      marginLeft: rows.marginLeft,
       marginRight: 64,
       marginBottom: 44,
       style: { background: 'transparent', color: ink, fontSize: '12px' },
@@ -97,15 +98,15 @@ export default function Chart(props: { scores: Score[] }): JSX.Element {
         domain: m === 'pct' ? [0, 100] : undefined,
         nice: true,
       },
-      y: { label: null, domain: data.map((d) => d.name) },
+      y: rows.y,
       marks: [
         Plot.barX(data, {
           x: 'value',
           y: 'name',
           fill: accent,
           rx: 3,
-          insetTop: 2,
-          insetBottom: 2,
+          insetTop: rows.insetTop,
+          insetBottom: rows.insetBottom,
         }),
         Plot.text(data, {
           x: 'value',
@@ -113,23 +114,15 @@ export default function Chart(props: { scores: Score[] }): JSX.Element {
           text: 'label',
           textAnchor: 'start',
           dx: 4,
+          dy: rows.barDy,
           fill: ink,
         }),
         Plot.ruleX([0], { stroke: ink }),
+        ...rows.nameMarks,
       ],
     })
-    // Hovering anywhere on a row shows the municipality's whole table row.
-    const names = data.map((d) => d.name)
-    plot.addEventListener('pointermove', (e) => {
-      const { offsetY, clientX, clientY } = e as PointerEvent
-      const name = rowAt(plot, names, offsetY)
-      const d = data.find((x) => x.name === name)
-      setHover(d ? { score: d.score, at: { x: clientX, y: clientY } } : null)
-    })
-    plot.addEventListener('pointerleave', () => {
-      setHover(null)
-    })
-    setHover(null)
+    // Anywhere on a row shows the municipality's whole table row.
+    attach(plot, (e) => data.find((x) => x.name === rowAt(plot, names, e.offsetY))?.score)
     el.replaceChildren(plot)
   }
 
@@ -144,24 +137,24 @@ export default function Chart(props: { scores: Score[] }): JSX.Element {
           ro.observe(e)
         }}
       />
-      <Show when={hover()}>
+      <Show when={tip()}>
         {(h) => (
           <HoverTip at={h().at}>
             <dl class="rows">
               <dt>Municipality</dt>
-              <dd>{h().score.muni.name}</dd>
+              <dd>{h().value.muni.name}</dd>
               <dt>Type</dt>
-              <dd>{TYPE_LABEL[h().score.muni.muni_type]}</dd>
+              <dd>{TYPE_LABEL[h().value.muni.muni_type]}</dd>
               <dt>Share</dt>
-              <dd>{h().score.pct === null ? '—' : formatPct(h().score.pct ?? 0)}</dd>
+              <dd>{h().value.pct === null ? '—' : formatPct(h().value.pct ?? 0)}</dd>
               <dt>Counted</dt>
-              <dd>{formatLong(h().score.numeratorM, units())}</dd>
+              <dd>{formatLong(h().value.numeratorM, units())}</dd>
               <dt>Out of</dt>
-              <dd>{formatLong(h().score.denominatorM, units())}</dd>
+              <dd>{formatLong(h().value.denominatorM, units())}</dd>
               <dt>Per 1,000 residents</dt>
-              <dd>{formatShort(h().score.perThousandM, units())}</dd>
+              <dd>{formatShort(h().value.perThousandM, units())}</dd>
               <dt>Population</dt>
-              <dd>{h().score.muni.population.toLocaleString()}</dd>
+              <dd>{h().value.muni.population.toLocaleString()}</dd>
             </dl>
           </HoverTip>
         )}

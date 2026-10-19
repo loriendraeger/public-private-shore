@@ -1,13 +1,14 @@
 import * as Plot from '@observablehq/plot'
-import { createEffect, createMemo, createSignal, For, type JSX, onCleanup, Show } from 'solid-js'
+import { createEffect, createMemo, For, type JSX, onCleanup, Show } from 'solid-js'
 
 import { ALL_CATEGORIES, CATEGORIES } from '../lib/categories'
 import type { Category } from '../lib/contract'
 import { formatLong, formatPct } from '../lib/units'
 import { CATEGORY_GROUP, CATEGORY_GROUPS, entries, type Mode } from '../map/colors'
 import { measure, stats, units } from '../state/store'
-import HoverTip, { onScrollHide, rowAt, type TipAt } from './HoverTip'
+import HoverTip, { createChartTip, rowAt } from './HoverTip'
 import type { Score } from './measures'
+import { rowLayout } from './rows'
 
 // What each municipality's shore is made of: one 100% stacked bar per municipality,
 // a segment per category the current report measures against. Counted categories come
@@ -80,9 +81,7 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
     })
   })
 
-  // Hovered segment and where to put the tooltip (px within the chart).
-  const [hover, setHover] = createSignal<{ seg: Segment; at: TipAt } | null>(null)
-  onScrollHide(() => setHover(null))
+  const { tip, attach } = createChartTip<Segment>()
 
   let el: HTMLDivElement | undefined
   let width = 640
@@ -101,7 +100,6 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
     if (!el) {
       return
     }
-    setHover(null)
     const names = [...new Set(data.map((d) => d.name))]
     // Where the counted part of each bar ends.
     const ends = names.map((name) => ({
@@ -110,11 +108,11 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
     }))
     const ink = cssVar('--ink-2')
     const surface = cssVar('--surface')
+    const rows = rowLayout(width, names, ink)
     const plot = Plot.plot({
       width,
-      // 22 px per row, plus 20 px top and 44 px bottom margins
-      height: Math.max(120, names.length * 22 + 64),
-      marginLeft: 200,
+      height: rows.height,
+      marginLeft: rows.marginLeft,
       marginRight: 16,
       marginBottom: 44,
       style: { background: 'transparent', color: ink, fontSize: '12px' },
@@ -124,7 +122,7 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
         labelOffset: 36,
         domain: [0, 100],
       },
-      y: { label: null, domain: names },
+      y: rows.y,
       marks: [
         Plot.barX(data, {
           x1: 'x1',
@@ -134,28 +132,30 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
           // 2px surface gap between segments
           stroke: surface,
           strokeWidth: 2,
-          insetTop: 2,
-          insetBottom: 2,
+          insetTop: rows.insetTop,
+          insetBottom: rows.insetBottom,
         }),
-        Plot.tickX(ends, { x: 'x', y: 'name', stroke: cssVar('--ink'), strokeWidth: 2 }),
+        Plot.tickX(ends, {
+          x: 'x',
+          y: 'name',
+          stroke: cssVar('--ink'),
+          strokeWidth: 2,
+          insetTop: rows.insetTop,
+          insetBottom: rows.insetBottom,
+        }),
+        ...rows.nameMarks,
       ],
     })
 
     // Plot's pointer picks the nearest segment midpoint, which can be the wrong one
     // beside a wide segment; find the segment under the pointer from the scales instead.
     const x = plot.scale('x')
-    plot.addEventListener('pointermove', (e) => {
-      const { offsetX, offsetY, clientX, clientY } = e as PointerEvent
-      const v = x?.invert?.(offsetX) as number | undefined
-      const name = rowAt(plot, names, offsetY)
-      const seg =
-        v === undefined || name === undefined
-          ? undefined
-          : data.find((d) => d.name === name && v >= d.x1 && v <= d.x2)
-      setHover(seg ? { seg, at: { x: clientX, y: clientY } } : null)
-    })
-    plot.addEventListener('pointerleave', () => {
-      setHover(null)
+    attach(plot, (e) => {
+      const v = x?.invert?.(e.offsetX) as number | undefined
+      const name = rowAt(plot, names, e.offsetY)
+      return v === undefined || name === undefined
+        ? undefined
+        : data.find((d) => d.name === name && v >= d.x1 && v <= d.x2)
     })
     el.replaceChildren(plot)
   }
@@ -178,8 +178,8 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
         </li>
       </ul>
       <p class="muted">
-        Each segment is one category; hover for details. Bars cover the shore the report measures
-        against, counted categories first.
+        Each segment is one category; hover or tap for details. Bars cover the shore the report
+        measures against, counted categories first.
       </p>
       <div
         class="chart"
@@ -188,16 +188,17 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
           ro.observe(e)
         }}
       />
-      <Show when={hover()}>
+      <Show when={tip()}>
         {(h) => (
           <HoverTip at={h().at}>
             <dl>
-              <dt>{h().seg.name}</dt>
-              <dd>{CATEGORIES[h().seg.category].label}</dd>
+              <dt>{h().value.name}</dt>
+              <dd>{CATEGORIES[h().value.category].label}</dd>
               <dd>
-                {formatLong(h().seg.m, units())} · {formatPct((h().seg.x2 - h().seg.x1) / 100)}
+                {formatLong(h().value.m, units())} ·{' '}
+                {formatPct((h().value.x2 - h().value.x1) / 100)}
               </dd>
-              <dd class="muted">In this report: {h().seg.counts ? 'Counts' : 'Out of'}</dd>
+              <dd class="muted">In this report: {h().value.counts ? 'Counts' : 'Out of'}</dd>
             </dl>
           </HoverTip>
         )}

@@ -1,5 +1,5 @@
 import type * as Plot from '@observablehq/plot'
-import { createSignal, type JSX, onCleanup } from 'solid-js'
+import { type Accessor, createSignal, type JSX, onCleanup } from 'solid-js'
 
 /** Pointer position in viewport coordinates (MouseEvent clientX/clientY). */
 export interface TipAt {
@@ -76,4 +76,61 @@ export function rowAt(plot: Plot.Plot, rows: string[], offsetY: number): string 
       offsetY < top + band + (step - band) / 2
     )
   })
+}
+
+export interface ChartTip<T> {
+  /** What to show and where, or null. */
+  tip: Accessor<{ value: T; at: TipAt } | null>
+  /** Wire a freshly drawn chart; `pick` finds the datum under the pointer, if any. */
+  attach: (target: Element, pick: (e: MouseEvent) => T | undefined) => void
+}
+
+/** Tooltip state for one chart. A mouse shows it on hover. A click or tap shows it and
+ * pins it (touch screens have no hover); tapping elsewhere on the chart moves it, and a
+ * click outside the chart or a scroll closes it. */
+export function createChartTip<T>(): ChartTip<T> {
+  const [tip, setTip] = createSignal<{ value: T; at: TipAt } | null>(null)
+  let pinned = false
+  let chart: Element | null = null
+
+  function close(): void {
+    pinned = false
+    setTip(null)
+  }
+  function show(e: MouseEvent, pick: (e: MouseEvent) => T | undefined): boolean {
+    const value = pick(e)
+    setTip(value === undefined ? null : { value, at: { x: e.clientX, y: e.clientY } })
+    return value !== undefined
+  }
+
+  onScrollHide(close)
+  function outside(e: PointerEvent): void {
+    if (chart && !chart.contains(e.target as Node)) {
+      close()
+    }
+  }
+  window.addEventListener('pointerdown', outside, { capture: true })
+  onCleanup(() => {
+    window.removeEventListener('pointerdown', outside, { capture: true })
+  })
+
+  function attach(target: Element, pick: (e: MouseEvent) => T | undefined): void {
+    chart = target
+    close() // a redraw invalidates what the tooltip points at
+    target.addEventListener('pointermove', (e) => {
+      if ((e as PointerEvent).pointerType === 'mouse' && !pinned) {
+        show(e as PointerEvent, pick)
+      }
+    })
+    target.addEventListener('pointerleave', (e) => {
+      if ((e as PointerEvent).pointerType === 'mouse' && !pinned) {
+        setTip(null)
+      }
+    })
+    target.addEventListener('click', (e) => {
+      pinned = show(e as MouseEvent, pick)
+    })
+  }
+
+  return { tip, attach }
 }
