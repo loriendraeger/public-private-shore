@@ -42,3 +42,11 @@ export function shortUnit(units: Units): string {
 export function formatPct(p: number): string {
   return `${(p * 100).toLocaleString(undefined, { maximumFractionDigits: p < 0.1 ? 1 : 0 })}%`
 }
+
+const M2_PER_ACRE = 4046.856
+
+/** Areas (pond size): ha or acres. */
+export function formatArea(m2: number, units: Units): string {
+  const v = units === 'metric' ? m2 / 10_000 : m2 / M2_PER_ACRE
+  return `${v.toLocaleString(undefined, { maximumFractionDigits: 1 })} ${units === 'metric' ? 'ha' : v === 1 ? 'acre' : 'acres'}`
+}

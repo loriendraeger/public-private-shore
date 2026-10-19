@@ -20,6 +20,10 @@ PRETTIER_PRINT_WIDTH = 100
 # Sources whose vintage the site shows (sources.toml sections).
 VINTAGE_SOURCES = ["parcels", "hydro_county", "hydro", "municipalities", "osm", "population"]
 
+# pipeline.toml settings the site quotes in its text (About page, tooltips), so the
+# words follow the analysis.
+SITE_SETTINGS = ["snap_tolerance_m", "narrow_width_m", "pond_min_area_m2"]
+
 
 def stats() -> None:
     # Connection details come from the PG* environment variables.
@@ -33,9 +37,14 @@ def stats() -> None:
     out = {
         "generated": datetime.date.today().isoformat(),
         "sources": {
-            name: {"name": src[name]["name"], "retrieved": src[name]["retrieved"]}
+            name: {
+                "name": src[name]["name"],
+                "url": src[name].get("landing", src[name]["url"]),
+                "retrieved": src[name]["retrieved"],
+            }
             for name in VINTAGE_SOURCES
         },
+        "settings": {key: setting(key) for key in SITE_SETTINGS},
         "municipalities": munis,
         "shore": shore,
     }
@@ -44,6 +53,15 @@ def stats() -> None:
     path.write_text(prettier_json(out))
     print(f"wrote {path.relative_to(config.REPO)}: {len(munis)} municipalities, "
           f"{len(shore)} rows")
+
+
+def setting(key: str):
+    """A pipeline.toml value by key, whatever its section (keys are unique; see
+    config.psql_vars)."""
+    for values in config.pipeline().values():
+        if key in values:
+            return values[key]
+    raise KeyError(f"{key!r} not in config/pipeline.toml")
 
 
 # A multi-line array of numbers, with the text before it on its line and the comma after.

@@ -18,7 +18,7 @@ export const CATEGORIES: Record<Category, CategoryInfo> = {
   state_federal: {
     label: 'State & federal',
     publicAccess: true,
-    description: 'DNR, WisDOT, US Fish & Wildlife and other state or federal land, open',
+    description: 'DNR, WisDOT, US Fish & Wildlife, and other state or federal land, open',
   },
   university: { label: 'UW–Madison', publicAccess: true, description: 'UW–Madison land, open' },
   land_trust: {
@@ -29,7 +29,7 @@ export const CATEGORIES: Record<Category, CategoryInfo> = {
   other_public: {
     label: 'Other public',
     publicAccess: true,
-    description: 'Sewerage, sanitary and lake districts, open',
+    description: 'Sewerage, sanitary, and lake districts, open',
   },
   private_public_access: {
     label: 'Private, public access',

@@ -21,8 +21,8 @@ absolute km**:
 - **Provided by the municipality**: the part it provides itself (its own land and street
   ends).
 
-Because scores compare municipalities, uncertainty matters: report how much of each
-municipality's shore has `unknown` access, and let users leave out municipalities with little shore.
+Because scores compare municipalities, uncertainty matters: no shore is left `unknown`
+(decided by rules and review), and users can leave out municipalities with little shore.
 
 Ownership and access are **separate attributes**. Public ownership doesn't imply access
 (a water utility parcel, for example), and private ownership doesn't rule it out (a
@@ -34,10 +34,10 @@ Two halves:
    map tiles plus stats come out.
 2. **Static site** (GitHub Pages, client-only): renders the committed outputs.
 
-**Status:** milestones 1–5 done; 6 (scorecard on the site) in progress. See [Milestones](#milestones). The full pipeline (load →
-staging → analysis → export → tiles) and the map run locally. `site/public/data/` is
-temporarily gitignored until the owner approves the output, and the deploy workflow is
-manual-only.
+**Status (2026-10-19):** milestones 1–6 done; 7 (ship) and 8 (explain and polish) partly
+done. See [Milestones](#milestones). The full pipeline (load → staging → analysis →
+export → tiles) and the site run locally. `site/public/data/` is committed, but the
+deploy workflow is still manual-only and the site isn't published yet.
 
 **Code architecture:** see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). It covers what
 each piece does and where to change things. Keep it current as code changes.
@@ -314,7 +314,7 @@ applied by `20_analysis/70_category.sql`.)
 | `private_public_access` | privately owned with public access (e.g. Edgewood condos) | owner label | yes (toggle) |
 | `public_no_access` | publicly owned, no public access | owner label + reason (barrier, no land route, facility, institutional grounds) | no |
 | `private` | privately owned, no public access | `Private`, `Condo / HOA`, `Church` (no individual owners) | no |
-| `unknown` | owner or access not yet determined | what is known | reported separately |
+| `unknown` | owner or access not determined (pipeline fallback; none left, not shown on the site) | — | — |
 
 Which categories count as public access is a site setting (presets plus toggles).
 
@@ -392,7 +392,7 @@ GitHub Release asset.
     segment access.
   - Click a segment to see owner label, class, access (and why), municipality, and
     length.
-  - Routing with `@solidjs/router`, **hash URLs** (`#/map`, `#/scorecard`; GitHub Pages
+  - Routing with `@solidjs/router`, **hash URLs** (`#/map`, `#/scorecard`, `#/about`; GitHub Pages
     has no SPA fallback). Map params: `bbox=w,s,e,n`, `municipality=<slug>`, `seg=<id>`
     (temporary, for review lists), `color=access`. Scorecard params:
     `report=<id>` or a custom `count=…&of=…&water=…`, `rank`, `min_shore` (m), `sort`.
@@ -478,17 +478,29 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 5. ✅ **Segment cleanup.** Adjacent segments merge into runs (`90_merge.sql`) when
    category, municipality, owner label, and access source and note match. Private
    shore keeps its labels (Condo / HOA, Church) rather than becoming one run.
-6. **Scorecard on the site.** Interactive tables and charts computed in the browser from
+6. ✅ **Scorecard on the site.** Interactive tables and charts computed in the browser from
    user-chosen numerators and denominators (e.g. "open shore ÷ all shore", "provided by the
    municipality ÷ all shore", lakes only), plus default reports with preset choices. The
    pipeline ships a tidy per-municipality breakdown (`stats.json`); the site aggregates.
    Map: shade municipalities by the selected measure. Metric/imperial display switch
-   (data stays in meters).
+   (data stays in meters). Done 2026-10-19, plus: settings in the URL, a ranked chart
+   with full-row tooltips, a "what the shore is made of" stacked chart, and a shore
+   floor slider.
 7. **Ship.** Approve the output, commit `site/public/data/`, enable GitHub Pages, restore
    the push trigger.
+   - Done: `site/public/data/` committed.
+   - To do: restore the `push` trigger in `.github/workflows/deploy.yml` (it still says
+     the data is gitignored), make the repo public and enable Pages (owner, on GitHub;
+     the About page links to the repo), push, check the deployed site.
 8. **Explain and polish.** Methodology/about page (sources and vintages, coastline
    paradox, public trust doctrine, how scores are computed, disclaimer), README,
    data-validation tests, CI (ruff + unit tests), mobile layout.
+   - Done: About page (`#/about`; pipeline settings and source links come from
+     stats.json); README; mobile layout for the scorecard (names above bars, tap
+     tooltips) and the map (panel under the map, selecting a segment scrolls to it).
+   - To do: data-validation tests (only the ownership-rule unit tests exist), CI (ruff +
+     unit tests; there is no `ci.yml` yet), a look at the map on real phones (maybe a
+     bottom sheet for segment details), the README against what the site now does.
 
 ## Decisions log
 

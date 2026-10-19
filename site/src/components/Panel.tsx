@@ -1,6 +1,8 @@
+import { A } from '@solidjs/router'
 import { createEffect, For, type JSX, on, Show } from 'solid-js'
 
 import { CATEGORIES } from '../lib/categories'
+import { narrowWidth } from '../lib/settings'
 import { formatLong, formatPct, formatShort } from '../lib/units'
 import { ACCESS, CATEGORY_GROUPS, entries, type Mode, SEQUENTIAL } from '../map/colors'
 import { computeScores, matchingReport } from '../scorecard/measures'
@@ -117,7 +119,8 @@ function SegmentDetails(): JSX.Element {
               {s().owner_label}
               <Show when={s().kind === 'stream'}>
                 <div class="muted">
-                  Narrow stream (under 30 m wide): counted once, with access if either bank has it.
+                  Narrow stream (under {narrowWidth()} wide): counted once, with access if either
+                  bank has it.
                   <Show when={s().other_bank_label} fallback=" Only one bank is in the study area.">
                     {(o) => ` Other bank: ${o()}.`}
                   </Show>
@@ -191,7 +194,7 @@ export default function Panel(): JSX.Element {
         panel = e
       }}
     >
-      <h1>Dane County shore access</h1>
+      <h1>Dane County Shore Access</h1>
       <p class="lede">
         Who owns the land along the water, and whether the public can reach it. Named lakes, ponds
         and rivers in central Dane County.
@@ -271,10 +274,10 @@ export default function Panel(): JSX.Element {
       </section>
 
       <p class="fine">
-        Shore lengths come from Dane County's ~1:2,400 hydrography. Parcel data is not a legal
-        record of ownership, and this map is not legal advice. In Wisconsin the beds of navigable
-        waters are held in trust for the public: "no access from land" doesn't mean you can't be on
-        the water.
+        Not legal advice.{' '}
+        <A href="/about" class="link">
+          How this map works
+        </A>
       </p>
     </aside>
   )

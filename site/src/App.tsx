@@ -1,6 +1,7 @@
 import { type RouteSectionProps, useNavigate } from '@solidjs/router'
 import { type JSX, Show } from 'solid-js'
 
+import About from './about/About'
 import Panel from './components/Panel'
 import MapView from './map/MapView'
 import Scorecard from './scorecard/Scorecard'
@@ -37,6 +38,15 @@ export default function App(props: RouteSectionProps): JSX.Element {
           >
             Scorecard
           </button>
+          <button
+            role="tab"
+            aria-selected={view() === 'about'}
+            onClick={() => {
+              navigate('/about')
+            }}
+          >
+            About
+          </button>
         </nav>
         <div class="segmented" role="radiogroup" aria-label="Units">
           <button
@@ -55,7 +65,7 @@ export default function App(props: RouteSectionProps): JSX.Element {
           </button>
         </div>
       </header>
-      {/* The map stays mounted (and hidden) on the scorecard tab, so it isn't rebuilt. */}
+      {/* The map stays mounted (and hidden) on the other tabs, so it isn't rebuilt. */}
       <div class="body" classList={{ hidden: view() !== 'map' }}>
         <Panel />
         <MapView />
@@ -63,6 +73,11 @@ export default function App(props: RouteSectionProps): JSX.Element {
       <Show when={view() === 'scorecard'}>
         <main class="body scroll">
           <Scorecard />
+        </main>
+      </Show>
+      <Show when={view() === 'about'}>
+        <main class="body scroll">
+          <About />
         </main>
       </Show>
     </div>

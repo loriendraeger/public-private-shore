@@ -13,13 +13,14 @@ if (!root) {
 loadStats(`${import.meta.env.BASE_URL}data/stats.json`).catch((e: unknown) => {
   console.error('Failed to load stats.json', e)
 })
-// Hash URLs (#/map, #/scorecard): GitHub Pages can't serve index.html for other paths.
+// Hash URLs (#/map, #/scorecard, #/about): GitHub Pages can't serve index.html for other paths.
 // App is the shell for every route; the routes themselves render nothing.
 render(
   () => (
     <HashRouter root={App}>
       <Route path="/map" />
       <Route path="/scorecard" />
+      <Route path="/about" />
       <Route path="/" component={() => <Navigate href="/map" />} />
       <Route path="*" component={() => <Navigate href="/map" />} />
     </HashRouter>

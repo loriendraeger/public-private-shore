@@ -2,6 +2,7 @@ import { For, type JSX, Show } from 'solid-js'
 
 import { ALL_CATEGORIES, CATEGORIES } from '../lib/categories'
 import type { Category, WaterKind } from '../lib/contract'
+import { narrowWidth, pondMinArea } from '../lib/settings'
 import { formatLong, formatPct, formatShort, fromLong, longUnit, toLong } from '../lib/units'
 import {
   measure,
@@ -26,15 +27,19 @@ import {
 } from './measures'
 import ScoreTable from './ScoreTable'
 
-const WATER: Record<WaterKind, { label: string; title: string }> = {
-  wide: { label: 'Lakes & wide rivers', title: 'Named lakes, ponds and rivers at least 30 m wide' },
+const WATER: Record<WaterKind, { label: string; title: () => string }> = {
+  wide: {
+    label: 'Lakes & wide rivers',
+    title: () => `Named lakes, ponds and rivers at least ${narrowWidth()} wide`,
+  },
   narrow: {
     label: 'Narrow streams',
-    title: 'Water under 30 m wide, counted once along its centerline',
+    title: () => `Water under ${narrowWidth()} wide, counted once along its centerline`,
   },
   pond: {
     label: 'Ponds',
-    title: "Standalone water of 1 ha or more that the county and DNR don't name (often stormwater)",
+    title: () =>
+      `Standalone water of ${pondMinArea()} or more that the county and DNR don't name (often stormwater)`,
   },
 }
 
@@ -45,7 +50,7 @@ function WaterPicker(): JSX.Element {
       <legend class="label">Water</legend>
       <For each={Object.keys(WATER) as WaterKind[]}>
         {(k) => (
-          <label title={WATER[k].title}>
+          <label title={WATER[k].title()}>
             <input
               type="checkbox"
               checked={measure().water.includes(k)}

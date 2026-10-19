@@ -13,7 +13,7 @@ import {
 // App state as Solid signals. The map subscribes to these and updates paint/visibility
 // in place; it is never re-created on a state change.
 
-export type View = 'map' | 'scorecard'
+export type View = 'map' | 'scorecard' | 'about'
 /** Set from the route by UrlSync (state/url.ts); navigate to change it. */
 export const [view, setView] = createSignal<View>('map')
 

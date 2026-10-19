@@ -3,28 +3,39 @@
   "sources": {
     "parcels": {
       "name": "Wisconsin Statewide Parcel Map V12 (Dane County extract)",
+      "url": "https://www.sco.wisc.edu/parcels/data-county/#v1200",
       "retrieved": "2026-10-16"
     },
     "hydro_county": {
       "name": "Dane County Lakes and Ponds (polygons)",
+      "url": "https://gis-countyofdane.opendata.arcgis.com/pages/water-resources",
       "retrieved": "2026-10-16"
     },
     "hydro": {
       "name": "WI DNR 24K Hydro (full file geodatabase)",
+      "url": "https://data-wi-dnr.opendata.arcgis.com/datasets/24k-hydro-full-file-geodatabase",
       "retrieved": "2026-10-16"
     },
     "municipalities": {
       "name": "Dane County Municipal Boundaries",
+      "url": "https://gis-countyofdane.opendata.arcgis.com/pages/boundaries",
       "retrieved": "2026-10-17"
     },
     "osm": {
       "name": "OpenStreetMap Wisconsin extract",
+      "url": "https://download.geofabrik.de/north-america/us/wisconsin.html",
       "retrieved": "2026-10-17"
     },
     "population": {
       "name": "Official Final Population Estimates, 1/1/2026, Wisconsin Minor Civil Divisions",
+      "url": "https://doa.wi.gov/Pages/LocalGovtsGrants/Population_Estimates_Long.aspx",
       "retrieved": "2026-10-17"
     }
+  },
+  "settings": {
+    "snap_tolerance_m": 15,
+    "narrow_width_m": 30,
+    "pond_min_area_m2": 10000
   },
   "municipalities": [
     {

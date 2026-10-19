@@ -6,6 +6,8 @@
 #
 # Fields:
 #   url         landing page or direct download
+#   landing     the dataset's page, when `url` is a direct download (the site links
+#               the landing page, else `url`)
 #   local_path  where the extracted download lives, relative to repo root
 #   format     as delivered (shp, gdb, gpkg, pbf, geojson, ...)
 #   layer       layer/table name inside the download, if multi-layer
@@ -139,7 +141,7 @@ Other layers in the gdb:
 [hydro_county]
 name = "Dane County Lakes and Ponds (polygons)"
 publisher = "Dane County Land Information Office"
-url = "https://gis-countyofdane.opendata.arcgis.com/"   # Water Resources category
+url = "https://gis-countyofdane.opendata.arcgis.com/pages/water-resources"
 rest_endpoint = "https://dcimapapps.danecounty.gov/arcgissrv/rest/services/DaneCountyBase/MapServer/10"
 local_path = "data/raw/hydro_county/LakesPonds/LakesPonds.shp"
 format = "shp"
@@ -149,7 +151,7 @@ load_srs = "EPSG:7599"       # ESRI .prj; tag the EPSG code explicitly
 geometry = "Polygon"
 crs = "EPSG:7599"   # NAD83(2011) / WISCRS Dane (ftUS). US survey FEET; must reproject to 3071.
 # .prj is ESRI WKT; tag it with -a_srs EPSG:7599 on load so PostGIS gets a real SRID.
-license = "Unclear. Metadata has a disclaimer only (fitness for use on requester; 'intended for cartographic use, general spatial analysis ... not site specific analysis'). The muni layer's metadata cites a 'License Agreement for Dane County Digital Geographic Data Sets' whose URL is dead (404, 2026-10-17). Owner decided not to pursue (2026-10-17). Attribution: Dane County Land Information Office"
+license = "Unclear. Metadata has a disclaimer only (fitness for use on requester; 'intended for cartographic use, general spatial analysis ... not site specific analysis'). The muni layer's metadata cites a 'License Agreement for Dane County Digital Geographic Data Sets' whose URL is dead (404, 2026-10-17). Owner decided not to pursue (2026-10-17). Rechecked 2026-10-19: the PDF still 404s (now at lio.danecounty.gov); the open data portal pages are plain link tables with no terms, the county's ArcGIS org has no items for these layers, and the live MapServer layers state no license (Lakes and Ponds: copyright text 'Dane County Land Information Office, Fly Dane' only). Re-uploads by others carry the county's standard disclaimer: fitness for use rests on the requester; for cartographic use and general spatial analysis, not site-specific analysis. Attribution: Dane County Land Information Office"
 retrieved = "2026-10-16"
 source_date = "2026-01"   # "January 2026" on the portal
 verified = true
@@ -204,7 +206,7 @@ Joins to DNR 24K by spatial overlap (names match for big lakes) to get WBIC.
 [streams_county]
 name = "Dane County Rivers and Streams (lines)"
 publisher = "Dane County Land Information Office"
-url = "https://gis-countyofdane.opendata.arcgis.com/"   # Water Resources category
+url = "https://gis-countyofdane.opendata.arcgis.com/pages/water-resources"
 rest_endpoint = "https://dcimapapps.danecounty.gov/arcgissrv/rest/services/DaneCountyBase/MapServer/9"
 local_path = "data/raw/hydro_county/RiversStreams/RiversStreams.shp"
 format = "shp"
@@ -244,7 +246,7 @@ table = "municipalities"
 load_srs = "EPSG:7599"
 geometry = "Polygon (some multipart; load as MultiPolygon)"
 crs = "EPSG:7599"   # WISCRS Dane ftUS, ESRI .prj; tag with -a_srs EPSG:7599 and reproject to 3071
-license = "Metadata: 'Data is copyright and licensed for use. Refer to the License Agreement for Dane County Digital Geographic Data Sets' (https://lio.countyofdane.com/pdf/licenseagreement.pdf, now 404). Owner decided not to pursue (2026-10-17). Attribution: Dane County Land Information Office"
+license = "Metadata: 'Data is copyright and licensed for use. Refer to the License Agreement for Dane County Digital Geographic Data Sets' (https://lio.countyofdane.com/pdf/licenseagreement.pdf, now 404). Owner decided not to pursue (2026-10-17). Rechecked 2026-10-19: the PDF still 404s (now at lio.danecounty.gov); the open data portal pages are plain link tables with no terms, the county's ArcGIS org has no items for these layers, and the live MapServer layers state no license (Lakes and Ponds: copyright text 'Dane County Land Information Office, Fly Dane' only). Re-uploads by others carry the county's standard disclaimer: fitness for use rests on the requester; for cartographic use and general spatial analysis, not site-specific analysis. Attribution: Dane County Land Information Office"
 retrieved = "2026-10-17"
 verified = true     # PostGIS recon 2026-10-17
 notes = """
@@ -270,6 +272,7 @@ Maple Bluff / Middleton / Shorewood Hills shore labeled City of Madison.
 name = "OpenStreetMap Wisconsin extract"
 publisher = "Geofabrik"
 url = "https://download.geofabrik.de/north-america/us/wisconsin-latest.osm.pbf"
+landing = "https://download.geofabrik.de/north-america/us/wisconsin.html"
 local_path = "data/raw/osm/wisconsin-latest.osm.pbf"   # + .md5 from Geofabrik (verified)
 format = "pbf"
 layer = "points, lines, multipolygons"   # GDAL OSM driver layers

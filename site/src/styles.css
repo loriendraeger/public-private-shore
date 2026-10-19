@@ -227,6 +227,10 @@ h2 {
   display: none;
 }
 .body.scroll {
+  /* Block, not flex: a flex item is stretched to the container's height and its content
+     overflows it, so the page's bottom padding sat at the window's edge, not after the
+     content. */
+  display: block;
   overflow-y: auto;
   background: var(--surface);
 }
@@ -474,4 +478,78 @@ a.link:hover {
   display: grid;
   grid-template-columns: auto auto;
   gap: 1px 10px;
+}
+
+/* About page */
+.about {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px 40px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.about h1 {
+  font-size: 22px;
+}
+.about h2 {
+  margin-top: 28px;
+}
+.about .steps,
+.about ul {
+  padding-left: 20px;
+}
+.about li {
+  margin: 8px 0;
+}
+.about a {
+  color: var(--accent);
+}
+.cats-list {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+}
+.cats-list dt {
+  font-weight: 600;
+}
+.cats-list dd {
+  margin: 0;
+  color: var(--ink-2);
+}
+@media (max-width: 560px) {
+  .cats-list {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .cats-list dd {
+    margin-bottom: 8px;
+  }
+}
+.disclaimer {
+  padding: 10px 12px;
+  background: var(--plane);
+  border-radius: 8px;
+}
+.sources {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.sources th,
+.sources td {
+  padding: 6px 12px 6px 0;
+  border-bottom: 1px solid var(--hairline);
+  text-align: left;
+  vertical-align: top;
+}
+.sources th {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.sources .muted {
+  font-size: 13px;
+}
+.nowrap {
+  white-space: nowrap;
 }

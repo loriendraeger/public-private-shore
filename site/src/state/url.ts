@@ -101,7 +101,10 @@ export function UrlSync(): null {
   let lastWrite: string | null = null
 
   createEffect(() => {
-    setView(location.pathname.startsWith('/scorecard') ? 'scorecard' : 'map')
+    const path = location.pathname
+    setView(
+      path.startsWith('/scorecard') ? 'scorecard' : path.startsWith('/about') ? 'about' : 'map',
+    )
   })
 
   // URL -> store. `on` tracks only the URL (and stats arriving); the store is read

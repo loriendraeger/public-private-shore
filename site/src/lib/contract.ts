@@ -81,7 +81,14 @@ export interface ShoreProps {
 /** stats.json: tidy rows, lengths in meters. The site aggregates. */
 export interface Stats {
   generated: string
-  sources: Record<string, { name: string; retrieved: string }>
+  /** url: the dataset's page (sources.toml `landing`, else `url`). */
+  sources: Record<string, { name: string; url: string; retrieved: string }>
+  /** config/pipeline.toml values the site quotes in its text (stats.py SITE_SETTINGS). */
+  settings: {
+    snap_tolerance_m: number
+    narrow_width_m: number
+    pond_min_area_m2: number
+  }
   municipalities: StatsMuni[]
   shore: StatsShoreRow[]
 }
@@ -97,8 +104,9 @@ export interface StatsMuni {
   shore_bbox: [number, number, number, number] | null
 }
 
-/** wide: lakes and wide rivers. narrow: narrower than 30 m, counted once (centerline).
- * pond: standalone water the county and DNR don't name (at least 1 ha). */
+/** wide: lakes and wide rivers. narrow: narrower than narrow_width_m, counted once
+ * (centerline). pond: standalone water the county and DNR don't name (at least
+ * pond_min_area_m2). */
 export type WaterKind = 'wide' | 'narrow' | 'pond'
 
 export interface StatsShoreRow {
