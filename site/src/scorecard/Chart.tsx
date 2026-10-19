@@ -4,11 +4,14 @@ import { createEffect, type JSX, onCleanup } from 'solid-js'
 import { formatLong, formatPct, formatShort, toLong, toShort } from '../lib/units'
 import { type Metric, metric, units } from '../state/store'
 import type { Score } from './measures'
+import { TYPE_LABEL } from './ScoreTable'
 
 interface Datum {
   name: string
   value: number
   label: string
+  /** The full row, for the tooltip. */
+  score: Score
 }
 
 function cssVar(name: string): string {
@@ -20,15 +23,17 @@ function datum(s: Score, m: Metric): Datum | null {
   const name = s.muni.name
   switch (m) {
     case 'pct':
-      return s.pct === null ? null : { name, value: s.pct * 100, label: formatPct(s.pct) }
+      return s.pct === null ? null : { name, value: s.pct * 100, label: formatPct(s.pct), score: s }
     case 'distance':
       return {
+        score: s,
         name,
         value: toLong(s.numeratorM, u),
         label: formatLong(s.numeratorM, u),
       }
     case 'perThousand':
       return {
+        score: s,
         name,
         value: toShort(s.perThousandM, u),
         label: formatShort(s.perThousandM, u),
@@ -104,13 +109,31 @@ export default function Chart(props: { scores: Score[] }): JSX.Element {
           fill: ink,
         }),
         Plot.ruleX([0], { stroke: ink }),
+        // The tooltip shows the municipality's whole table row.
         Plot.tip(
           data,
           Plot.pointerY({
             x: 'value',
             y: 'name',
-            title: (d: Datum) => `${d.name}
-${d.label}`,
+            channels: {
+              muni: { label: 'Municipality', value: (d: Datum) => d.name },
+              type: { label: 'Type', value: (d: Datum) => TYPE_LABEL[d.score.muni.muni_type] },
+              share: {
+                label: 'Share',
+                value: (d: Datum) => (d.score.pct === null ? '—' : formatPct(d.score.pct)),
+              },
+              counted: { label: 'Counted', value: (d: Datum) => formatLong(d.score.numeratorM, u) },
+              outOf: { label: 'Out of', value: (d: Datum) => formatLong(d.score.denominatorM, u) },
+              perThousand: {
+                label: 'Per 1,000 residents',
+                value: (d: Datum) => formatShort(d.score.perThousandM, u),
+              },
+              population: {
+                label: 'Population',
+                value: (d: Datum) => d.score.muni.population.toLocaleString(),
+              },
+            },
+            format: { x: false, y: false },
           }),
         ),
       ],

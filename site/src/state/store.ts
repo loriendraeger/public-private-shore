@@ -67,6 +67,11 @@ export const [metric, setMetric] = createSignal<Metric>('pct')
 /** Leave out municipalities with less measured shore than this (meters; 0 = all). */
 export const [minShoreM, setMinShoreM] = createSignal(DEFAULT_MIN_SHORE_M)
 
+/** Scorecard table sort (column ids from ScoreTable), first key first. */
+export type TableSort = { id: string; desc: boolean }[]
+export const DEFAULT_TABLE_SORT: TableSort = [{ id: 'share', desc: true }]
+export const [tableSort, setTableSort] = createSignal<TableSort>(DEFAULT_TABLE_SORT)
+
 /** Scores for the current measure, above the shore floor; shared by the scorecard and
  * the map shading. */
 export const scores = createRoot(() =>

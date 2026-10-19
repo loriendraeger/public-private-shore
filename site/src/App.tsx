@@ -4,6 +4,7 @@ import { type JSX, Show } from 'solid-js'
 import Panel from './components/Panel'
 import MapView from './map/MapView'
 import Scorecard from './scorecard/Scorecard'
+import { scorecardPath, ScorecardUrlSync } from './state/scorecardUrl'
 import { setUnits, units, view } from './state/store'
 import { mapPath, UrlSync } from './state/url'
 
@@ -13,6 +14,7 @@ export default function App(props: RouteSectionProps): JSX.Element {
   return (
     <div class="app">
       <UrlSync />
+      <ScorecardUrlSync />
       {/* Routes render nothing, except the redirect to #/map. */}
       {props.children}
       <header class="topbar">
@@ -30,7 +32,7 @@ export default function App(props: RouteSectionProps): JSX.Element {
             role="tab"
             aria-selected={view() === 'scorecard'}
             onClick={() => {
-              navigate('/scorecard')
+              navigate(scorecardPath())
             }}
           >
             Scorecard

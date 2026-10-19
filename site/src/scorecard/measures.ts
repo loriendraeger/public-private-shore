@@ -23,7 +23,19 @@ export interface Report {
   measure: Measure
 }
 
+// The first report is the default (and is left out of the URL).
 export const REPORTS: Report[] = [
+  {
+    id: 'public_with_ponds',
+    label: 'Public access, including ponds',
+    description:
+      "Shore the public can reach from land, whoever provides it, including ponds the county and DNR don't name (often stormwater ponds): credit for ponds ringed by parks, a penalty for ponds behind private lots.",
+    measure: {
+      numerator: PUBLIC_ACCESS_CATEGORIES,
+      denominator: ALL_CATEGORIES,
+      water: ALL_WATER,
+    },
+  },
   {
     id: 'public',
     label: 'Public access, any provider',
@@ -64,17 +76,6 @@ export const REPORTS: Report[] = [
     },
   },
   {
-    id: 'public_with_ponds',
-    label: 'Public access, including ponds',
-    description:
-      'Like "any provider", plus ponds the county and DNR don\'t name (often stormwater ponds): credit for ponds ringed by parks, a penalty for ponds behind private lots.',
-    measure: {
-      numerator: PUBLIC_ACCESS_CATEGORIES,
-      denominator: ALL_CATEGORIES,
-      water: ALL_WATER,
-    },
-  },
-  {
     id: 'no_access',
     label: 'No public access',
     description: 'Shore with no public access from land: private, plus public land that is closed.',
@@ -103,6 +104,8 @@ export function matchingReport(m: Measure): Report | undefined {
 /** Default shore floor: below this much measured shore, one park or street end swings
  * a municipality's share a lot, so it's left out unless the user lowers the floor. */
 export const DEFAULT_MIN_SHORE_M = 1000
+/** Top of the shore-floor slider: 25 km (15.5 mi). */
+export const MAX_MIN_SHORE_M = 25_000
 
 export interface Score {
   muni: StatsMuni

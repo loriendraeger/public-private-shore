@@ -394,7 +394,8 @@ GitHub Release asset.
     length.
   - Routing with `@solidjs/router`, **hash URLs** (`#/map`, `#/scorecard`; GitHub Pages
     has no SPA fallback). Map params: `bbox=w,s,e,n`, `municipality=<slug>`, `seg=<id>`
-    (temporary, for review lists), `color=access`. Scorecard params come later.
+    (temporary, for review lists), `color=access`. Scorecard params:
+    `report=<id>` or a custom `count=…&of=…&water=…`, `rank`, `min_shore` (m), `sort`.
   - A methodology/about view: data sources and vintages, the coastline-paradox caveat,
     the public trust note, and the disclaimer.
   - A stats panel driven by `stats.json` that recomputes public/private totals when the
@@ -485,6 +486,10 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
+
+- 2026-10-18: The scorecard's default report is "Public access, including ponds"
+  (supersedes ponds being off in the default reports); the other presets still leave
+  ponds out.
 
 - 2026-10-18: The site no longer mentions `unknown` (legends, scorecard column and
   summary, category list): the pipeline leaves none. `unknown` stays a pipeline

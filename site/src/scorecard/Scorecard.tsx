@@ -1,6 +1,6 @@
 import { For, type JSX, Show } from 'solid-js'
 
-import { ALL_CATEGORIES,CATEGORIES } from '../lib/categories'
+import { ALL_CATEGORIES, CATEGORIES } from '../lib/categories'
 import type { Category, WaterKind } from '../lib/contract'
 import { formatLong, formatPct, formatShort, fromLong, longUnit, toLong } from '../lib/units'
 import {
@@ -16,7 +16,7 @@ import {
   units,
 } from '../state/store'
 import Chart from './Chart'
-import { matchingReport, REPORTS, totalScore } from './measures'
+import { matchingReport, MAX_MIN_SHORE_M, REPORTS, totalScore } from './measures'
 import ScoreTable from './ScoreTable'
 
 const WATER: Record<WaterKind, { label: string; title: string }> = {
@@ -199,7 +199,7 @@ function ShoreFloor(): JSX.Element {
       <input
         type="range"
         min="0"
-        max="10"
+        max={toLong(MAX_MIN_SHORE_M, units())}
         step="0.25"
         value={value()}
         onInput={(e) => {

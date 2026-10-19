@@ -12,7 +12,7 @@ import {
 import { For, type JSX } from 'solid-js'
 
 import { formatLong, formatPct, formatShort } from '../lib/units'
-import { units } from '../state/store'
+import { setTableSort, tableSort, units } from '../state/store'
 import { mapPath, municipalitySlug } from '../state/url'
 import type { Score } from './measures'
 
@@ -23,7 +23,7 @@ const features = tableFeatures({
 })
 const helper = createColumnHelper<typeof features, Score>()
 
-const TYPE_LABEL = { city: 'City', village: 'Village', town: 'Town' }
+export const TYPE_LABEL = { city: 'City', village: 'Village', town: 'Town' }
 
 function long(c: CellContext<typeof features, Score, number>): string {
   return formatLong(c.getValue(), units())
@@ -58,7 +58,7 @@ const columns = helper.columns([
     cell: (c) => TYPE_LABEL[c.getValue()],
   }),
   helper.accessor((s) => s.pct ?? -1, {
-    id: 'pct',
+    id: 'share',
     header: 'Share',
     sortFn: 'basic',
     cell: (c) => {
@@ -66,9 +66,10 @@ const columns = helper.columns([
       return p === null ? '—' : formatPct(p)
     },
   }),
-  helper.accessor('numeratorM', { header: 'Counted', sortFn: 'basic', cell: long }),
-  helper.accessor('denominatorM', { header: 'Out of', sortFn: 'basic', cell: long }),
+  helper.accessor('numeratorM', { id: 'counted', header: 'Counted', sortFn: 'basic', cell: long }),
+  helper.accessor('denominatorM', { id: 'out_of', header: 'Out of', sortFn: 'basic', cell: long }),
   helper.accessor('perThousandM', {
+    id: 'per_1000',
     header: 'Per 1,000 residents',
     sortFn: 'basic',
     cell: (c) => formatShort(c.getValue(), units()),
@@ -88,7 +89,13 @@ export default function ScoreTable(props: { scores: Score[] }): JSX.Element {
     get data() {
       return props.scores
     },
-    initialState: { sorting: [{ id: 'pct', desc: true }] },
+    // Controlled, so the sort lives in the store (and the URL).
+    get state() {
+      return { sorting: tableSort() }
+    },
+    onSortingChange: (u) => {
+      setTableSort(typeof u === 'function' ? u(tableSort()) : u)
+    },
   })
 
   return (
