@@ -441,6 +441,14 @@ cd site && npm run dev
 - Never export raw owner names. Only ownership class and owner label leave the DB.
 - Update this file when a decision changes, and docs/ARCHITECTURE.md when code
   structure changes.
+- The site needs Node 24 (`site/.nvmrc`): run `nvm use` first. Under the default Node 20,
+  ESLint's formatter and `vite build` crash.
+- Checking the site in a headless browser: `puppeteer-core` (installed in a scratch
+  directory, not the repo) driving the system Chrome. The map needs WebGL2, which
+  headless Chrome on macOS only has with
+  `args: ['--use-angle=metal', '--enable-gpu', '--ignore-gpu-blocklist']`. The
+  SwiftShader flags (`--use-angle=swiftshader`, `--enable-unsafe-swiftshader`) give no
+  WebGL2 and stalled the page. The scorecard needs no flags.
 
 ## Milestones
 

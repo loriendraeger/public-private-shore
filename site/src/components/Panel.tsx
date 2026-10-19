@@ -1,4 +1,4 @@
-import { For, type JSX, Show } from 'solid-js'
+import { createEffect, For, type JSX, on, Show } from 'solid-js'
 
 import { CATEGORIES } from '../lib/categories'
 import { formatLong, formatPct, formatShort } from '../lib/units'
@@ -158,9 +158,39 @@ function SegmentDetails(): JSX.Element {
   )
 }
 
+// Matches the stacked (phone) layout in styles.css, where the panel sits under the map.
+const stacked = window.matchMedia('(max-width: 700px)')
+
 export default function Panel(): JSX.Element {
+  let panel: HTMLElement | undefined
+  let selectedSection: HTMLElement | undefined
+
+  // Picking a segment brings its details into view: always when the panel is the short
+  // strip under the map, otherwise only if they're scrolled out of sight.
+  createEffect(
+    on(
+      () => selected()?.segment_id,
+      (id) => {
+        if (id === undefined || !panel || !selectedSection) {
+          return
+        }
+        const p = panel.getBoundingClientRect()
+        const s = selectedSection.getBoundingClientRect()
+        const outOfView = s.top < p.top || s.top > p.bottom - 40
+        if (stacked.matches || outOfView) {
+          panel.scrollTo({ top: panel.scrollTop + s.top - p.top - 8, behavior: 'smooth' })
+        }
+      },
+    ),
+  )
+
   return (
-    <aside class="panel">
+    <aside
+      class="panel"
+      ref={(e) => {
+        panel = e
+      }}
+    >
       <h1>Dane County shore access</h1>
       <p class="lede">
         Who owns the land along the water, and whether the public can reach it. Named lakes, ponds
@@ -231,8 +261,14 @@ export default function Panel(): JSX.Element {
         </div>
       </Show>
 
-      <h2>Selected</h2>
-      <SegmentDetails />
+      <section
+        ref={(e) => {
+          selectedSection = e
+        }}
+      >
+        <h2>Selected</h2>
+        <SegmentDetails />
+      </section>
 
       <p class="fine">
         Shore lengths come from Dane County's ~1:2,400 hydrography. Parcel data is not a legal
