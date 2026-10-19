@@ -35,10 +35,12 @@ def export_views() -> list[Path]:
     return [export_view(v) for v in views]
 
 
-def tiles() -> None:
+def tiles(compare: bool = False) -> None:
     """Build one PMTiles file per [tiles.files] entry from data/build/export/*.geojsonl.
-    Missing layers are skipped (e.g. shore_alt only exists after `shore compare`)."""
+    Missing layers are skipped. Comparison layers (`compare_layers`, written by
+    `shore compare`) are left out unless `compare` is set."""
     t = config.pipeline()["tiles"]
+    skip = set() if compare else set(t.get("compare_layers", []))
     if not any(EXPORT_DIR.glob("*.geojsonl")):
         raise SystemExit("nothing exported yet; run `shore export` first")
     assigned = {layer for layers in t["files"].values() for layer in layers}
@@ -54,7 +56,10 @@ def tiles() -> None:
                "--attribution", t["attribution"]]
         for layer in layers:
             f = EXPORT_DIR / f"{layer}.geojsonl"
-            if f.exists():
+            if layer in skip:
+                if f.exists():
+                    print(f"skipping comparison layer {layer} (include it with --compare)")
+            elif f.exists():
                 cmd += ["-L", f"{layer}:{f}"]
         run(cmd)
 

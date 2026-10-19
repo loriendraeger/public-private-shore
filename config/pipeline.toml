@@ -155,6 +155,9 @@ minzoom = 10
 maxzoom = 16           # shore lines; overzoomed beyond this by MapLibre
 basemap_maxzoom = 15   # keeps basemap.pmtiles under the ~50 MB budget (check on change)
 basemap_buffer_m = 2000   # basemap covers the study area plus this margin
+# Layers written by `make compare`. Left out of the tiles unless asked for
+# (`make tiles COMPARE=1`), so a leftover comparison never ships to the site.
+compare_layers = ["shore_alt"]
 attribution = "Dane County LIO; WI DNR; SCO V12 parcels; © OpenStreetMap contributors"
 
 # Which exported layers go into which site/public/data/<name>.pmtiles. shore.pmtiles holds

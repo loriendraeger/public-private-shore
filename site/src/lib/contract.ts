@@ -3,7 +3,7 @@
 // pipeline/src/shore/stats.py (stats.json). Change together.
 
 export const SHORE_LAYER = 'shore'
-export const SHORE_ALT_LAYER = 'shore_alt' // only present after `make compare`
+export const SHORE_ALT_LAYER = 'shore_alt' // only present after `make compare` + `make tiles COMPARE=1`
 export const PARKS_LAYER = 'parks'
 
 // context.pmtiles: county-wide reference layers (pipeline/sql/30_export/30_municipalities.sql)

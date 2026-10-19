@@ -50,9 +50,13 @@ def stats():
 
 
 @app.command()
-def tiles():
-    """Build site/public/data/shore.pmtiles from data/build/export/*.geojsonl."""
-    export_mod.tiles()
+def tiles(
+    compare: Annotated[
+        bool, typer.Option(help="include comparison layers from `shore compare`")
+    ] = False,
+):
+    """Build site/public/data/*.pmtiles from data/build/export/*.geojsonl."""
+    export_mod.tiles(compare)
 
 
 @app.command()

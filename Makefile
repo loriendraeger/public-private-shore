@@ -62,14 +62,14 @@ stats: export
 	$(RUN) stats
 
 tiles: export
-	$(RUN) tiles
+	$(RUN) tiles $(if $(COMPARE),--compare)
 
 # Extract region = the study area (+ margin), so it needs the analysis stage.
 basemap: $(STAMPS)/analysis
 	$(RUN) basemap
 
-# Extra map layer `shore_alt` at another tolerance, e.g. make compare SET=snap_tolerance_m=12.
-# Delete data/build/export/shore_alt.geojsonl and rerun `make tiles` to drop it.
+# Extra map layer `shore_alt` at another tolerance, e.g. make compare SET=snap_tolerance_m=12,
+# then `make tiles COMPARE=1` to see it on the map. A plain `make tiles` leaves it out.
 SET ?= snap_tolerance_m=12
 compare: $(STAMPS)/analysis
 	$(RUN) compare --set $(SET)
