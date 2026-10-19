@@ -36,8 +36,9 @@ Two halves:
 
 **Status (2026-10-19):** milestones 1–6 done; 7 (ship) and 8 (explain and polish) partly
 done. See [Milestones](#milestones). The full pipeline (load → staging → analysis →
-export → tiles) and the site run locally. `site/public/data/` is committed, but the
-deploy workflow is still manual-only and the site isn't published yet.
+export → tiles) and the site run locally. `site/public/data/` is committed, and the
+deploy workflow runs on every push to `main` (GitHub Pages, source: GitHub Actions); the
+first deploy is still to be checked.
 
 **Code architecture:** see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md). It covers what
 each piece does and where to change things. Keep it current as code changes.
@@ -488,10 +489,11 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
    floor slider.
 7. **Ship.** Approve the output, commit `site/public/data/`, enable GitHub Pages, restore
    the push trigger.
-   - Done: `site/public/data/` committed.
-   - To do: restore the `push` trigger in `.github/workflows/deploy.yml` (it still says
-     the data is gitignored), make the repo public and enable Pages (owner, on GitHub;
-     the About page links to the repo), push, check the deployed site.
+   - Done: `site/public/data/` committed; `push` trigger restored in
+     `.github/workflows/deploy.yml`; Pages enabled with GitHub Actions as the source
+     (2026-10-18).
+   - To do: confirm the repo is public (the About page links to it), push, check the
+     deployed site at https://loriendraeger.github.io/public-private-shore/.
 8. **Explain and polish.** Methodology/about page (sources and vintages, coastline
    paradox, public trust doctrine, how scores are computed, disclaimer), README,
    data-validation tests, CI (ruff + unit tests), mobile layout.

@@ -4,10 +4,8 @@
 name: Deploy site
 
 on:
-  # Manual only while site/public/data/ is gitignored (output not yet approved).
-  # Once the data is committed, restore:
-  #   push:
-  #     branches: [main]
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
