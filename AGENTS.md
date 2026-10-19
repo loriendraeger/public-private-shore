@@ -113,6 +113,9 @@ analysis happens in **PostGIS SQL**, and products are exported back out to **fil
 .
 ├── AGENTS.md                     # this file (CLAUDE.md just imports it)
 ├── README.md                     # human-facing overview + quickstart
+├── LICENSE                       # code: GPL-3.0-or-later
+├── LICENSE-DOCS                  # docs + methodology: CC BY-SA 4.0
+├── LICENSE-DATA                  # outputs + config/*.csv: ODbL 1.0, upstream attributions
 ├── docs/ARCHITECTURE.md          # how the code pieces fit together (humans + agents)
 ├── Makefile                      # single entry point for the pipeline
 ├── docker-compose.yml            # services: db (PostGIS), pipeline (tools)
@@ -478,6 +481,12 @@ Rewritten 2026-10-17 around the municipal scorecard goal; 4 and 5 swapped the sa
 
 Record judgment calls here (classification edge cases, tolerance changes, scope
 changes), newest first, with the date and a one-line rationale.
+
+- 2026-10-18: Licensing is share-alike throughout: code GPL-3.0-or-later (`LICENSE`),
+  docs and methodology CC BY-SA 4.0 (`LICENSE-DOCS`), data ODbL 1.0 (`LICENSE-DATA`:
+  `site/public/data/` and the curated `config/*.csv`). The outputs derive from OSM, so
+  ODbL is required anyway; `LICENSE-DATA` lists the upstream attributions, whose terms
+  still apply. New data sources need a line there too.
 
 - 2026-10-18: Highway right-of-way at the water (numbered routes, by OSM `ref`:
   interstate, US, state, county trunk; mostly bridges over creeks and the Yahara) is

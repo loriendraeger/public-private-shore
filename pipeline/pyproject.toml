@@ -2,6 +2,7 @@
 name = "shore"
 version = "0.1.0"
 description = "Dane County shore access pipeline: raw data -> PostGIS -> tiles + stats"
+license = "GPL-3.0-or-later"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "psycopg[binary]>=3.2",
