@@ -6,6 +6,7 @@ import type { Category } from '../lib/contract'
 import { formatLong, formatPct } from '../lib/units'
 import { CATEGORY_GROUP, CATEGORY_GROUPS, entries, type Mode } from '../map/colors'
 import { measure, stats, units } from '../state/store'
+import HoverTip, { onScrollHide, rowAt, type TipAt } from './HoverTip'
 import type { Score } from './measures'
 
 // What each municipality's shore is made of: one 100% stacked bar per municipality,
@@ -80,7 +81,8 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
   })
 
   // Hovered segment and where to put the tooltip (px within the chart).
-  const [hover, setHover] = createSignal<{ seg: Segment; left: number; top: number } | null>(null)
+  const [hover, setHover] = createSignal<{ seg: Segment; at: TipAt } | null>(null)
+  onScrollHide(() => setHover(null))
 
   let el: HTMLDivElement | undefined
   let width = 640
@@ -110,11 +112,18 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
     const surface = cssVar('--surface')
     const plot = Plot.plot({
       width,
-      height: Math.max(120, names.length * 22 + 40),
+      // 22 px per row, plus 20 px top and 44 px bottom margins
+      height: Math.max(120, names.length * 22 + 64),
       marginLeft: 200,
       marginRight: 16,
+      marginBottom: 44,
       style: { background: 'transparent', color: ink, fontSize: '12px' },
-      x: { label: 'Share of measured shore (%)', domain: [0, 100] },
+      x: {
+        label: 'Share of measured shore (%)',
+        labelAnchor: 'center',
+        labelOffset: 36,
+        domain: [0, 100],
+      },
       y: { label: null, domain: names },
       marks: [
         Plot.barX(data, {
@@ -135,20 +144,15 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
     // Plot's pointer picks the nearest segment midpoint, which can be the wrong one
     // beside a wide segment; find the segment under the pointer from the scales instead.
     const x = plot.scale('x')
-    const y = plot.scale('y')
     plot.addEventListener('pointermove', (e) => {
-      const { offsetX, offsetY } = e as PointerEvent
+      const { offsetX, offsetY, clientX, clientY } = e as PointerEvent
       const v = x?.invert?.(offsetX) as number | undefined
-      const band = y?.bandwidth ?? 0
-      const name = names.find((n) => {
-        const top = y?.apply(n) as number | undefined
-        return top !== undefined && offsetY >= top && offsetY < top + band
-      })
+      const name = rowAt(plot, names, offsetY)
       const seg =
         v === undefined || name === undefined
           ? undefined
           : data.find((d) => d.name === name && v >= d.x1 && v <= d.x2)
-      setHover(seg ? { seg, left: offsetX, top: offsetY } : null)
+      setHover(seg ? { seg, at: { x: clientX, y: clientY } } : null)
     })
     plot.addEventListener('pointerleave', () => {
       setHover(null)
@@ -177,20 +181,17 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
         Each segment is one category; hover for details. Bars cover the shore the report measures
         against, counted categories first.
       </p>
-      <div class="bar-wrap">
-        <div
-          class="chart"
-          ref={(e) => {
-            el = e
-            ro.observe(e)
-          }}
-        />
-        <Show when={hover()}>
-          {(h) => (
-            <dl
-              class="bar-tip"
-              style={{ left: `${String(h().left)}px`, top: `${String(h().top + 14)}px` }}
-            >
+      <div
+        class="chart"
+        ref={(e) => {
+          el = e
+          ro.observe(e)
+        }}
+      />
+      <Show when={hover()}>
+        {(h) => (
+          <HoverTip at={h().at}>
+            <dl>
               <dt>{h().seg.name}</dt>
               <dd>{CATEGORIES[h().seg.category].label}</dd>
               <dd>
@@ -198,9 +199,9 @@ export default function Composition(props: { scores: Score[] }): JSX.Element {
               </dd>
               <dd class="muted">In this report: {h().seg.counts ? 'Counts' : 'Out of'}</dd>
             </dl>
-          )}
-        </Show>
-      </div>
+          </HoverTip>
+        )}
+      </Show>
     </section>
   )
 }
