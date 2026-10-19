@@ -32,7 +32,7 @@ const USED_FOR: Record<string, string> = {
   population: 'Per-resident measures',
 }
 
-const REPO = 'https://github.com/loriendraeger/public-private-land'
+const REPO = 'https://github.com/loriendraeger/public-private-shore'
 
 export default function About(): JSX.Element {
   return (

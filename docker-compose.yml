@@ -1,3 +1,5 @@
+name: public-private-shore
+
 # PostGIS plus the pipeline tools container.
 services:
   db:

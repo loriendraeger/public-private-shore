@@ -1,6 +1,6 @@
 # Public Water Access Around Madison
 
-Check it out at [https://loriendraeger.github.io/public-private-land/](https://loriendraeger.github.io/public-private-land/).
+Check it out at [https://loriendraeger.github.io/public-private-shore/](https://loriendraeger.github.io/public-private-shore/).
 
 This is not meant to be advice about where you are allowed to be.
 

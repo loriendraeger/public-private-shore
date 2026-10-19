@@ -169,7 +169,7 @@ analysis happens in **PostGIS SQL**, and products are exported back out to **fil
 │
 ├── site/                         # Vite + Solid + TypeScript
 │   ├── package.json
-│   ├── vite.config.ts            # base: '/public-private-land/'
+│   ├── vite.config.ts            # base: '/public-private-shore/'
 │   ├── index.html
 │   ├── src/
 │   │   ├── index.tsx
@@ -400,7 +400,7 @@ GitHub Release asset.
     the public trust note, and the disclaimer.
   - A stats panel driven by `stats.json` that recomputes public/private totals when the
     "public" definition changes.
-- Set Vite `base` to `/public-private-land/` for GitHub Pages project hosting.
+- Set Vite `base` to `/public-private-shore/` for GitHub Pages project hosting.
 - Show attribution for OSM (ODbL), Protomaps, and the county/state data.
 
 ## CI / deploy

@@ -212,7 +212,7 @@ when typescript-eslint supports it.
 
 ```sh
 cd site && nvm use && npm install
-npm run dev        # http://localhost:5173/public-private-land/
+npm run dev        # http://localhost:5173/public-private-shore/
 npm run build      # tsc --noEmit + vite build → site/dist/
 npm run format     # prettier --write .
 npm run check      # prettier --check, eslint, tsc (also runs in the deploy workflow)
@@ -262,7 +262,7 @@ House rules on top:
 | `src/scorecard/Composition.tsx` | Below the table: one 100% stacked bar per municipality over the report's denominator categories, counted ones first (a tick marks where the counted shore ends, i.e. the share). Segments take the map's three group colors with 2px gaps; the hover tooltip finds the segment under the pointer by inverting the x scale and matching the y band (`rowAt`); Plot's pointer picks the nearest midpoint, which can be the wrong segment |
 | `src/scorecard/HoverTip.tsx` | Shared chart tooltip: `position: fixed`, so it is never clipped by the SVG and never lengthens the page (which flashed a scrollbar); kept inside the window, flipped above the pointer near the bottom. `createChartTip` holds one chart's tooltip state: a mouse shows it on hover; a click or tap shows and pins it (touch has no hover); a click outside the chart or a scroll closes it. `rowAt` finds the y-band row under the pointer (gaps between bands included) |
 | `src/scorecard/rows.ts` | `rowLayout`: row layout shared by both bar charts. Wide: 200 px name column, 22 px rows. Under 560 px (phones): each name above its bar (36 px rows, bars full width, names kept whole since several towns share a name with a city or village) |
-| `vite.config.ts` | `base: '/public-private-land/'`; `worker.format: 'es'` |
+| `vite.config.ts` | `base: '/public-private-shore/'`; `worker.format: 'es'` |
 
 **MapLibre worker gotcha:** MapLibre 6 loads its Web Worker from a file next to its own
 module, which breaks once Vite moves the module (pre-bundling in dev, bundling in
